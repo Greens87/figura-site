@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Фигура — Удаление фона с фотографий</title>
+<meta name="description" content="Фигура — сервис удаления фона с продуктовых фотографий. Загрузите фото — получите чистый результат за один клик.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --blue: #003AE7;
+  --black: #0A0A0A;
+  --white: #FFFFFF;
+  --gray: #6B7280;
+  --gray-border: #E8E8E8;
+  --gray-bg: #F9F9F9;
+  --font-heading: 'Unbounded', sans-serif;
+  --font-body: 'Onest', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--white);
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--black);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  line-height: 1.15;
+}
+
+/* ===== NAV ===== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(232, 232, 232, 0.8);
+}
+
+.nav-inner {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  background: #003AE7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.nav-logo-text {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  color: #0A0A0A;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.nav-links a {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: var(--blue);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blue);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.hamburger svg {
+  display: block;
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--white);
+  z-index: 999;
+  padding: 32px 24px;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mobile-menu.open {
+  display: flex;
+}
+
+.mobile-menu a {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--black);
+  text-decoration: none;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+/* ===== HERO ===== */
+.hero {
+  display: flex;
+  background-color: #fff;
+  background-image: radial-gradient(circle, #e2e2e2 1px, transparent 1px);
+  background-size: 36px 36px;
+  padding-top: 72px;
+  padding-bottom: 72px;
+  border-bottom: 1px solid #E8E8E8;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+  align-items: center;
+}
+
+.hero-tag {
+  display: inline-block;
+  border: 1.5px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 16px;
+  border-radius: 50px;
+  margin-bottom: 24px;
+}
+
+.hero-headline {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--black);
+  margin-bottom: 20px;
+}
+
+.hero-subtext {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 440px;
+}
+
+.upload-zone {
+  border: 2px dashed var(--blue);
+  border-radius: 16px;
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  background: #ffffff;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.upload-zone:hover {
+  background: rgba(0, 58, 231, 0.03);
+}
+
+.upload-zone.dragover {
+  background: rgba(0, 58, 231, 0.06);
+  border-color: var(--blue);
+}
+
+.upload-zone-icon {
+  margin-bottom: 12px;
+}
+
+.upload-zone-text {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--black);
+  margin-bottom: 6px;
+}
+
+.upload-zone-hint {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-status {
+  display: none;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--gray);
+  text-align: center;
+}
+
+.upload-status.visible {
+  display: block;
+}
+
+.upload-progress {
+  width: 100%;
+  height: 4px;
+  background: var(--gray-border);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* result area */
+.result-area {
+  background: var(--white);
+  border: 1px solid #E8E8E8;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.result-preview {
+  width: 100%;
+  position: relative;
+}
+
+.result-preview-box {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.result-area.has-image .result-preview-box {
+  aspect-ratio: auto;
+}
+
+.result-placeholder {
+  padding: 60px 20px;
+  text-align: center;
+  border: 1.5px dashed #D1D5DB;
+  border-radius: 12px;
+  margin: 16px;
+}
+
+.result-placeholder-icon {
+  margin-bottom: 12px;
+}
+
+.result-placeholder-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+.result-image-wrap {
+  display: none;
+  padding: 16px;
+}
+
+.result-image-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.result-area.has-image .result-placeholder {
+  display: none;
+}
+
+.result-area.has-image .result-image-wrap {
+  display: block;
+}
+
+.checkerboard-bg {
+  background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-color: #f0f0f0;
+}
+
+#colorPickerRow {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--gray-border);
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid var(--gray-border);
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.active {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(0, 58, 231, 0.3);
+}
+
+.color-hex-input {
+  width: 90px;
+  height: 32px;
+  border: 1.5px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 0 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--black);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.color-hex-input:focus {
+  border-color: var(--blue);
+}
+
+#downloadRow {
+  display: none;
+  padding: 12px 16px;
+  border-top: 1px solid var(--gray-border);
+}
+
+#downloadRow .btn-primary {
+  width: 100%;
+}
+
+/* ===== STATS STRIP ===== */
+.stats-strip {
+  background: #F9F9F9;
+  border-top: 1px solid #E8E8E8;
+  border-bottom: 1px solid #E8E8E8;
+  overflow: hidden;
+  padding: 14px 0;
+}
+.stats-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+}
+.stats-content {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.stat-item {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 20px;
+}
+.stat-dot {
+  color: var(--blue);
+  font-size: 18px;
+  font-weight: 700;
+  margin-right: 20px;
+}
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ===== SECTION BASE ===== */
+.section {
+  padding: 96px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--black);
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+/* ===== FEATURES ===== */
+.features-section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.features-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  background: var(--white);
+  border: 1px solid #E8E8E8;
+  border-radius: 20px;
+  padding: 36px 28px;
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--blue);
+  border-radius: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.feature-card h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--black);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.feature-card p {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+/* ===== HOW IT WORKS ===== */
+.how-section {
+  background: var(--blue);
+  padding: 48px 0;
+}
+
+.how-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.how-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+
+.how-step {
+  text-align: left;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  padding-right: 48px;
+}
+.how-step:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.how-step-number {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.2);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.how-step-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.how-step-desc {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+}
+
+/* ===== BEFORE/AFTER ===== */
+.ba-section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.ba-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.ba-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--black);
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.ba-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.ba-card {
+  border: 1px solid #E8E8E8;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ba-slider-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: ew-resize;
+}
+
+.ba-slider-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ba-img-before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ba-img-before img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ba-slider-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--white);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ba-slider-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: var(--white);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ba-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--white);
+}
+
+.ba-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray);
+}
+
+/* ===== PRICING ===== */
+.pricing-section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.pricing-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pricing-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--black);
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+.pricing-card {
+  border-radius: 20px;
+  padding: 40px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pricing-card--free {
+  background: var(--white);
+  border: 1px solid #E8E8E8;
+}
+
+.pricing-card--basic {
+  background: var(--white);
+  border: 2px solid var(--blue);
+  position: relative;
+}
+.pricing-card--basic .pricing-card-title { color: var(--blue); }
+.pricing-badge--dark {
+  background: var(--blue);
+  color: var(--white);
+}
+.pricing-card--pro {
+  background: var(--blue);
+  color: var(--white);
+  position: relative;
+}
+
+.pricing-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 50px;
+}
+
+.pricing-card-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.pricing-card-price {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 40px;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.pricing-card-price span {
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  opacity: 0.6;
+}
+
+.pricing-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pricing-features li {
+  font-family: var(--font-body);
+  font-size: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.pricing-features li::before {
+  content: '\2192';
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.pricing-card--pro .pricing-features li {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== FAQ ===== */
+.faq-section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.faq-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.faq-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--black);
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.faq-item {
+  border-bottom: 1px solid #E8E8E8;
+}
+
+.faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--black);
+  text-align: left;
+  gap: 16px;
+}
+
+.faq-question svg {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.faq-item.open .faq-question svg {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.faq-answer-inner {
+  padding: 0 0 20px 0;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+/* ===== EMAIL CAPTURE ===== */
+.email-section {
+  background: var(--gray-bg);
+  padding: 48px 0;
+  border-bottom: 1px solid var(--gray-border);
+}
+
+.email-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 48px;
+  text-align: center;
+}
+
+.email-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--black);
+  margin-bottom: 12px;
+}
+
+.email-subtext {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--gray);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.email-form {
+  display: flex;
+  gap: 12px;
+}
+
+.email-input {
+  flex: 1;
+  height: 48px;
+  border: 1.5px solid var(--blue);
+  border-radius: 12px;
+  padding: 0 16px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--black);
+  outline: none;
+  background: var(--white);
+  transition: box-shadow 0.2s ease;
+}
+
+.email-input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 58, 231, 0.15);
+}
+
+.email-input::placeholder {
+  color: #9CA3AF;
+}
+
+.email-submit {
+  height: 48px;
+  padding: 0 28px;
+  flex-shrink: 0;
+}
+
+.email-success {
+  display: none;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--blue);
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.email-success.visible {
+  display: block;
+}
+
+/* slide-up CTA */
+.slide-cta {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  background: var(--white);
+  border-top: 1px solid var(--gray-border);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 24px;
+  text-align: center;
+  transform: translateY(100%);
+  animation: slideUp 0.4s ease forwards;
+}
+
+.slide-cta.visible {
+  display: block;
+}
+
+@keyframes slideUp {
+  to { transform: translateY(0); }
+}
+
+.slide-cta-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--black);
+  margin-bottom: 8px;
+}
+
+.slide-cta-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray);
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  border-top: 1px solid #E8E8E8;
+  padding: 64px 0 32px;
+  background: var(--white);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+
+.footer-brand-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--gray);
+  margin-top: 12px;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.footer-col-title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--black);
+  margin-bottom: 16px;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--gray);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--blue);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--gray-border);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-copy {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.footer-tagline {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--gray);
+}
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px 28px;
+  border-radius: 16px;
+  z-index: 9999;
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav-inner {
+    padding: 0 20px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-right .btn-primary {
+    display: none;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .hero {
+    padding: 40px 0;
+    min-height: auto;
+  }
+
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 0 20px;
+  }
+
+  .hero-headline {
+    font-size: 36px;
+  }
+
+  .features-inner,
+  .ba-inner,
+  .pricing-inner,
+  .faq-inner,
+  .how-inner,
+  .email-inner,
+  .footer-inner {
+    padding: 0 20px;
+  }
+
+  .features-section,
+  .ba-section,
+  .pricing-section,
+  .faq-section,
+  .how-section,
+  .email-section {
+    padding: 48px 0;
+  }
+
+  .features-grid,
+  .how-grid,
+  .ba-grid,
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .email-form {
+    flex-direction: column;
+  }
+
+  .section {
+    padding: 64px 20px;
+  }
+
+  .section-title {
+    font-size: 28px;
+    margin-bottom: 40px;
+  }
+
+  .how-step-number {
+    font-size: 48px;
+  }
+
+  .pricing-title,
+  .faq-title,
+  .ba-title,
+  .how-title {
+    font-size: 28px;
+    margin-bottom: 40px;
+  }
+
+  .email-heading {
+    font-size: 22px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon">F</div>
+      <span class="nav-logo-text">Фигура</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">Как работает</a>
+      <a href="#pricing">Тарифы</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <a href="#hero" class="btn-primary">Попробовать</a>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Меню">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#how" onclick="closeMobileMenu()">Как работает</a>
+  <a href="#pricing" onclick="closeMobileMenu()">Тарифы</a>
+  <a href="#faq" onclick="closeMobileMenu()">FAQ</a>
+  <a href="#hero" class="btn-primary" style="text-align:center;margin-top:8px;" onclick="closeMobileMenu()">Попробовать</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <span class="hero-tag">Удаление фона</span>
+      <h1 class="hero-headline">Чистый фон в один клик.</h1>
+      <p class="hero-subtext">Загрузите фото — получите профессиональный результат. JPG, PNG, AVIF, WEBP. Без регистрации.</p>
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-zone-icon">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="12" fill="rgba(0,58,231,0.08)"/>
+            <path d="M20 12v16M12 20l8-8 8 8" stroke="#003AE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="upload-zone-text">Перетащите фото или нажмите для выбора</div>
+        <div class="upload-zone-hint">JPG, PNG, AVIF, WEBP до 10 MB</div>
+        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.avif,.webp">
+      </div>
+      <div class="upload-status" id="uploadStatus">
+        <span id="uploadStatusText">Обработка...</span>
+        <div class="upload-progress">
+          <div class="upload-progress-bar" id="uploadProgressBar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="result-area" id="resultArea">
+        <div class="result-preview">
+          <div class="result-preview-box">
+          <div class="result-placeholder">
+            <div class="result-placeholder-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect x="4" y="4" width="40" height="40" rx="8" stroke="#D1D5DB" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <path d="M18 30l4-5 3 3.5 5-7 6 8.5H12z" stroke="#D1D5DB" stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="18" cy="19" r="3" stroke="#D1D5DB" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="result-placeholder-text">Результат появится здесь</div>
+          </div>
+          <div class="result-image-wrap" id="resultImageWrap">
+            <img id="resultImage" src="" alt="Результат">
+          </div>
+          </div>
+        </div>
+        <div id="colorPickerRow">
+          <div class="color-swatch active" data-color="transparent" style="background: linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%), linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%); background-size:10px 10px; background-position:0 0,5px 5px; background-color:#f0f0f0;" title="Прозрачный"></div>
+          <div class="color-swatch" data-color="#FFFFFF" style="background:#FFFFFF;" title="Белый"></div>
+          <div class="color-swatch" data-color="#000000" style="background:#000000;" title="Чёрный"></div>
+          <div class="color-swatch" data-color="#00B140" style="background:#00B140;" title="Зелёный"></div>
+          <div class="color-swatch" data-color="#9CA3AF" style="background:#9CA3AF;" title="Серый"></div>
+          <input type="text" class="color-hex-input" id="hexInput" placeholder="#hex" maxlength="7">
+        </div>
+        <div id="downloadRow">
+          <button class="btn-primary" id="downloadBtn" disabled>Скачать результат</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<section class="stats-strip">
+  <div class="stats-track">
+    <div class="stats-content">
+      <span class="stat-item">5 форматов на вход</span><span class="stat-dot">&middot;</span><span class="stat-item">PNG с прозрачностью</span><span class="stat-dot">&middot;</span><span class="stat-item">JPG с любым фоном</span><span class="stat-dot">&middot;</span><span class="stat-item">до 10 MB бесплатно</span><span class="stat-dot">&middot;</span><span class="stat-item">без регистрации</span><span class="stat-dot">&middot;</span>
+    </div>
+    <div class="stats-content" aria-hidden="true">
+      <span class="stat-item">5 форматов на вход</span><span class="stat-dot">&middot;</span><span class="stat-item">PNG с прозрачностью</span><span class="stat-dot">&middot;</span><span class="stat-item">JPG с любым фоном</span><span class="stat-dot">&middot;</span><span class="stat-item">до 10 MB бесплатно</span><span class="stat-dot">&middot;</span><span class="stat-item">без регистрации</span><span class="stat-dot">&middot;</span>
+    </div>
+    <div class="stats-content" aria-hidden="true">
+      <span class="stat-item">5 форматов на вход</span><span class="stat-dot">&middot;</span><span class="stat-item">PNG с прозрачностью</span><span class="stat-dot">&middot;</span><span class="stat-item">JPG с любым фоном</span><span class="stat-dot">&middot;</span><span class="stat-item">до 10 MB бесплатно</span><span class="stat-dot">&middot;</span><span class="stat-item">без регистрации</span><span class="stat-dot">&middot;</span>
+    </div>
+    <div class="stats-content" aria-hidden="true">
+      <span class="stat-item">5 форматов на вход</span><span class="stat-dot">&middot;</span><span class="stat-item">PNG с прозрачностью</span><span class="stat-dot">&middot;</span><span class="stat-item">JPG с любым фоном</span><span class="stat-dot">&middot;</span><span class="stat-item">до 10 MB бесплатно</span><span class="stat-dot">&middot;</span><span class="stat-item">без регистрации</span><span class="stat-dot">&middot;</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="features-inner">
+    <h2 class="section-title">Зачем это нужно</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M4 7h20v14H4z" stroke="white" stroke-width="1.5"/>
+            <path d="M9 12h10M9 16h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Белый фон для маркетплейса</h3>
+        <p>Готовые фото для WB, Ozon, Яндекс Маркет. Загружайте карточки товаров без лишних хлопот.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="3" y="3" width="22" height="22" rx="4" stroke="white" stroke-width="1.5"/>
+            <path d="M3 19l6-6 4 4 4-6 7 9" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Прозрачный PNG</h3>
+        <p>Для дизайна, коллажей и презентаций. Получите вырезанный объект с альфа-каналом.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="3" y="6" width="22" height="16" rx="3" stroke="white" stroke-width="1.5"/>
+            <circle cx="14" cy="14" r="4" stroke="white" stroke-width="1.5"/>
+            <path d="M10 14h8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Зелёный экран</h3>
+        <p>Для видео и стримов. Замените фон на хромакей одним кликом.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="how-inner">
+    <h2 class="how-title">Как это работает</h2>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-step-number">01</div>
+        <div class="how-step-title">Загрузите фото</div>
+        <div class="how-step-desc">Перетащите изображение или выберите файл. Поддерживаем JPG, PNG, AVIF и WEBP до 10 MB.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-number">02</div>
+        <div class="how-step-title">Нейросеть удаляет фон</div>
+        <div class="how-step-desc">Модель анализирует объект и создаёт точную маску. Обработка занимает пару секунд.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-number">03</div>
+        <div class="how-step-title">Скачайте результат</div>
+        <div class="how-step-desc">Выберите цвет фона и скачайте готовое фото в PNG или JPG. Без водяных знаков.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BEFORE/AFTER -->
+<section class="ba-section" id="results">
+  <div class="ba-inner">
+    <h2 class="ba-title">Результат</h2>
+    <div class="ba-grid">
+      <div class="ba-card">
+        <div class="ba-slider-wrap" data-position="50">
+          <img class="ba-img-after" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239CA3AF' font-family='sans-serif' font-size='14'%3EПосле%3C/text%3E%3C/svg%3E" alt="После">
+          <div class="ba-img-before" style="width:50%">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e5e5' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236B7280' font-family='sans-serif' font-size='14'%3EДо%3C/text%3E%3C/svg%3E" alt="До">
+          </div>
+          <div class="ba-slider-line"></div>
+          <div class="ba-slider-handle">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M5 3l-4 5 4 5M11 3l4 5-4 5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ba-labels"><span class="ba-label">До</span><span class="ba-label">После</span></div>
+      </div>
+      <div class="ba-card">
+        <div class="ba-slider-wrap" data-position="50">
+          <img class="ba-img-after" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239CA3AF' font-family='sans-serif' font-size='14'%3EПосле%3C/text%3E%3C/svg%3E" alt="После">
+          <div class="ba-img-before" style="width:50%">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e5e5' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236B7280' font-family='sans-serif' font-size='14'%3EДо%3C/text%3E%3C/svg%3E" alt="До">
+          </div>
+          <div class="ba-slider-line"></div>
+          <div class="ba-slider-handle">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M5 3l-4 5 4 5M11 3l4 5-4 5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ba-labels"><span class="ba-label">До</span><span class="ba-label">После</span></div>
+      </div>
+      <div class="ba-card">
+        <div class="ba-slider-wrap" data-position="50">
+          <img class="ba-img-after" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239CA3AF' font-family='sans-serif' font-size='14'%3EПосле%3C/text%3E%3C/svg%3E" alt="После">
+          <div class="ba-img-before" style="width:50%">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e5e5' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236B7280' font-family='sans-serif' font-size='14'%3EДо%3C/text%3E%3C/svg%3E" alt="До">
+          </div>
+          <div class="ba-slider-line"></div>
+          <div class="ba-slider-handle">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M5 3l-4 5 4 5M11 3l4 5-4 5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ba-labels"><span class="ba-label">До</span><span class="ba-label">После</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <h2 class="pricing-title">Тарифы</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card pricing-card--free">
+        <div class="pricing-card-title">Free</div>
+        <div class="pricing-card-price">0 &#8381; <span>/ навсегда</span></div>
+        <ul class="pricing-features">
+          <li>5 обработок в день</li>
+          <li>50 обработок в месяц</li>
+          <li>До 1024px по длинной стороне</li>
+          <li>PNG с прозрачностью</li>
+          <li>JPG с цветным фоном</li>
+        </ul>
+      </div>
+      <div class="pricing-card pricing-card--basic">
+        <span class="pricing-badge pricing-badge--dark">Скоро</span>
+        <div class="pricing-card-title">Базовый</div>
+        <div class="pricing-card-price">— <span>/ мес</span></div>
+        <ul class="pricing-features">
+          <li>20 обработок в день</li>
+          <li>200 обработок в месяц</li>
+          <li>До 2048px по длинной стороне</li>
+          <li>PNG с прозрачностью</li>
+          <li>JPG с цветным фоном</li>
+        </ul>
+      </div>
+      <div class="pricing-card pricing-card--pro">
+        <span class="pricing-badge">Скоро</span>
+        <div class="pricing-card-title">Pro</div>
+        <div class="pricing-card-price">— <span>/ мес</span></div>
+        <ul class="pricing-features">
+          <li>50 обработок в день</li>
+          <li>500 обработок в месяц</li>
+          <li>До 5000px по длинной стороне</li>
+          <li>Приоритетная очередь</li>
+          <li>API-доступ</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <h2 class="faq-title">Частые вопросы</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Нужна ли регистрация?</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Нет, сервис работает без аккаунта. Просто загрузите фото и скачайте результат.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Какие форматы поддерживаются?</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">На вход: JPG, PNG, AVIF, WEBP до 10 MB. На выход: PNG с прозрачностью или JPG с выбранным цветом фона.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Какие ограничения на бесплатном тарифе?</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">5 обработок в день, 50 в месяц, максимальное разрешение 1024px по длинной стороне.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Что входит в Pro?</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">50 обработок в день, разрешение до 5000px, приоритетная очередь и API-доступ. Тариф скоро будет доступен.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Мои фото сохраняются на сервере?</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer"><div class="faq-answer-inner">Нет, все изображения удаляются сразу после обработки. Мы не храним ваши файлы.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EMAIL CAPTURE -->
+<section class="email-section" id="email">
+  <div class="email-inner">
+    <h2 class="email-heading">Pro в разработке — будьте первыми</h2>
+    <p class="email-subtext">Оставьте email — мы сообщим, когда Pro-тариф будет готов.</p>
+    <form class="email-form" id="emailForm">
+      <input type="email" class="email-input" id="emailInput" placeholder="email@example.com" required>
+      <button type="submit" class="btn-primary email-submit">Уведомить</button>
+    </form>
+    <div class="email-success" id="emailSuccess">Готово! Мы отправим уведомление на вашу почту.</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="30" height="30" rx="8" fill="#003AE7"/>
+            <path d="M8 7h13v3.5H11.5v3H19v3.5H11.5V23H8V7z" fill="white"/>
+          </svg>
+          <span class="nav-logo-text">Фигура</span>
+        </a>
+        <p class="footer-brand-text">Удаление фона с фотографий за один клик. Быстро, качественно, без регистрации.</p>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Сервис</div>
+        <ul class="footer-links">
+          <li><a href="#hero">Удалить фон</a></li>
+          <li><a href="#how">Как работает</a></li>
+          <li><a href="#pricing">Тарифы</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Правовое</div>
+        <ul class="footer-links">
+          <li><a href="#">Пользовательское соглашение</a></li>
+          <li><a href="#">Политика конфиденциальности</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 Фигура. Все права защищены.</span>
+      <span class="footer-tagline">Сделано для тех, кто ценит время</span>
+    </div>
+  </div>
+</footer>
+
+<!-- SLIDE-UP CTA -->
+<div class="slide-cta" id="slideCta">
+  <button class="slide-cta-close" id="slideCtaClose">&times;</button>
+  <div class="slide-cta-text">Pro-тариф скоро — получите уведомление первыми</div>
+  <a href="#email" class="btn-primary" style="font-size:13px;padding:8px 20px;" onclick="document.getElementById('slideCta').classList.remove('visible')">Узнать о Pro</a>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const DAILY_LIMIT = 5;
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
+
+  let visitorId = null;
+  let uploadedImageData = null;
+  let currentBgColor = 'transparent';
+  let originalImage = null;
+  let slideCtaShown = false;
+
+  // FingerprintJS
+  if (typeof FingerprintJS !== 'undefined') {
+    FingerprintJS.load().then(function(fp) {
+      return fp.get();
+    }).then(function(result) {
+      visitorId = result.visitorId;
+    }).catch(function() {
+      visitorId = 'fallback-' + Math.random().toString(36).substr(2, 9);
+    });
+  } else {
+    visitorId = 'fallback-' + Math.random().toString(36).substr(2, 9);
+  }
+
+  // Daily counter
+  function getDailyKey() {
+    var d = new Date();
+    return 'bg5_daily_' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+  }
+
+  function getDailyCount() {
+    var key = getDailyKey();
+    return parseInt(localStorage.getItem(key) || '0', 10);
+  }
+
+  function incrementDailyCount() {
+    var key = getDailyKey();
+    var count = getDailyCount() + 1;
+    localStorage.setItem(key, count.toString());
+    return count;
+  }
+
+  function canProcess() {
+    return getDailyCount() < DAILY_LIMIT;
+  }
+
+  // Toast
+  function showToast(msg, duration) {
+    duration = duration || 3000;
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    setTimeout(function() {
+      toast.classList.remove('visible');
+    }, duration);
+  }
+
+  // File validation
+  function validateFile(file) {
+    if (!file) return 'Файл не выбран';
+    var ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (ALLOWED_EXTENSIONS.indexOf(ext) === -1 && ALLOWED_TYPES.indexOf(file.type) === -1) {
+      return 'Неподдерживаемый формат. Используйте JPG, PNG, AVIF или WEBP.';
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return 'Файл слишком большой. Максимум 10 MB.';
+    }
+    return null;
+  }
+
+  // Upload zone
+  var uploadZone = document.getElementById('uploadZone');
+  var fileInput = document.getElementById('fileInput');
+  var uploadStatus = document.getElementById('uploadStatus');
+  var uploadStatusText = document.getElementById('uploadStatusText');
+  var uploadProgressBar = document.getElementById('uploadProgressBar');
+  var resultArea = document.getElementById('resultArea');
+  var resultImage = document.getElementById('resultImage');
+  var resultImageWrap = document.getElementById('resultImageWrap');
+  var colorPickerRow = document.getElementById('colorPickerRow');
+  var downloadRow = document.getElementById('downloadRow');
+  var downloadBtn = document.getElementById('downloadBtn');
+
+  uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  fileInput.addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+      handleFile(e.target.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    var error = validateFile(file);
+    if (error) {
+      showToast(error, 4000);
+      return;
+    }
+
+    if (!canProcess()) {
+      showToast('Лимит исчерпан: ' + DAILY_LIMIT + ' обработок в день. Попробуйте завтра.', 5000);
+      return;
+    }
+
+    uploadStatus.classList.add('visible');
+    uploadStatusText.textContent = 'Обработка...';
+    uploadProgressBar.style.width = '0%';
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      uploadedImageData = e.target.result;
+
+      // Simulated processing
+      var progress = 0;
+      var interval = setInterval(function() {
+        progress += Math.random() * 30 + 10;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+
+          uploadProgressBar.style.width = '100%';
+          uploadStatusText.textContent = 'Готово!';
+
+          setTimeout(function() {
+            uploadStatus.classList.remove('visible');
+            uploadProgressBar.style.width = '0%';
+          }, 800);
+
+          // Load the image
+          originalImage = new Image();
+          originalImage.onload = function() {
+            applyBackground(currentBgColor);
+            resultArea.classList.add('has-image');
+            colorPickerRow.style.display = 'flex';
+            downloadRow.style.display = 'block';
+            downloadBtn.disabled = false;
+
+            incrementDailyCount();
+
+            // Show slide-up CTA after first generation
+            if (!slideCtaShown) {
+              slideCtaShown = true;
+              setTimeout(function() {
+                document.getElementById('slideCta').classList.add('visible');
+              }, 2000);
+            }
+          };
+          originalImage.src = uploadedImageData;
+        }
+        uploadProgressBar.style.width = Math.min(progress, 100) + '%';
+      }, 400);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Color picker
+  function applyBackground(color) {
+    currentBgColor = color;
+    var wrap = document.getElementById('resultImageWrap');
+
+    if (color === 'transparent') {
+      wrap.className = 'result-image-wrap checkerboard-bg';
+      wrap.style.backgroundColor = '';
+    } else {
+      wrap.className = 'result-image-wrap';
+      wrap.style.backgroundColor = color;
+    }
+
+    if (originalImage) {
+      resultImage.src = uploadedImageData;
+    }
+
+    // Update active swatch
+    var swatches = colorPickerRow.querySelectorAll('.color-swatch');
+    swatches.forEach(function(s) {
+      s.classList.remove('active');
+      if (s.getAttribute('data-color') === color) {
+        s.classList.add('active');
+      }
+    });
+  }
+
+  colorPickerRow.addEventListener('click', function(e) {
+    var swatch = e.target.closest('.color-swatch');
+    if (swatch) {
+      applyBackground(swatch.getAttribute('data-color'));
+    }
+  });
+
+  var hexInput = document.getElementById('hexInput');
+  hexInput.addEventListener('input', function() {
+    var val = hexInput.value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      applyBackground(val);
+      // Deactivate all swatches
+      colorPickerRow.querySelectorAll('.color-swatch').forEach(function(s) {
+        s.classList.remove('active');
+      });
+    }
+  });
+
+  // Download
+  downloadBtn.addEventListener('click', function() {
+    if (!originalImage) return;
+
+    var canvas = document.createElement('canvas');
+    canvas.width = originalImage.naturalWidth;
+    canvas.height = originalImage.naturalHeight;
+    var ctx = canvas.getContext('2d');
+
+    if (currentBgColor !== 'transparent') {
+      ctx.fillStyle = currentBgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    ctx.drawImage(originalImage, 0, 0);
+
+    var format = currentBgColor === 'transparent' ? 'image/png' : 'image/jpeg';
+    var ext = currentBgColor === 'transparent' ? 'png' : 'jpg';
+    var quality = format === 'image/jpeg' ? 0.95 : undefined;
+
+    var link = document.createElement('a');
+    link.download = 'figura-result.' + ext;
+    link.href = canvas.toDataURL(format, quality);
+    link.click();
+  });
+
+  // Slide-up CTA close
+  document.getElementById('slideCtaClose').addEventListener('click', function() {
+    document.getElementById('slideCta').classList.remove('visible');
+  });
+
+  // Email form
+  document.getElementById('emailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var emailVal = document.getElementById('emailInput').value;
+    if (emailVal) {
+      document.getElementById('emailForm').style.display = 'none';
+      document.getElementById('emailSuccess').classList.add('visible');
+    }
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var item = btn.parentElement;
+      var answer = item.querySelector('.faq-answer');
+      var isOpen = item.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.faq-item').forEach(function(fi) {
+        fi.classList.remove('open');
+        fi.querySelector('.faq-answer').style.maxHeight = null;
+      });
+
+      if (!isOpen) {
+        item.classList.add('open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+
+  // Mobile hamburger
+  var hamburgerBtn = document.getElementById('hamburgerBtn');
+  var mobileMenu = document.getElementById('mobileMenu');
+
+  hamburgerBtn.addEventListener('click', function() {
+    mobileMenu.classList.toggle('open');
+  });
+
+  window.closeMobileMenu = function() {
+    mobileMenu.classList.remove('open');
+  };
+
+  // Before/after sliders
+  document.querySelectorAll('.ba-slider-wrap').forEach(function(wrap) {
+    var before = wrap.querySelector('.ba-img-before');
+    var line = wrap.querySelector('.ba-slider-line');
+    var handle = wrap.querySelector('.ba-slider-handle');
+    var isDragging = false;
+
+    function updatePosition(clientX) {
+      var rect = wrap.getBoundingClientRect();
+      var x = clientX - rect.left;
+      var pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
+      before.style.width = pct + '%';
+      line.style.left = pct + '%';
+      handle.style.left = pct + '%';
+    }
+
+    wrap.addEventListener('mousedown', function(e) {
+      isDragging = true;
+      updatePosition(e.clientX);
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (isDragging) {
+        updatePosition(e.clientX);
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('mouseup', function() {
+      isDragging = false;
+    });
+
+    wrap.addEventListener('touchstart', function(e) {
+      isDragging = true;
+      updatePosition(e.touches[0].clientX);
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', function(e) {
+      if (isDragging) {
+        updatePosition(e.touches[0].clientX);
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    wrap.addEventListener('touchend', function() {
+      isDragging = false;
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>
