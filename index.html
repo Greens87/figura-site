@@ -404,6 +404,16 @@ h1, h2, h3 {
   transition: opacity 0.6s ease;
 }
 
+/* Demo pulse — картинка «прыгает» к зрителю */
+@keyframes demoPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+.result-preview-box.demo-pulse {
+  animation: demoPulse 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .result-image-wrap {
   display: none;
   padding: 16px;
@@ -2129,15 +2139,20 @@ h1, h2, h3 {
   });
 
   // ===== DEMO SLIDER ANIMATION =====
-  var demoSliderWrap = document.getElementById('demoSliderWrap');
-  var demoBefore    = document.getElementById('demoBefore');
-  var demoBeforeImg = document.getElementById('demoBeforeImg');
-  var demoLine      = document.getElementById('demoLine');
-  var demoHandle    = document.getElementById('demoHandle');
-  var demoHint      = document.getElementById('demoHint');
-  var demoAnimId    = null;
-  var demoStartTime = null;
-  var DEMO_PERIOD   = 6000; // мс на полный цикл
+  var demoSliderWrap   = document.getElementById('demoSliderWrap');
+  var demoBefore       = document.getElementById('demoBefore');
+  var demoBeforeImg    = document.getElementById('demoBeforeImg');
+  var demoLine         = document.getElementById('demoLine');
+  var demoHandle       = document.getElementById('demoHandle');
+  var demoHint         = document.getElementById('demoHint');
+  var demoPreviewBox   = demoSliderWrap.closest('.result-preview-box');
+  var demoAnimId       = null;
+  var demoStartTime    = null;
+  var demoPhase        = 'idle'; // 'idle' | 'osc' | 'done'
+  var demoPhaseStart   = null;
+  var DEMO_IDLE_MS     = 700;   // держим 100% в начале
+  var DEMO_OSC_PERIOD  = 3200;  // мс на один цикл колебания
+  var DEMO_OSC_CYCLES  = 2;     // количество циклов
 
   function setDemoPos(pct) {
     demoBefore.style.width = pct + '%';
@@ -2146,17 +2161,52 @@ h1, h2, h3 {
     demoBeforeImg.style.width = demoSliderWrap.offsetWidth + 'px';
   }
 
+  function triggerDemoPulse() {
+    if (!demoPreviewBox) return;
+    demoPreviewBox.classList.remove('demo-pulse');
+    void demoPreviewBox.offsetWidth; // reflow
+    demoPreviewBox.classList.add('demo-pulse');
+    demoPreviewBox.addEventListener('animationend', function() {
+      demoPreviewBox.classList.remove('demo-pulse');
+    }, { once: true });
+  }
+
   function demoStep(ts) {
     if (!demoStartTime) demoStartTime = ts;
-    var t = ((ts - demoStartTime) % DEMO_PERIOD) / DEMO_PERIOD;
-    // Синусоида: 20% → 75% → 20% ... (плавно)
-    var pct = 47.5 + 27.5 * Math.sin(t * 2 * Math.PI);
-    setDemoPos(pct);
+    var elapsed = ts - demoStartTime;
+
+    if (demoPhase === 'idle') {
+      setDemoPos(100);
+      if (elapsed >= DEMO_IDLE_MS) {
+        demoPhase = 'osc';
+        demoPhaseStart = ts;
+      }
+    } else if (demoPhase === 'osc') {
+      var phaseElapsed = ts - demoPhaseStart;
+      var totalDuration = DEMO_OSC_CYCLES * DEMO_OSC_PERIOD;
+      if (phaseElapsed >= totalDuration) {
+        setDemoPos(100);
+        demoPhase = 'done';
+        demoAnimId = null;
+        triggerDemoPulse();
+        return;
+      }
+      // cos: старт=100%, ныряет до 20%, возвращается
+      var t = phaseElapsed / DEMO_OSC_PERIOD;
+      var pct = 60 + 40 * Math.cos(t * 2 * Math.PI);
+      setDemoPos(pct);
+    }
+
     demoAnimId = requestAnimationFrame(demoStep);
   }
 
   function startDemo() {
-    if (!demoAnimId) demoAnimId = requestAnimationFrame(demoStep);
+    if (!demoAnimId) {
+      demoPhase = 'idle';
+      demoStartTime = null;
+      demoPhaseStart = null;
+      demoAnimId = requestAnimationFrame(demoStep);
+    }
   }
 
   function stopDemo() {
@@ -2195,8 +2245,6 @@ h1, h2, h3 {
   document.addEventListener('mouseup', function() {
     if (demoDragging) {
       demoDragging = false;
-      // Перезапускаем авто через 2с после отпускания
-      setTimeout(function() { demoStartTime = null; startDemo(); }, 2000);
     }
   });
   demoSliderWrap.addEventListener('touchstart', function(e) {
@@ -2213,7 +2261,6 @@ h1, h2, h3 {
   demoSliderWrap.addEventListener('touchend', function() {
     if (demoDragging) {
       demoDragging = false;
-      setTimeout(function() { demoStartTime = null; startDemo(); }, 2000);
     }
   });
 
