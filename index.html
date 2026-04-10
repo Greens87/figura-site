@@ -657,6 +657,29 @@ h1, h2, h3 {
   width: 100%;
   overflow: hidden;
   cursor: ew-resize;
+  background: #f5f5f5;
+}
+
+/* ===== BA GALLERY ===== */
+.ba-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.ba-gallery-item {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f5f5f5;
+  aspect-ratio: 3/4;
+}
+
+.ba-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .ba-slider-wrap img {
@@ -1420,9 +1443,9 @@ h1, h2, h3 {
     <div class="ba-grid">
       <div class="ba-card">
         <div class="ba-slider-wrap" data-position="50">
-          <img class="ba-img-after" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239CA3AF' font-family='sans-serif' font-size='14'%3EПосле%3C/text%3E%3C/svg%3E" alt="После">
+          <img class="ba-img-after" src="assets/results/after/Image_01.png" alt="После">
           <div class="ba-img-before" style="width:50%">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e5e5' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236B7280' font-family='sans-serif' font-size='14'%3EДо%3C/text%3E%3C/svg%3E" alt="До">
+            <img src="assets/results/before/Image_01.png" alt="До">
           </div>
           <div class="ba-slider-line"></div>
           <div class="ba-slider-handle">
@@ -1435,9 +1458,9 @@ h1, h2, h3 {
       </div>
       <div class="ba-card">
         <div class="ba-slider-wrap" data-position="50">
-          <img class="ba-img-after" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239CA3AF' font-family='sans-serif' font-size='14'%3EПосле%3C/text%3E%3C/svg%3E" alt="После">
+          <img class="ba-img-after" src="assets/results/after/Image_02.png" alt="После">
           <div class="ba-img-before" style="width:50%">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e5e5' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236B7280' font-family='sans-serif' font-size='14'%3EДо%3C/text%3E%3C/svg%3E" alt="До">
+            <img src="assets/results/before/Image_02.png" alt="До">
           </div>
           <div class="ba-slider-line"></div>
           <div class="ba-slider-handle">
@@ -1450,9 +1473,9 @@ h1, h2, h3 {
       </div>
       <div class="ba-card">
         <div class="ba-slider-wrap" data-position="50">
-          <img class="ba-img-after" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239CA3AF' font-family='sans-serif' font-size='14'%3EПосле%3C/text%3E%3C/svg%3E" alt="После">
+          <img class="ba-img-after" src="assets/results/after/Image_03.png" alt="После">
           <div class="ba-img-before" style="width:50%">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e5e5' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236B7280' font-family='sans-serif' font-size='14'%3EДо%3C/text%3E%3C/svg%3E" alt="До">
+            <img src="assets/results/before/Image_03.png" alt="До">
           </div>
           <div class="ba-slider-line"></div>
           <div class="ba-slider-handle">
@@ -1463,6 +1486,15 @@ h1, h2, h3 {
         </div>
         <div class="ba-labels"><span class="ba-label">До</span><span class="ba-label">После</span></div>
       </div>
+    </div>
+    <div class="ba-gallery">
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_04.png" alt="Результат 4"></div>
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_05.png" alt="Результат 5"></div>
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_06.png" alt="Результат 6"></div>
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_07.png" alt="Результат 7"></div>
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_08.png" alt="Результат 8"></div>
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_09.png" alt="Результат 9"></div>
+      <div class="ba-gallery-item"><img src="assets/results/after/Image_10.png" alt="Результат 10"></div>
     </div>
   </div>
 </section>
