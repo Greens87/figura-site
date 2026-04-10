@@ -404,14 +404,14 @@ h1, h2, h3 {
   transition: opacity 0.6s ease;
 }
 
-/* Demo pulse — картинка «прыгает» к зрителю */
-@keyframes demoPulse {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.035); }
-  100% { transform: scale(1); }
+/* Demo bounce — рамка поднимается по дуге и плавно опускается */
+@keyframes demoBounce {
+  0%   { transform: translateY(0);    animation-timing-function: ease-in; }
+  50%  { transform: translateY(-20px); animation-timing-function: ease-out; }
+  100% { transform: translateY(0); }
 }
-.result-preview-box.demo-pulse {
-  animation: demoPulse 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+.result-preview-box.demo-bounce {
+  animation: demoBounce 900ms linear;
 }
 
 .result-image-wrap {
@@ -2148,11 +2148,7 @@ h1, h2, h3 {
   var demoPreviewBox   = demoSliderWrap.closest('.result-preview-box');
   var demoAnimId       = null;
   var demoStartTime    = null;
-  var demoPhase        = 'idle'; // 'idle' | 'osc' | 'done'
-  var demoPhaseStart   = null;
-  var DEMO_IDLE_MS     = 700;   // держим 100% в начале
-  var DEMO_OSC_PERIOD  = 3200;  // мс на один цикл колебания
-  var DEMO_OSC_CYCLES  = 2;     // количество циклов
+  var DEMO_TOTAL_MS    = 6000; // 3 колебания по 2000мс
 
   function setDemoPos(pct) {
     demoBefore.style.width = pct + '%';
@@ -2161,50 +2157,37 @@ h1, h2, h3 {
     demoBeforeImg.style.width = demoSliderWrap.offsetWidth + 'px';
   }
 
-  function triggerDemoPulse() {
+  function triggerDemoBounce() {
     if (!demoPreviewBox) return;
-    demoPreviewBox.classList.remove('demo-pulse');
-    void demoPreviewBox.offsetWidth; // reflow
-    demoPreviewBox.classList.add('demo-pulse');
+    demoPreviewBox.classList.remove('demo-bounce');
+    void demoPreviewBox.offsetWidth;
+    demoPreviewBox.classList.add('demo-bounce');
     demoPreviewBox.addEventListener('animationend', function() {
-      demoPreviewBox.classList.remove('demo-pulse');
+      demoPreviewBox.classList.remove('demo-bounce');
     }, { once: true });
   }
 
   function demoStep(ts) {
     if (!demoStartTime) demoStartTime = ts;
-    var elapsed = ts - demoStartTime;
+    var t = (ts - demoStartTime) / DEMO_TOTAL_MS;
 
-    if (demoPhase === 'idle') {
-      setDemoPos(100);
-      if (elapsed >= DEMO_IDLE_MS) {
-        demoPhase = 'osc';
-        demoPhaseStart = ts;
-      }
-    } else if (demoPhase === 'osc') {
-      var phaseElapsed = ts - demoPhaseStart;
-      var totalDuration = DEMO_OSC_CYCLES * DEMO_OSC_PERIOD;
-      if (phaseElapsed >= totalDuration) {
-        setDemoPos(100);
-        demoPhase = 'done';
-        demoAnimId = null;
-        triggerDemoPulse();
-        return;
-      }
-      // cos: старт=100%, ныряет до 20%, возвращается
-      var t = phaseElapsed / DEMO_OSC_PERIOD;
-      var pct = 60 + 40 * Math.cos(t * 2 * Math.PI);
-      setDemoPos(pct);
+    if (t >= 1) {
+      setDemoPos(0);
+      demoAnimId = null;
+      triggerDemoBounce();
+      return;
     }
 
+    // 3 затухающих колебания: центр дрейфует от 47.5% к 0%
+    // первое движение — влево (к прозрачному фону)
+    var pct = (1 - t) * (47.5 - 27.5 * Math.sin(6 * Math.PI * t));
+    setDemoPos(pct);
     demoAnimId = requestAnimationFrame(demoStep);
   }
 
   function startDemo() {
     if (!demoAnimId) {
-      demoPhase = 'idle';
       demoStartTime = null;
-      demoPhaseStart = null;
       demoAnimId = requestAnimationFrame(demoStep);
     }
   }
