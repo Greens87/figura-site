@@ -51,10 +51,10 @@ h1, h2, h3 {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(232, 232, 232, 0.8);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid rgba(232, 232, 232, 0.5);
 }
 
 .nav-inner {
@@ -450,9 +450,7 @@ h1, h2, h3 {
 
 /* ===== STATS STRIP ===== */
 .stats-strip {
-  background-color: #F9F9F9;
-  background-image: radial-gradient(circle, #e0e0e0 1px, transparent 1px);
-  background-size: 36px 36px;
+  background: #F9F9F9;
   border-top: 1px solid #E8E8E8;
   border-bottom: 1px solid #E8E8E8;
   overflow: hidden;
@@ -624,11 +622,8 @@ h1, h2, h3 {
 .ba-section {
   padding: 48px 0;
   border-bottom: 1px solid var(--gray-border);
-  background-color: #fff;
-  background-image:
-    linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.85) 65%, #fff 100%),
-    radial-gradient(circle, #e2e2e2 1px, transparent 1px);
-  background-size: 100% 100%, 36px 36px;
+  background-image: radial-gradient(circle, #e2e2e2 1px, transparent 1px);
+  background-size: 36px 36px;
 }
 
 .ba-inner {
@@ -649,7 +644,7 @@ h1, h2, h3 {
 /* ===== BA SHOWCASE ===== */
 .ba-showcase {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   gap: 20px;
 }
@@ -657,19 +652,37 @@ h1, h2, h3 {
 .ba-sidebar {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  align-content: stretch;
   gap: 10px;
   flex-shrink: 0;
-  width: 228px;
+  width: 248px;
 }
 
 .ba-thumb {
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: var(--gray-bg);
-  aspect-ratio: 2/3;
+  aspect-ratio: 4/5;
+  min-height: 0;
+}
+
+/* Белый оверлей для затухания */
+.ba-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.55);
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.ba-thumb:hover::after,
+.ba-thumb.active::after {
+  opacity: 0;
 }
 
 .ba-thumb img {
@@ -677,22 +690,16 @@ h1, h2, h3 {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: brightness(0.72) saturate(0.55);
-  transition: filter 0.35s ease, transform 0.35s ease;
+  transition: transform 0.35s ease;
 }
 
 .ba-thumb:hover img {
-  filter: brightness(1) saturate(1);
   transform: scale(1.06);
 }
 
 .ba-thumb.active {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(0,58,231,0.12);
-}
-
-.ba-thumb.active img {
-  filter: brightness(1) saturate(1);
 }
 
 .ba-main {
@@ -787,8 +794,8 @@ h1, h2, h3 {
   border-bottom: 1px solid var(--gray-border);
   background-color: #fff;
   background-image:
-    linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.85) 60%, #fff 100%),
-    radial-gradient(circle, rgba(226,226,226,0.7) 1px, transparent 1px);
+    linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.6) 50%, #fff 100%),
+    radial-gradient(circle, #e2e2e2 1px, transparent 1px);
   background-size: 100% 100%, 36px 36px;
 }
 
@@ -1524,8 +1531,11 @@ h1, h2, h3 {
         </div>
       </div>
 
-      <!-- Правая сетка 2×2 (3 изображения) -->
+      <!-- Правая сетка 2×2 -->
       <div class="ba-sidebar">
+        <div class="ba-thumb active" data-before="assets/results/before/Image_02.png" data-after="assets/results/after/Image_02.png">
+          <img src="assets/results/before/Image_02.png" alt="">
+        </div>
         <div class="ba-thumb" data-before="assets/results/before/Image_07.jpg" data-after="assets/results/after/Image_07.png">
           <img src="assets/results/before/Image_07.jpg" alt="">
         </div>
