@@ -412,7 +412,7 @@ h1, h2, h3 {
   100% { transform: scale(1); }
 }
 #resultArea.demo-bounce {
-  animation: demoBounce 1000ms linear;
+  animation: demoBounce 500ms linear;
 }
 
 .result-image-wrap {
@@ -2152,12 +2152,8 @@ h1, h2, h3 {
   var demoPhase         = 'osc'; // 'osc' | 'settle' | 'done'
   var demoPhaseStart    = null;
   var DEMO_OSC_PERIOD   = 4800; // 6000 * 0.8 = +20% быстрее
-  var DEMO_OSC_END      = 2.5 * 4800; // t=2.5 цикла: sin=0, скорость макс. влево
-  var DEMO_SETTLE_MS    = 1000;
-  // Hermite-параметры для бесшовного перехода:
-  // p0=47.5% (позиция на 2.5 цикла), v0=совпадает со скоростью синуса в этот момент
-  var SETTLE_P0 = 47.5;
-  var SETTLE_V0 = 27.5 * (2 * Math.PI / DEMO_OSC_PERIOD) * Math.cos(2.5 * 2 * Math.PI) * DEMO_SETTLE_MS;
+  var DEMO_OSC_END      = 2.75 * 4800; // t=2.75: 3-я яма (pct=20%)
+  var DEMO_SETTLE_MS    = 700;
 
   function setDemoPos(pct) {
     demoBefore.style.width = pct + '%';
@@ -2166,11 +2162,10 @@ h1, h2, h3 {
     demoBeforeImg.style.width = demoSliderWrap.offsetWidth + 'px';
   }
 
-  // Кубический Hermite: p(0)=p0, p'(0)=v0, p(1)=0, p'(1)=0
-  function hermiteSettle(u) {
-    var h00 = 2*u*u*u - 3*u*u + 1;
-    var h10 = u*u*u - 2*u*u + u;
-    return h00 * SETTLE_P0 + h10 * SETTLE_V0;
+  // Settle: cubic ease-out от 20% до 0% — быстрый старт, плавное торможение
+  function settlePos(u) {
+    var inv = 1 - u;
+    return 20 * inv * inv * inv;
   }
 
   function triggerDemoBounce() {
@@ -2207,9 +2202,8 @@ h1, h2, h3 {
         triggerDemoBounce();
         return;
       }
-      // Hermite: скорость на старте = скорость синуса → нет тормоза
       var u = elapsed / DEMO_SETTLE_MS;
-      setDemoPos(Math.max(0, hermiteSettle(u)));
+      setDemoPos(settlePos(u));
     }
 
     demoAnimId = requestAnimationFrame(demoStep);
