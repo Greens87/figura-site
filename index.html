@@ -1711,6 +1711,103 @@ body.ps-active { overflow: hidden; }
   transition: border-color 0.2s;
 }
 .ps-picker-hex:focus { border-color: #003AE7; }
+/* Help button (?) in actions row */
+.ps-help-circle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #E8E8E8;
+  background: transparent;
+  color: var(--gray);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+}
+.ps-help-circle-btn:hover {
+  border-color: #003AE7;
+  color: #003AE7;
+  background: rgba(0,58,231,0.06);
+  transform: scale(1.05);
+}
+.ps-help-circle-btn.active {
+  border-color: #003AE7;
+  color: #003AE7;
+  background: rgba(0,58,231,0.08);
+}
+/* Help popover */
+#psHelpPopover {
+  position: absolute;
+  z-index: 600;
+  display: none;
+  background: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.16), 0 4px 12px rgba(0,0,0,0.06);
+  padding: 18px 20px;
+  width: 300px;
+  font-family: var(--font-body);
+}
+#psHelpPopover.visible { display: block; }
+#psHelpPopover .ps-help-title {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#psHelpPopover .ps-help-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+#psHelpPopover .ps-help-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gray);
+  gap: 12px;
+}
+#psHelpPopover .ps-help-list li > span:first-child {
+  flex-shrink: 1;
+}
+#psHelpPopover .ps-help-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+#psHelpPopover kbd {
+  display: inline-block;
+  background: #F7F7F7;
+  border: 1px solid #E0E0E0;
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--black);
+  box-shadow: 0 1px 0 #D8D8D8;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1.1;
+}
+#psHelpPopover .ps-help-sep {
+  color: #C0C0C0;
+  font-size: 11px;
+  margin: 0 1px;
+}
 /* Hex input beside swatches */
 .ps-hex-wrap {
   position: relative;
@@ -2154,6 +2251,7 @@ body.ps-active #slideCta {
       <div id="psActions">
         <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
         <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
+        <button class="ps-help-circle-btn" id="psHelpBtn" type="button" aria-label="Горячие клавиши">?</button>
       </div>
     </div>
     <!-- Crop panel -->
@@ -2194,6 +2292,21 @@ body.ps-active #slideCta {
         <button id="psEraserDoneBtn" class="btn-primary">Готово</button>
       </div>
     </div>
+  </div>
+  <!-- Help popover (keyboard shortcuts) -->
+  <div id="psHelpPopover">
+    <div class="ps-help-title">Горячие клавиши</div>
+    <ul class="ps-help-list">
+      <li><span>Отменить</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>Z</kbd></span></li>
+      <li><span>Увеличить</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>+</kbd></span></li>
+      <li><span>Уменьшить</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>−</kbd></span></li>
+      <li><span>Сбросить масштаб</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>0</kbd></span></li>
+      <li><span>Скачать PNG</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>S</kbd></span></li>
+      <li><span>Обрезать</span><span class="ps-help-keys"><kbd>C</kbd></span></li>
+      <li><span>Ластик</span><span class="ps-help-keys"><kbd>E</kbd></span></li>
+      <li><span>Применить / Выйти</span><span class="ps-help-keys"><kbd>Enter</kbd> / <kbd>Esc</kbd></span></li>
+      <li><span>Панорама по изображению</span><span class="ps-help-keys"><kbd>Space</kbd> + drag</span></li>
+    </ul>
   </div>
   <!-- Custom color picker popover -->
   <div id="psPickerPopover">
@@ -2986,6 +3099,8 @@ body.ps-active #slideCta {
       zoom = 1; panX = 0; panY = 0;
       psCanvas.style.transform = '';
       if (psPickerPop) psPickerPop.classList.remove('visible');
+      if (psHelpPop) psHelpPop.classList.remove('visible');
+      editStack.length = 0;
     }, 600);
   }
 
@@ -3030,7 +3145,7 @@ body.ps-active #slideCta {
     document.querySelectorAll('.ps-fmt-btn').forEach(function(b) {
       b.classList.toggle('active', b.getAttribute('data-ratio') === 'free');
     });
-    eraserUndoStack = [];
+    editStack.length = 0;
     if (psCtx) psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
 
     setTimeout(function() {
@@ -3446,6 +3561,7 @@ body.ps-active #slideCta {
 
   document.getElementById('psCropApplyBtn').addEventListener('click', function() {
     if (!psCtx) return;
+    pushEditState(); // save for undo
     var tmp = document.createElement('canvas');
     var cx = Math.round(cropX), cy = Math.round(cropY);
     var cw = Math.round(cropW), ch = Math.round(cropH);
@@ -3464,10 +3580,42 @@ body.ps-active #slideCta {
     showPsPanel('default');
   });
 
+  // ── UNIFIED UNDO STACK (eraser strokes + crops) ──
+  var editStack = [];
+  var MAX_UNDO = 15;
+  function pushEditState() {
+    if (!psCtx) return;
+    try {
+      editStack.push({
+        w: psCanvas.width,
+        h: psCanvas.height,
+        data: psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height),
+        cardW: psCard.style.width,
+        cardH: psCard.style.height
+      });
+      if (editStack.length > MAX_UNDO) editStack.shift();
+    } catch (err) {}
+  }
+  function undoEdit() {
+    if (!editStack.length) return;
+    var s = editStack.pop();
+    if (psCanvas.width !== s.w || psCanvas.height !== s.h) {
+      psCanvas.width = s.w;
+      psCanvas.height = s.h;
+      psCard.style.width  = s.cardW;
+      psCard.style.height = s.cardH;
+      zoom = 1; panX = 0; panY = 0;
+      applyTransform(true);
+    }
+    psCtx.putImageData(s.data, 0, 0);
+    if (psCropOverlay.classList.contains('visible')) initCropOverlay();
+  }
+
   // ── ERASER ──
   var eraserSize = 40, eraserHard = 80;
   var eraserDrawing = false, eraserLastPos = null;
-  var eraserUndoStack = [];
+  // Backwards compat: eraserUndoStack refers to unified editStack now
+  var eraserUndoStack = editStack;
 
   function updateEraserCursorSize() {
     if (!psCanvas || !psEraserRing) return;
@@ -3572,8 +3720,7 @@ body.ps-active #slideCta {
     if (psEraserPanel.classList.contains('hidden')) return;
     eraserDrawing = true;
     psCanvas.setPointerCapture(e.pointerId);
-    eraserUndoStack.push(psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height));
-    if (eraserUndoStack.length > 20) eraserUndoStack.shift();
+    pushEditState();
     var pos = getCanvasPos(e);
     eraserLastPos = pos;
     eraseAtPoint(pos.x, pos.y);
@@ -3589,10 +3736,7 @@ body.ps-active #slideCta {
     if (!psEraserPanel.classList.contains('hidden')) psEraserCursor.classList.add('visible');
   });
 
-  document.getElementById('psUndoBtn').addEventListener('click', function() {
-    if (eraserUndoStack.length === 0) return;
-    psCtx.putImageData(eraserUndoStack.pop(), 0, 0);
-  });
+  document.getElementById('psUndoBtn').addEventListener('click', undoEdit);
   document.getElementById('psEraserDoneBtn').addEventListener('click', function() {
     showPsPanel('default');
   });
@@ -3711,6 +3855,105 @@ body.ps-active #slideCta {
     if (panDragging) {
       panDragging = false;
       psCard.classList.remove('panning');
+    }
+  });
+
+  // ── Help popover ──
+  var psHelpBtn = document.getElementById('psHelpBtn');
+  var psHelpPop = document.getElementById('psHelpPopover');
+
+  function positionHelpPopover() {
+    var btnRect = psHelpBtn.getBoundingClientRect();
+    var popRect = psHelpPop.getBoundingClientRect();
+    var left = btnRect.left + btnRect.width / 2 - popRect.width / 2;
+    var top  = btnRect.top - popRect.height - 12;
+    if (top < 10) top = btnRect.bottom + 12;
+    left = Math.max(10, Math.min(window.innerWidth - popRect.width - 10, left));
+    psHelpPop.style.left = left + 'px';
+    psHelpPop.style.top  = top + 'px';
+  }
+
+  psHelpBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (psHelpPop.classList.contains('visible')) {
+      psHelpPop.classList.remove('visible');
+      psHelpBtn.classList.remove('active');
+      return;
+    }
+    psHelpPop.classList.add('visible');
+    psHelpBtn.classList.add('active');
+    positionHelpPopover();
+  });
+  document.addEventListener('click', function(e) {
+    if (!psHelpPop.classList.contains('visible')) return;
+    if (psHelpPop.contains(e.target) || psHelpBtn.contains(e.target)) return;
+    psHelpPop.classList.remove('visible');
+    psHelpBtn.classList.remove('active');
+  });
+
+  // ── Keyboard shortcuts ──
+  document.addEventListener('keydown', function(e) {
+    if (!document.body.classList.contains('ps-active')) return;
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    var mod = e.ctrlKey || e.metaKey;
+
+    // Ctrl/Cmd+Z — undo
+    if (mod && !e.shiftKey && (e.key === 'z' || e.key === 'Z' || e.key === 'я' || e.key === 'Я')) {
+      e.preventDefault();
+      undoEdit();
+      return;
+    }
+    // Ctrl/Cmd+S — download
+    if (mod && (e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы')) {
+      e.preventDefault();
+      if (!psDownloadBtn.disabled) psDownloadBtn.click();
+      return;
+    }
+    // Ctrl/Cmd + plus/equals — zoom in
+    if (mod && (e.key === '+' || e.key === '=')) {
+      e.preventDefault();
+      var rIn = psFrame.getBoundingClientRect();
+      zoomAt(rIn.width / 2, rIn.height / 2, 1.25, true);
+      return;
+    }
+    // Ctrl/Cmd + minus — zoom out
+    if (mod && (e.key === '-' || e.key === '_')) {
+      e.preventDefault();
+      var rOut = psFrame.getBoundingClientRect();
+      zoomAt(rOut.width / 2, rOut.height / 2, 1/1.25, true);
+      return;
+    }
+    // Ctrl/Cmd + 0 — reset zoom
+    if (mod && e.key === '0') {
+      e.preventDefault();
+      resetZoom();
+      return;
+    }
+    // Enter — apply crop when in crop mode
+    if (e.key === 'Enter' && !psCropPanel.classList.contains('hidden')) {
+      e.preventDefault();
+      document.getElementById('psCropApplyBtn').click();
+      return;
+    }
+    // Tool shortcuts (only when toolbar is available, default panel visible)
+    if (mod) return;
+    if (psToolbar.classList.contains('hidden')) return;
+    // C — crop tool
+    if (e.key === 'c' || e.key === 'C' || e.key === 'с' || e.key === 'С') {
+      if (psCropPanel.classList.contains('hidden')) {
+        e.preventDefault();
+        showPsPanel('crop');
+      }
+      return;
+    }
+    // E — eraser tool
+    if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') {
+      if (psEraserPanel.classList.contains('hidden')) {
+        e.preventDefault();
+        showPsPanel('eraser');
+      }
+      return;
     }
   });
 
