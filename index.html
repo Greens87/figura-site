@@ -327,7 +327,7 @@ h1, h2, h3 {
   border-radius: 20px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  max-width: 80%;
+  max-width: 90%;
   margin: 0 auto;
   transition: max-width 0.5s cubic-bezier(0.34, 1.1, 0.64, 1);
 }
@@ -1446,11 +1446,11 @@ h1, h2, h3 {
           <div class="result-placeholder" id="resultPlaceholder">
             <div class="demo-slider-wrap" id="demoSliderWrap">
               <img class="ba-img-after" id="demoAfter" src="assets/results/after/Image_04.png" alt="">
-              <div class="ba-img-before" id="demoBefore" style="width:72%">
+              <div class="ba-img-before" id="demoBefore" style="width:100%">
                 <img id="demoBeforeImg" src="assets/results/before/Image_04.png" alt="">
               </div>
-              <div class="ba-slider-line" id="demoLine" style="left:72%"></div>
-              <div class="ba-slider-handle" id="demoHandle" style="left:72%">
+              <div class="ba-slider-line" id="demoLine" style="left:100%"></div>
+              <div class="ba-slider-handle" id="demoHandle" style="left:100%">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M6 3.5l-4 5.5 4 5.5M12 3.5l4 5.5-4 5.5" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -2136,79 +2136,51 @@ h1, h2, h3 {
   });
 
   // ===== DEMO SLIDER ANIMATION =====
-  var demoSliderWrap    = document.getElementById('demoSliderWrap');
-  var demoBefore        = document.getElementById('demoBefore');
-  var demoBeforeImg     = document.getElementById('demoBeforeImg');
-  var demoLine          = document.getElementById('demoLine');
-  var demoHandle        = document.getElementById('demoHandle');
-  var demoHint          = document.getElementById('demoHint');
-  var demoAnimId        = null;
-  var demoStartTime     = null;
-  var demoPhase         = 'osc'; // 'osc' | 'settle' | 'done'
-  var demoPhaseStart    = null;
-  var DEMO_OSC_PERIOD   = 4800;
-  var DEMO_SETTLE_MS    = 1300;
-  // Переход фиксируется динамически когда pct ≤ 27.5% на 3-м нисходящем участке
-  var settleP0 = 0, settleV0 = 0, settleTriggered = false;
+  var demoSliderWrap = document.getElementById('demoSliderWrap');
+  var demoBefore     = document.getElementById('demoBefore');
+  var demoBeforeImg  = document.getElementById('demoBeforeImg');
+  var demoLine       = document.getElementById('demoLine');
+  var demoHandle     = document.getElementById('demoHandle');
+  var demoHint       = document.getElementById('demoHint');
+  var demoAnimId     = null;
+  var demoStartTime  = null;
+
+  // 5 прогонов: 100→0, 0→100, 100→0, 0→100, 100→0  (3 прогона влево, стоп)
+  var DEMO_SWEEPS    = [[100,0],[0,100],[100,0],[0,100],[100,0]];
+  var DEMO_HALF_MS   = 2200; // мс на один прогон
 
   function setDemoPos(pct) {
-    demoBefore.style.width = pct + '%';
-    demoLine.style.left    = pct + '%';
-    demoHandle.style.left  = pct + '%';
-    demoBeforeImg.style.width = demoSliderWrap.offsetWidth + 'px';
+    demoBefore.style.width        = pct + '%';
+    demoLine.style.left           = pct + '%';
+    demoHandle.style.left         = pct + '%';
+    demoBeforeImg.style.width     = demoSliderWrap.offsetWidth + 'px';
   }
 
-  // Hermite сплайн C1: p(0)=p0, p'(0)=v0_norm, p(1)=0, p'(1)=0
-  // Монотонно убывает, нет оверш ута (математически доказано для t≈2.62)
-  function hermiteSettle(u) {
-    var h00 = 2*u*u*u - 3*u*u + 1;
-    var h10 = u*u*u - 2*u*u + u;
-    return h00 * settleP0 + h10 * settleV0;
+  function eio(t) { // ease-in-out квадратная
+    return t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t;
   }
 
   function demoStep(ts) {
-    if (!demoStartTime) { demoStartTime = ts; demoPhaseStart = ts; }
+    if (!demoStartTime) demoStartTime = ts;
+    var total   = ts - demoStartTime;
+    var segIdx  = Math.floor(total / DEMO_HALF_MS);
 
-    if (demoPhase === 'osc') {
-      var elapsed = ts - demoPhaseStart;
-      var t = elapsed / DEMO_OSC_PERIOD;
-      var pct = 47.5 + 27.5 * Math.sin(t * 2 * Math.PI);
-
-      // Динамический переход: 3-й нисходящий участок, pct ≤ 27.5%
-      if (!settleTriggered && elapsed > 2.5 * DEMO_OSC_PERIOD && pct <= 27.5) {
-        settleTriggered = true;
-        // Фиксируем реальную позицию и скорость в момент перехода
-        settleP0 = pct;
-        var v0raw = 27.5 * (2 * Math.PI / DEMO_OSC_PERIOD) * Math.cos(t * 2 * Math.PI);
-        settleV0 = v0raw * DEMO_SETTLE_MS; // нормализованная скорость
-        demoPhase = 'settle';
-        demoPhaseStart = ts;
-      } else {
-        setDemoPos(pct);
-      }
+    if (segIdx >= DEMO_SWEEPS.length) {
+      setDemoPos(0);
+      demoAnimId = null;
+      return;
     }
 
-    if (demoPhase === 'settle') {
-      var elapsed = ts - demoPhaseStart;
-      if (elapsed >= DEMO_SETTLE_MS) {
-        setDemoPos(0);
-        demoPhase = 'done';
-        demoAnimId = null;
-        return;
-      }
-      var u = elapsed / DEMO_SETTLE_MS;
-      setDemoPos(Math.max(0, hermiteSettle(u)));
-    }
-
+    var u    = (total % DEMO_HALF_MS) / DEMO_HALF_MS;
+    var from = DEMO_SWEEPS[segIdx][0];
+    var to   = DEMO_SWEEPS[segIdx][1];
+    setDemoPos(from + (to - from) * eio(u));
     demoAnimId = requestAnimationFrame(demoStep);
   }
 
   function startDemo() {
     if (!demoAnimId) {
-      demoPhase = 'osc';
       demoStartTime = null;
-      demoPhaseStart = null;
-      settleTriggered = false;
       demoAnimId = requestAnimationFrame(demoStep);
     }
   }
