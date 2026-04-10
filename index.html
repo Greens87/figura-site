@@ -644,29 +644,25 @@ h1, h2, h3 {
 /* ===== BA SHOWCASE ===== */
 .ba-showcase {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.ba-sidebar {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.ba-thumbs-row {
+  display: flex;
   gap: 10px;
-  flex-shrink: 0;
-  width: 248px;
 }
 
 .ba-thumb {
   position: relative;
+  flex: 1;
+  height: 100px;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: var(--gray-bg);
-  aspect-ratio: 4/5;
-  min-height: 0;
 }
 
 /* Белый оверлей для затухания */
@@ -674,7 +670,7 @@ h1, h2, h3 {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.38);
   transition: opacity 0.35s ease;
   pointer-events: none;
 }
@@ -702,9 +698,8 @@ h1, h2, h3 {
 }
 
 .ba-main {
-  flex: 1;
-  max-width: 480px;
-  border-radius: 24px;
+  width: 100%;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 16px 56px rgba(0,0,0,0.14);
   user-select: none;
@@ -1201,20 +1196,6 @@ h1, h2, h3 {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ===== RESPONSIVE 1024px ===== */
-@media (max-width: 1024px) {
-  .ba-sidebar {
-    width: 190px;
-  }
-}
-
-@media (max-width: 900px) {
-  .ba-sidebar {
-    width: 150px;
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .nav-inner {
@@ -1273,18 +1254,8 @@ h1, h2, h3 {
     grid-template-columns: 1fr;
   }
 
-  .ba-showcase {
-    flex-direction: column;
-  }
-
-  .ba-sidebar {
-    width: 100%;
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .ba-main {
-    max-width: 100%;
-    width: 100%;
+  .ba-thumb {
+    height: 72px;
   }
 
   .footer-grid {
@@ -1512,8 +1483,8 @@ h1, h2, h3 {
     <h2 class="ba-title">Результат</h2>
     <div class="ba-showcase">
 
-      <!-- Левая сетка 2×2 -->
-      <div class="ba-sidebar">
+      <!-- Верхний ряд миниатюр -->
+      <div class="ba-thumbs-row">
         <div class="ba-thumb" data-before="assets/results/before/Image_01.png" data-after="assets/results/after/Image_01.png">
           <img src="assets/results/before/Image_01.png" alt="">
         </div>
@@ -1544,8 +1515,8 @@ h1, h2, h3 {
         </div>
       </div>
 
-      <!-- Правая сетка 2×2 -->
-      <div class="ba-sidebar">
+      <!-- Нижний ряд миниатюр -->
+      <div class="ba-thumbs-row">
         <div class="ba-thumb active" data-before="assets/results/before/Image_02.png" data-after="assets/results/after/Image_02.png">
           <img src="assets/results/before/Image_02.png" alt="">
         </div>
