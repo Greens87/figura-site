@@ -682,19 +682,23 @@ h1, h2, h3 {
 /* ===== BA SHOWCASE ===== */
 .ba-showcase {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
 }
 
-.ba-thumbs-row {
-  display: flex;
+.ba-sidebar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+  flex-shrink: 0;
+  width: 244px;
 }
 
 .ba-thumb {
   position: relative;
-  flex: 1;
-  height: 100px;
+  aspect-ratio: 4/5;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
@@ -1235,6 +1239,40 @@ h1, h2, h3 {
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Промежуточный — сайдбары уже, центр доминирует */
+@media (max-width: 1080px) {
+  .ba-sidebar {
+    width: 200px;
+  }
+}
+
+@media (max-width: 960px) {
+  .ba-sidebar {
+    width: 144px;
+    gap: 8px;
+  }
+  .ba-showcase {
+    gap: 14px;
+  }
+}
+
+/* Узкий экран — сайдбары убираются под центр */
+@media (max-width: 768px) {
+  .ba-showcase {
+    flex-direction: column;
+    align-items: center;
+  }
+  .ba-sidebar {
+    width: 100%;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .ba-thumb {
+    aspect-ratio: 1/1;
+  }
+}
+
 @media (max-width: 768px) {
   .nav-inner {
     padding: 0 20px;
@@ -1290,10 +1328,6 @@ h1, h2, h3 {
   .how-grid,
   .pricing-grid {
     grid-template-columns: 1fr;
-  }
-
-  .ba-thumb {
-    height: 72px;
   }
 
   .footer-grid {
@@ -1531,8 +1565,8 @@ h1, h2, h3 {
     <h2 class="ba-title">Результат</h2>
     <div class="ba-showcase">
 
-      <!-- Верхний ряд миниатюр -->
-      <div class="ba-thumbs-row">
+      <!-- Левый сайдбар: 4 миниатюры 2×2 -->
+      <div class="ba-sidebar">
         <div class="ba-thumb" data-before="assets/results/before/Image_01.png" data-after="assets/results/after/Image_01.png">
           <img src="assets/results/before/Image_01.png" alt="">
         </div>
@@ -1563,8 +1597,8 @@ h1, h2, h3 {
         </div>
       </div>
 
-      <!-- Нижний ряд миниатюр -->
-      <div class="ba-thumbs-row">
+      <!-- Правый сайдбар: 4 миниатюры 2×2 -->
+      <div class="ba-sidebar">
         <div class="ba-thumb active" data-before="assets/results/before/Image_02.png" data-after="assets/results/after/Image_02.png">
           <img src="assets/results/before/Image_02.png" alt="">
         </div>
