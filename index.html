@@ -1327,7 +1327,7 @@ body.ps-active { overflow: hidden; }
   z-index: 1;
   transform-origin: 0 0;
   will-change: transform;
-  transition: transform 0.14s ease-out;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #psCanvas.no-transition { transition: none; }
 /* Crop overlay — overflow visible so handles can extend past edges */
@@ -1345,14 +1345,27 @@ body.ps-active { overflow: hidden; }
   position: absolute;
   background: rgba(0,0,0,0.48);
   pointer-events: none;
+  transition:
+    left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #psCropBox {
   position: absolute;
   border: 1.5px solid rgba(255,255,255,0.95);
   box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
-  cursor: crosshair;
+  cursor: move;
   box-sizing: border-box;
+  transition:
+    left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
+/* Disable transitions during active drag/resize/marquee for direct response */
+#psCropOverlay.dragging #psCropBox,
+#psCropOverlay.dragging .ps-crop-dark { transition: none; }
 .ps-crop-handle {
   position: absolute;
   width: 10px;
@@ -1472,22 +1485,119 @@ body.ps-active { overflow: hidden; }
 /* Pan cursor states */
 .ps-card.pannable #psCanvas { cursor: grab; }
 .ps-card.panning   #psCanvas { cursor: grabbing; }
-/* Color wheel swatch — trigger for custom popover */
-.ps-swatch-wheel {
-  background:
-    conic-gradient(from 90deg,
-      #ff0000, #ffae00, #ffff00, #00ff22, #00ffd0,
-      #0066ff, #4000ff, #bf00ff, #ff00c8, #ff0000);
-  position: relative;
-  box-shadow: inset 0 0 0 3px #FFFFFF;
+/* Space-pan mode — overrides any tool cursor */
+.ps-card.space-pan,
+.ps-card.space-pan #psFrame,
+.ps-card.space-pan #psCanvas,
+.ps-card.space-pan #psCropOverlay,
+.ps-card.space-pan #psCropBox,
+.ps-card.space-pan .ps-crop-handle { cursor: grab !important; }
+.ps-card.space-panning,
+.ps-card.space-panning #psFrame,
+.ps-card.space-panning #psCanvas,
+.ps-card.space-panning #psCropOverlay,
+.ps-card.space-panning #psCropBox,
+.ps-card.space-panning .ps-crop-handle { cursor: grabbing !important; }
+/* Pan hint — shown only when zoomed */
+#psPanHint {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #E8E8E8;
+  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  color: var(--gray);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 16;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.ps-swatch-wheel::after {
+#psPanHint kbd {
+  background: #FFFFFF;
+  border: 1px solid #D0D0D0;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--black);
+  box-shadow: 0 1px 0 #D0D0D0;
+}
+.ps-card.zoomed #psPanHint { opacity: 1; }
+/* Color wheel swatch — trigger for custom popover (palette icon) */
+.ps-swatch-wheel {
+  background: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0A0A0A;
+  position: relative;
+}
+.ps-swatch-wheel svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.ps-swatch-wheel:hover { background: #F5F5F5; border-color: #C8C8C8; }
+.ps-swatch-wheel.active {
+  border-color: #003AE7;
+  background: rgba(0,58,231,0.08);
+  color: #003AE7;
+}
+/* Tooltip on swatches (custom CSS bubble) */
+.ps-swatch[data-name] {
+  position: relative;
+}
+.ps-swatch[data-name]::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(10,10,10,0.94);
+  color: #FFFFFF;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 60;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+.ps-swatch[data-name]::before {
   content: '';
   position: absolute;
-  inset: 9px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(10,10,10,0.94);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 61;
+}
+.ps-swatch[data-name]:hover::after,
+.ps-swatch[data-name]:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 /* Custom color picker popover */
 #psPickerPopover {
@@ -1653,9 +1763,9 @@ body.ps-active { overflow: hidden; }
   position: relative;
   transition: border-color 0.2s, transform 0.15s;
   flex-shrink: 0;
-  overflow: hidden;
   padding: 0;
   background: none;
+  background-clip: padding-box;
 }
 .ps-swatch:hover { transform: scale(1.12); }
 .ps-swatch.active { border-color: #003AE7; }
@@ -1663,6 +1773,7 @@ body.ps-active { overflow: hidden; }
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   background-color: #fff;
   background-image:
     linear-gradient(45deg,#ccc 25%,transparent 25%),
@@ -2010,19 +2121,22 @@ body.ps-active #slideCta {
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1h4M1 1v4M12 1H8M12 1v4M1 12h4M1 12V8M12 12H8M12 12V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
     </div>
+    <div id="psPanHint">Удерживайте <kbd>Space</kbd> + перетаскивание — движение по изображению</div>
   </div>
   <div id="psBottom">
     <!-- Default panel -->
     <div id="psDefaultPanel">
       <div id="psBgPicker">
-        <button class="ps-swatch active" data-color="transparent" title="Прозрачный"><span class="ps-swatch-checker"></span></button>
-        <button class="ps-swatch" data-color="#FFFFFF" style="background:#FFFFFF;border-color:#ddd" title="Белый"></button>
-        <button class="ps-swatch" data-color="#000000" style="background:#000000" title="Чёрный"></button>
-        <button class="ps-swatch" data-color="#808080" style="background:#808080" title="Серый"></button>
-        <button class="ps-swatch" data-color="#F5F5F5" style="background:#F5F5F5;border-color:#ddd" title="Светло-серый"></button>
-        <button class="ps-swatch" data-color="#00B140" style="background:#00B140" title="Зелёный (хромакей)"></button>
-        <button class="ps-swatch" data-color="#003AE7" style="background:#003AE7" title="Синий"></button>
-        <button class="ps-swatch ps-swatch-wheel" id="psWheelBtn" type="button" title="Выбрать любой цвет"></button>
+        <button class="ps-swatch active" data-color="transparent" data-name="Прозрачный"><span class="ps-swatch-checker"></span></button>
+        <button class="ps-swatch" data-color="#FFFFFF" data-name="Белый" style="background:#FFFFFF;border-color:#ddd"></button>
+        <button class="ps-swatch" data-color="#000000" data-name="Чёрный" style="background:#000000"></button>
+        <button class="ps-swatch" data-color="#808080" data-name="Серый" style="background:#808080"></button>
+        <button class="ps-swatch" data-color="#F5F5F5" data-name="Светло-серый" style="background:#F5F5F5;border-color:#ddd"></button>
+        <button class="ps-swatch" data-color="#00B140" data-name="Зелёный (хромакей)" style="background:#00B140"></button>
+        <button class="ps-swatch" data-color="#003AE7" data-name="Синий" style="background:#003AE7"></button>
+        <button class="ps-swatch ps-swatch-wheel" id="psWheelBtn" type="button" data-name="Выбрать любой цвет">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </button>
         <span class="ps-hex-wrap">
           <input type="text" id="psHexInput" class="ps-hex-input" placeholder="FFFFFF" maxlength="6">
         </span>
@@ -3063,9 +3177,11 @@ body.ps-active #slideCta {
     });
   });
 
-  // ── Marquee selection on overlay ──
+  // ── Marquee + drag-to-move on overlay ──
   var cropMarquee = false;
+  var cropMoving  = false;
   var cropMarqueeOrigin = null;
+  var cropMoveStart = null;
 
   function getCropCanvasPos(e) {
     var rect = psCanvas.getBoundingClientRect();
@@ -3076,43 +3192,69 @@ body.ps-active #slideCta {
       y: Math.max(0, Math.min(psCanvas.height, y))
     };
   }
+  function isInsideCropBox(p) {
+    return p.x >= cropX && p.x <= cropX + cropW &&
+           p.y >= cropY && p.y <= cropY + cropH;
+  }
+  function isCropFullImage() {
+    return cropX < 1 && cropY < 1 &&
+           cropW > psCanvas.width - 1 && cropH > psCanvas.height - 1;
+  }
 
   psCropOverlay.addEventListener('pointerdown', function(e) {
     if (e.target.classList.contains('ps-crop-handle')) return;
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
-    cropMarquee = true;
-    try { psCropOverlay.setPointerCapture(e.pointerId); } catch (err) {}
     var p = getCropCanvasPos(e);
-    cropMarqueeOrigin = { x: p.x, y: p.y };
-    cropX = p.x; cropY = p.y; cropW = 0; cropH = 0;
-    updateCropBoxCSS();
+
+    // Disable transitions during active drag
+    psCropOverlay.classList.add('dragging');
+
+    if (!isCropFullImage() && isInsideCropBox(p)) {
+      // Click inside existing (non-full) box → drag to move
+      cropMoving = true;
+      try { psCropOverlay.setPointerCapture(e.pointerId); } catch (err) {}
+      cropMoveStart = { mx: p.x, my: p.y, bx: cropX, by: cropY };
+    } else {
+      // Click outside box or on full-image box → start marquee
+      cropMarquee = true;
+      try { psCropOverlay.setPointerCapture(e.pointerId); } catch (err) {}
+      cropMarqueeOrigin = { x: p.x, y: p.y };
+      cropX = p.x; cropY = p.y; cropW = 0; cropH = 0;
+      updateCropBoxCSS();
+    }
   });
 
   psCropOverlay.addEventListener('pointermove', function(e) {
+    if (cropMoving) {
+      var p = getCropCanvasPos(e);
+      var dx = p.x - cropMoveStart.mx;
+      var dy = p.y - cropMoveStart.my;
+      cropX = Math.max(0, Math.min(psCanvas.width  - cropW, cropMoveStart.bx + dx));
+      cropY = Math.max(0, Math.min(psCanvas.height - cropH, cropMoveStart.by + dy));
+      updateCropBoxCSS();
+      return;
+    }
     if (!cropMarquee) return;
-    var p = getCropCanvasPos(e);
+    var p2 = getCropCanvasPos(e);
     var sx = cropMarqueeOrigin.x, sy = cropMarqueeOrigin.y;
-    var dxR = p.x - sx, dyR = p.y - sy;
+    var dxR = p2.x - sx, dyR = p2.y - sy;
     var w = Math.abs(dxR), h = Math.abs(dyR);
-    var x = Math.min(sx, p.x);
-    var y = Math.min(sy, p.y);
+    var x = Math.min(sx, p2.x);
+    var y = Math.min(sy, p2.y);
 
     var ratio = null;
     if (cropActiveRatio !== null) ratio = cropActiveRatio;
     else if (e.shiftKey) ratio = 1;
 
     if (ratio !== null) {
-      // Enforce ratio, using dominant dimension
       if (w / ratio >= h) h = w / ratio;
       else               w = h * ratio;
-      // Position based on drag direction (anchor to origin)
       x = dxR < 0 ? sx - w : sx;
       y = dyR < 0 ? sy - h : sy;
     }
 
-    // Clamp to canvas bounds
     var cw = psCanvas.width, ch = psCanvas.height;
     if (x < 0) { w += x; x = 0; }
     if (y < 0) { h += y; y = 0; }
@@ -3120,7 +3262,6 @@ body.ps-active #slideCta {
     if (y + h > ch) h = ch - y;
 
     if (ratio !== null) {
-      // Re-enforce ratio by shrinking the excess dimension
       if (w / ratio > h) w = h * ratio;
       else               h = w / ratio;
     }
@@ -3130,10 +3271,15 @@ body.ps-active #slideCta {
   });
 
   psCropOverlay.addEventListener('pointerup', function(e) {
+    psCropOverlay.classList.remove('dragging');
+    if (cropMoving) {
+      cropMoving = false;
+      try { psCropOverlay.releasePointerCapture(e.pointerId); } catch (err) {}
+      return;
+    }
     if (!cropMarquee) return;
     cropMarquee = false;
     try { psCropOverlay.releasePointerCapture(e.pointerId); } catch (err) {}
-    // If marquee too small, treat as click — reset to initial
     if (cropW < 8 || cropH < 8) {
       initCropOverlay();
     }
@@ -3150,11 +3296,15 @@ body.ps-active #slideCta {
       var sy = psCanvas.height / rect.height;
       cropDragStartMouse = { x: e.clientX * sx, y: e.clientY * sy };
       cropDragStartBox   = { x: cropX, y: cropY, w: cropW, h: cropH };
+      psCropOverlay.classList.add('dragging');
       e.stopPropagation();
       e.preventDefault();
     });
     handle.addEventListener('pointermove', cropHandleMove);
-    handle.addEventListener('pointerup', function() { cropResizing = false; });
+    handle.addEventListener('pointerup', function() {
+      cropResizing = false;
+      psCropOverlay.classList.remove('dragging');
+    });
   });
 
   function cropHandleMove(e) {
@@ -3479,6 +3629,7 @@ body.ps-active #slideCta {
     psZoomOutBtn.disabled = zoom <= ZOOM_MIN + 0.001;
     psZoomInBtn.disabled  = zoom >= ZOOM_MAX - 0.001;
     psCard.classList.toggle('pannable', zoom > 1 && psCropPanel.classList.contains('hidden') && psEraserPanel.classList.contains('hidden'));
+    psCard.classList.toggle('zoomed', zoom > 1);
     // Update eraser cursor size (depends on zoom)
     updateEraserCursorSize();
     // Sync crop box if visible
@@ -3486,7 +3637,9 @@ body.ps-active #slideCta {
   }
 
   function clampPan() {
-    var rect = psCard.getBoundingClientRect();
+    // Canvas lives inside psFrame. Its natural display size = frame size.
+    // Transformed size = frame size × zoom. Pan is in frame coords.
+    var rect = psFrame.getBoundingClientRect();
     var cw = rect.width, ch = rect.height;
     var sw = cw * zoom, sh = ch * zoom;
     if (sw <= cw) panX = (cw - sw) / 2;
@@ -3495,7 +3648,7 @@ body.ps-active #slideCta {
     else panY = Math.max(ch - sh, Math.min(0, panY));
   }
 
-  function zoomAt(mx, my, factor) {
+  function zoomAt(mx, my, factor, smooth) {
     var newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom * factor));
     if (Math.abs(newZoom - zoom) < 0.001) return;
     // Adjust pan so point under cursor stays fixed
@@ -3503,7 +3656,7 @@ body.ps-active #slideCta {
     panY = my - ((my - panY) / zoom) * newZoom;
     zoom = newZoom;
     clampPan();
-    applyTransform(false);
+    applyTransform(smooth === true);
   }
 
   function resetZoom() {
@@ -3514,20 +3667,23 @@ body.ps-active #slideCta {
   psCard.addEventListener('wheel', function(e) {
     if (!psCtx) return;
     e.preventDefault();
-    var rect = psCard.getBoundingClientRect();
+    // Use frame coords so (mx,my) matches canvas origin
+    var rect = psFrame.getBoundingClientRect();
     var mx = e.clientX - rect.left;
     var my = e.clientY - rect.top;
-    var factor = e.deltaY < 0 ? 1.18 : 1/1.18;
-    zoomAt(mx, my, factor);
+    // Soft factor + smooth transition = "plavnost'"
+    var delta = Math.max(-50, Math.min(50, e.deltaY));
+    var factor = Math.exp(-delta * 0.0032);
+    zoomAt(mx, my, factor, true);
   }, { passive: false });
 
   psZoomInBtn.addEventListener('click', function() {
-    var rect = psCard.getBoundingClientRect();
-    zoomAt(rect.width / 2, rect.height / 2, 1.25);
+    var rect = psFrame.getBoundingClientRect();
+    zoomAt(rect.width / 2, rect.height / 2, 1.25, true);
   });
   psZoomOutBtn.addEventListener('click', function() {
-    var rect = psCard.getBoundingClientRect();
-    zoomAt(rect.width / 2, rect.height / 2, 1/1.25);
+    var rect = psFrame.getBoundingClientRect();
+    zoomAt(rect.width / 2, rect.height / 2, 1/1.25, true);
   });
   psZoomResetBtn.addEventListener('click', resetZoom);
 
@@ -3557,6 +3713,56 @@ body.ps-active #slideCta {
       psCard.classList.remove('panning');
     }
   });
+
+  // ── Photoshop-style Space+drag to pan from any tool mode ──
+  var spacePanMode = false;
+  var spacePanDrag = false;
+  var spacePanStart = null;
+
+  document.addEventListener('keydown', function(e) {
+    if (e.code !== 'Space') return;
+    if (!document.body.classList.contains('ps-active')) return;
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    e.preventDefault();
+    if (!spacePanMode) {
+      spacePanMode = true;
+      psCard.classList.add('space-pan');
+    }
+  });
+  document.addEventListener('keyup', function(e) {
+    if (e.code !== 'Space') return;
+    if (!spacePanMode) return;
+    spacePanMode = false;
+    psCard.classList.remove('space-pan', 'space-panning');
+  });
+
+  // Intercept in capture phase so it runs before crop/eraser handlers
+  psCard.addEventListener('pointerdown', function(e) {
+    if (!spacePanMode || !psCtx) return;
+    if (e.target.closest('#psZoomCtrls')) return;
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    spacePanDrag = true;
+    try { psCard.setPointerCapture(e.pointerId); } catch (err) {}
+    psCard.classList.add('space-panning');
+    spacePanStart = { x: e.clientX - panX, y: e.clientY - panY };
+  }, true);
+  psCard.addEventListener('pointermove', function(e) {
+    if (!spacePanDrag) return;
+    e.stopPropagation();
+    panX = e.clientX - spacePanStart.x;
+    panY = e.clientY - spacePanStart.y;
+    clampPan();
+    applyTransform(false);
+  }, true);
+  psCard.addEventListener('pointerup', function(e) {
+    if (!spacePanDrag) return;
+    e.stopPropagation();
+    spacePanDrag = false;
+    psCard.classList.remove('space-panning');
+  }, true);
 
   // Color picker
   function applyBackground(color) {
