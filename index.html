@@ -1245,7 +1245,9 @@ h1, h2, h3 {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ===== PROCESSING SCREEN ===== */
+/* ===== UPLOAD PAGE ===== */
+body.ps-active { overflow: hidden; }
+
 #processingScreen {
   position: fixed;
   inset: 0;
@@ -1255,10 +1257,11 @@ h1, h2, h3 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  padding: 80px 20px 32px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.55s ease;
+  overflow-y: auto;
 }
 #processingScreen.visible {
   opacity: 1;
@@ -1272,12 +1275,11 @@ h1, h2, h3 {
   width: 380px;
   height: 380px;
   position: relative;
+  flex-shrink: 0;
   transition: width 0.7s cubic-bezier(0.34,1.1,0.64,1), height 0.7s cubic-bezier(0.34,1.1,0.64,1);
   background: #f5f5f5;
 }
-.ps-card.breathing {
-  animation: psBreath 2.6s ease-in-out infinite;
-}
+.ps-card.breathing { animation: psBreath 2.6s ease-in-out infinite; }
 @keyframes psBreath {
   0%,100% { transform: scale(1); }
   50%      { transform: scale(1.02); }
@@ -1285,6 +1287,7 @@ h1, h2, h3 {
 .ps-shimmer {
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: linear-gradient(110deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
   background-size: 300% 100%;
   animation: psShimmerAnim 1.5s ease-in-out infinite;
@@ -1294,18 +1297,15 @@ h1, h2, h3 {
   0%   { background-position: 100% 0; }
   100% { background-position: -100% 0; }
 }
-.ps-shimmer.hidden { opacity: 0; }
-.ps-result-img {
-  position: absolute;
-  inset: 0;
+.ps-shimmer.hidden { opacity: 0; pointer-events: none; }
+#psCanvas {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  opacity: 0;
-  transition: opacity 0.5s ease;
+  position: relative;
+  z-index: 1;
 }
-.ps-result-img.visible { opacity: 1; }
-.ps-card.checkerboard {
+.ps-card.checker-bg {
   background-color: #f0f0f0;
   background-image:
     linear-gradient(45deg,#d8d8d8 25%,transparent 25%),
@@ -1315,17 +1315,147 @@ h1, h2, h3 {
   background-size: 20px 20px;
   background-position: 0 0,0 10px,10px -10px,-10px 0;
 }
-.ps-actions {
+/* Crop overlay */
+#psCropOverlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 10;
+  display: none;
+}
+#psCropOverlay.visible { display: block; }
+#psCropBox {
+  position: absolute;
+  border: 1.5px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+  cursor: move;
+  box-sizing: border-box;
+}
+.ps-crop-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 1.5px solid rgba(0,0,0,0.3);
+  box-sizing: border-box;
+}
+.ps-crop-handle-tl { top:-5px; left:-5px; cursor:nwse-resize; }
+.ps-crop-handle-tr { top:-5px; right:-5px; cursor:nesw-resize; }
+.ps-crop-handle-bl { bottom:-5px; left:-5px; cursor:nesw-resize; }
+.ps-crop-handle-br { bottom:-5px; right:-5px; cursor:nwse-resize; }
+/* Eraser cursor */
+#psEraserCursor {
+  position: absolute;
+  border: 1.5px solid rgba(0,0,0,0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 11;
+  display: none;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
+}
+#psEraserCursor.visible { display: block; }
+/* Bottom layout */
+#psBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 580px;
+}
+#psDefaultPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+#psDefaultPanel.hidden { display: none; }
+/* Color swatches */
+#psBgPicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ps-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2.5px solid #E8E8E8;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
+  background: none;
+}
+.ps-swatch:hover { transform: scale(1.12); }
+.ps-swatch.active { border-color: #003AE7; }
+.ps-swatch-checker {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg,#ccc 25%,transparent 25%),
+    linear-gradient(-45deg,#ccc 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#ccc 75%),
+    linear-gradient(-45deg,transparent 75%,#ccc 75%);
+  background-size: 10px 10px;
+  background-position: 0 0,0 5px,5px -5px,-5px 0;
+}
+.ps-hex-input {
+  width: 82px;
+  padding: 5px 10px;
+  border: 1.5px solid #E8E8E8;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--black);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.ps-hex-input:focus { border-color: #003AE7; }
+/* Toolbar */
+#psToolbar {
+  display: flex;
+  gap: 10px;
+}
+#psToolbar.hidden { display: none; }
+.ps-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1.5px solid #E8E8E8;
+  border-radius: 50px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--black);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.ps-tool-btn:hover { border-color: #aaa; }
+.ps-tool-btn.active {
+  border-color: #003AE7;
+  background: rgba(0,58,231,0.06);
+  color: #003AE7;
+}
+/* Actions row */
+#psActions {
   display: flex;
   gap: 12px;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
 }
-.ps-actions.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+#psActions.visible { opacity: 1; transform: translateY(0); }
 .ps-back-btn {
   background: transparent;
   border: 1px solid #E8E8E8;
@@ -1338,8 +1468,70 @@ h1, h2, h3 {
   transition: border-color 0.2s, color 0.2s;
 }
 .ps-back-btn:hover { border-color: #aaa; color: var(--black); }
-
-/* Hide page sections during processing */
+/* Tool panels */
+.ps-panel {
+  width: 100%;
+  background: var(--gray-bg);
+  border: 1px solid var(--gray-border);
+  border-radius: 16px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ps-panel.hidden { display: none; }
+.ps-panel-title {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+  letter-spacing: 0.02em;
+}
+#psCropFormats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ps-fmt-btn {
+  padding: 7px 16px;
+  border: 1.5px solid #E8E8E8;
+  border-radius: 50px;
+  background: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.ps-fmt-btn:hover { border-color: #aaa; }
+.ps-fmt-btn.active {
+  border-color: #003AE7;
+  background: rgba(0,58,231,0.06);
+  color: #003AE7;
+}
+.ps-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--gray);
+}
+.ps-slider-row input[type=range] {
+  flex: 1;
+  accent-color: #003AE7;
+  cursor: pointer;
+}
+.ps-slider-val {
+  min-width: 38px;
+  text-align: right;
+  color: var(--black);
+  font-weight: 500;
+  font-size: 13px;
+}
+.ps-panel-actions {
+  display: flex;
+  gap: 10px;
+}
+/* Hide page sections during upload */
 body.ps-active .hero,
 body.ps-active .stats-strip,
 body.ps-active .features-section,
@@ -1494,7 +1686,7 @@ body.ps-active #slideCta {
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="#" class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'});closeMobileMenu();return false;">
+    <a href="#" class="nav-logo" onclick="handleLogoClick(event);return false;">
       <div class="logo-icon">F</div>
       <span class="nav-logo-text">Фигура</span>
     </a>
@@ -1516,15 +1708,83 @@ body.ps-active #slideCta {
   </div>
 </nav>
 
-<!-- Processing Screen -->
+<!-- UPLOAD PAGE -->
 <div id="processingScreen" aria-hidden="true">
   <div class="ps-card" id="psCard">
     <div class="ps-shimmer" id="psShimmer"></div>
-    <img class="ps-result-img" id="psResultImg" src="" alt="Результат">
+    <canvas id="psCanvas"></canvas>
+    <div id="psCropOverlay">
+      <div id="psCropBox">
+        <div class="ps-crop-handle ps-crop-handle-tl" data-handle="tl"></div>
+        <div class="ps-crop-handle ps-crop-handle-tr" data-handle="tr"></div>
+        <div class="ps-crop-handle ps-crop-handle-bl" data-handle="bl"></div>
+        <div class="ps-crop-handle ps-crop-handle-br" data-handle="br"></div>
+      </div>
+    </div>
+    <div id="psEraserCursor"></div>
   </div>
-  <div class="ps-actions" id="psActions">
-    <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
-    <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
+  <div id="psBottom">
+    <!-- Default panel -->
+    <div id="psDefaultPanel">
+      <div id="psBgPicker">
+        <button class="ps-swatch active" data-color="transparent" title="Прозрачный"><span class="ps-swatch-checker"></span></button>
+        <button class="ps-swatch" data-color="#FFFFFF" style="background:#FFFFFF;border-color:#ddd" title="Белый"></button>
+        <button class="ps-swatch" data-color="#000000" style="background:#000000" title="Чёрный"></button>
+        <button class="ps-swatch" data-color="#808080" style="background:#808080" title="Серый"></button>
+        <button class="ps-swatch" data-color="#F5F5F5" style="background:#F5F5F5;border-color:#ddd" title="Светло-серый"></button>
+        <button class="ps-swatch" data-color="#00B140" style="background:#00B140" title="Зелёный (хромакей)"></button>
+        <button class="ps-swatch" data-color="#003AE7" style="background:#003AE7" title="Синий"></button>
+        <input type="text" id="psHexInput" class="ps-hex-input" placeholder="#HEX" maxlength="7">
+      </div>
+      <div id="psToolbar" class="hidden">
+        <button id="psCropToolBtn" class="ps-tool-btn">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 4.5h9M4.5 1v9M4.5 10.5v2a2 2 0 002 2h2M10.5 4.5h2a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Обрезать
+        </button>
+        <button id="psEraserToolBtn" class="ps-tool-btn">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 9.5l4-4 4 4-2 2H3l-2-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M1 13.5h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Ластик
+        </button>
+      </div>
+      <div id="psActions">
+        <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
+        <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
+      </div>
+    </div>
+    <!-- Crop panel -->
+    <div id="psCropPanel" class="ps-panel hidden">
+      <div class="ps-panel-title">Обрезать по формату</div>
+      <div id="psCropFormats">
+        <button class="ps-fmt-btn active" data-ratio="1/1">1:1 Квадрат</button>
+        <button class="ps-fmt-btn" data-ratio="4/3">4:3</button>
+        <button class="ps-fmt-btn" data-ratio="16/9">16:9</button>
+        <button class="ps-fmt-btn" data-ratio="9/16">9:16 Вертикаль</button>
+        <button class="ps-fmt-btn" data-ratio="3/4">3:4 WB/Ozon</button>
+        <button class="ps-fmt-btn" data-ratio="free">Свободно</button>
+      </div>
+      <div class="ps-panel-actions">
+        <button id="psCropApplyBtn" class="btn-primary">Применить</button>
+        <button id="psCropCancelBtn" class="ps-back-btn">Отмена</button>
+      </div>
+    </div>
+    <!-- Eraser panel -->
+    <div id="psEraserPanel" class="ps-panel hidden">
+      <div class="ps-panel-title">Ластик</div>
+      <div class="ps-slider-row">
+        <span>Размер</span>
+        <input type="range" id="psEraserSize" min="5" max="150" value="30">
+        <span class="ps-slider-val"><span id="psEraserSizeVal">30</span>px</span>
+      </div>
+      <div class="ps-slider-row">
+        <span>Жёсткость</span>
+        <input type="range" id="psEraserHard" min="0" max="100" value="80">
+        <span class="ps-slider-val"><span id="psEraserHardVal">80</span>%</span>
+      </div>
+      <div class="ps-panel-actions">
+        <button id="psUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+        <button id="psEraserDoneBtn" class="btn-primary">Готово</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2014,6 +2274,128 @@ body.ps-active #slideCta {
     }
   });
 
+  // ── UPLOAD PAGE ──
+  var psScreen     = document.getElementById('processingScreen');
+  var psCard       = document.getElementById('psCard');
+  var psShimmer    = document.getElementById('psShimmer');
+  var psCanvas     = document.getElementById('psCanvas');
+  var psActions    = document.getElementById('psActions');
+  var psDownloadBtn = document.getElementById('psDownloadBtn');
+  var psBackBtn    = document.getElementById('psBackBtn');
+  var psBgPicker   = document.getElementById('psBgPicker');
+  var psHexInput   = document.getElementById('psHexInput');
+  var psToolbar    = document.getElementById('psToolbar');
+  var psDefaultPanel = document.getElementById('psDefaultPanel');
+  var psCropPanel  = document.getElementById('psCropPanel');
+  var psEraserPanel = document.getElementById('psEraserPanel');
+  var psCropOverlay = document.getElementById('psCropOverlay');
+  var psCropBox    = document.getElementById('psCropBox');
+  var psEraserCursor = document.getElementById('psEraserCursor');
+  var psCtx = null;
+
+  function psCalcCardSize(imgW, imgH) {
+    var ratio = imgW / imgH;
+    var maxW = Math.min(window.innerWidth * 0.78, 600);
+    var maxH = Math.min(window.innerHeight * 0.62, 520);
+    var w, h;
+    if (ratio >= 1) { w = Math.min(maxW, maxH * ratio); h = w / ratio; }
+    else            { h = Math.min(maxH, maxW / ratio); w = h * ratio; }
+    return { w: Math.round(w), h: Math.round(h) };
+  }
+
+  function psBgApply(color) {
+    currentBgColor = color;
+    if (color === 'transparent') {
+      psCard.classList.add('checker-bg');
+      psCard.style.backgroundColor = '';
+      psCard.style.backgroundImage = '';
+    } else {
+      psCard.classList.remove('checker-bg');
+      psCard.style.backgroundColor = color;
+      psCard.style.backgroundImage = 'none';
+    }
+    document.querySelectorAll('#psBgPicker .ps-swatch').forEach(function(s) {
+      s.classList.toggle('active', s.getAttribute('data-color') === color);
+    });
+    if (color !== 'transparent') psHexInput.value = color;
+    else psHexInput.value = '';
+  }
+
+  psBgPicker.addEventListener('click', function(e) {
+    var s = e.target.closest('.ps-swatch');
+    if (s) psBgApply(s.getAttribute('data-color'));
+  });
+
+  psHexInput.addEventListener('input', function() {
+    var val = psHexInput.value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      currentBgColor = val;
+      psCard.classList.remove('checker-bg');
+      psCard.style.backgroundColor = val;
+      psCard.style.backgroundImage = 'none';
+      document.querySelectorAll('#psBgPicker .ps-swatch').forEach(function(s) {
+        s.classList.remove('active');
+      });
+    }
+  });
+
+  function showPsPanel(panel) {
+    psDefaultPanel.classList.toggle('hidden', panel !== 'default');
+    psCropPanel.classList.toggle('hidden', panel !== 'crop');
+    psEraserPanel.classList.toggle('hidden', panel !== 'eraser');
+    if (panel === 'crop') {
+      psCropOverlay.classList.add('visible');
+      initCropOverlay();
+    } else {
+      psCropOverlay.classList.remove('visible');
+    }
+    if (panel === 'eraser') {
+      psCanvas.style.cursor = 'none';
+    } else {
+      psCanvas.style.cursor = '';
+      psEraserCursor.classList.remove('visible');
+      eraserDrawing = false;
+    }
+  }
+
+  document.getElementById('psCropToolBtn').addEventListener('click', function() {
+    showPsPanel('crop');
+  });
+  document.getElementById('psEraserToolBtn').addEventListener('click', function() {
+    showPsPanel('eraser');
+  });
+
+  function psExitToLanding() {
+    psScreen.classList.remove('visible');
+    psScreen.setAttribute('aria-hidden', 'true');
+    setTimeout(function() {
+      document.body.classList.remove('ps-active');
+      if (fileInput) fileInput.value = '';
+      originalImage = null;
+      uploadedImageData = null;
+      psCtx = null;
+      showPsPanel('default');
+      psToolbar.classList.add('hidden');
+      psActions.classList.remove('visible');
+      psDownloadBtn.disabled = true;
+      psCard.classList.remove('checker-bg');
+      psCard.style.backgroundColor = '';
+      psCard.style.backgroundImage = '';
+    }, 600);
+  }
+
+  psBackBtn.addEventListener('click', psExitToLanding);
+
+  window.handleLogoClick = function(e) {
+    e.preventDefault();
+    if (document.body.classList.contains('ps-active')) {
+      psExitToLanding();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      closeMobileMenu();
+    }
+  };
+
   function handleFile(file) {
     var error = validateFile(file);
     if (error) { showToast(error, 4000); return; }
@@ -2021,26 +2403,20 @@ body.ps-active #slideCta {
       showToast('Лимит исчерпан: ' + DAILY_LIMIT + ' обработок в день. Попробуйте завтра.', 5000);
       return;
     }
-
     stopDemo();
-
-    // ── Transition to processing screen ──
     document.body.classList.add('ps-active');
-    var psScreen    = document.getElementById('processingScreen');
-    var psCard      = document.getElementById('psCard');
-    var psShimmer   = document.getElementById('psShimmer');
-    var psResultImg = document.getElementById('psResultImg');
-    var psActions   = document.getElementById('psActions');
-    var psDownload  = document.getElementById('psDownloadBtn');
 
-    psCard.classList.remove('checkerboard');
+    psCard.classList.remove('checker-bg');
+    psCard.style.backgroundColor = '';
+    psCard.style.backgroundImage = '';
     psShimmer.classList.remove('hidden');
-    psResultImg.classList.remove('visible');
-    psResultImg.src = '';
     psActions.classList.remove('visible');
-    psDownload.disabled = true;
+    psDownloadBtn.disabled = true;
     psCard.style.width  = '380px';
     psCard.style.height = '380px';
+    psToolbar.classList.add('hidden');
+    showPsPanel('default');
+    if (psCtx) psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
 
     setTimeout(function() {
       psScreen.classList.add('visible');
@@ -2050,84 +2426,282 @@ body.ps-active #slideCta {
     var reader = new FileReader();
     reader.onload = function(e) {
       uploadedImageData = e.target.result;
-
-      // Detect aspect ratio and resize card
       var probe = new Image();
       probe.onload = function() {
-        var ratio = probe.naturalWidth / probe.naturalHeight;
-        var maxW  = Math.min(window.innerWidth  * 0.78, 600);
-        var maxH  = Math.min(window.innerHeight * 0.65, 520);
-        var w, h;
-        if (ratio >= 1) { w = Math.min(maxW, maxH * ratio); h = w / ratio; }
-        else             { h = Math.min(maxH, maxW / ratio); w = h * ratio; }
-        psCard.style.width  = Math.round(w) + 'px';
-        psCard.style.height = Math.round(h) + 'px';
+        var sz = psCalcCardSize(probe.naturalWidth, probe.naturalHeight);
+        psCard.style.width  = sz.w + 'px';
+        psCard.style.height = sz.h + 'px';
         psCard.classList.add('breathing');
+
+        var progress = 0;
+        var interval = setInterval(function() {
+          progress += Math.random() * 30 + 10;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            originalImage = new Image();
+            originalImage.onload = function() {
+              psCanvas.width  = originalImage.naturalWidth;
+              psCanvas.height = originalImage.naturalHeight;
+              psCtx = psCanvas.getContext('2d');
+              psCtx.drawImage(originalImage, 0, 0);
+
+              psCard.classList.remove('breathing');
+              psShimmer.classList.add('hidden');
+              psBgApply('transparent');
+              psActions.classList.add('visible');
+              psDownloadBtn.disabled = false;
+              psToolbar.classList.remove('hidden');
+              incrementDailyCount();
+            };
+            originalImage.src = uploadedImageData;
+          }
+        }, 400);
       };
-      probe.src = uploadedImageData;
-
-      // Simulate 2s processing
-      var progress = 0;
-      var interval = setInterval(function() {
-        progress += Math.random() * 30 + 10;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-
-          // Show result
-          originalImage = new Image();
-          originalImage.onload = function() {
-            applyBackground(currentBgColor);
-
-            psCard.classList.remove('breathing');
-            psCard.classList.add('checkerboard');
-            psShimmer.classList.add('hidden');
-            psResultImg.src = uploadedImageData;
-            psResultImg.classList.add('visible');
-            psActions.classList.add('visible');
-            psDownload.disabled = false;
-
-            incrementDailyCount();
-          };
-          originalImage.src = uploadedImageData;
-        }
-      }, 400);
+      probe.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  // Processing screen: download
-  document.getElementById('psDownloadBtn').addEventListener('click', function() {
-    if (!originalImage) return;
-    var canvas = document.createElement('canvas');
-    canvas.width  = originalImage.naturalWidth;
-    canvas.height = originalImage.naturalHeight;
-    var ctx = canvas.getContext('2d');
+  psDownloadBtn.addEventListener('click', function() {
+    if (!psCtx) return;
+    var out = document.createElement('canvas');
+    out.width  = psCanvas.width;
+    out.height = psCanvas.height;
+    var ctx = out.getContext('2d');
     if (currentBgColor !== 'transparent') {
       ctx.fillStyle = currentBgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, out.width, out.height);
     }
-    ctx.drawImage(originalImage, 0, 0);
+    ctx.drawImage(psCanvas, 0, 0);
     var fmt = currentBgColor === 'transparent' ? 'image/png' : 'image/jpeg';
     var ext = currentBgColor === 'transparent' ? 'png' : 'jpg';
     var link = document.createElement('a');
     link.download = 'figura-result.' + ext;
-    link.href = canvas.toDataURL(fmt, 0.95);
+    link.href = out.toDataURL(fmt, 0.95);
     link.click();
   });
 
-  // Processing screen: back to landing
-  document.getElementById('psBackBtn').addEventListener('click', function() {
-    var psScreen = document.getElementById('processingScreen');
-    psScreen.classList.remove('visible');
-    psScreen.setAttribute('aria-hidden', 'true');
-    setTimeout(function() {
-      document.body.classList.remove('ps-active');
-      var fileInput = document.getElementById('fileInput');
-      if (fileInput) fileInput.value = '';
-      originalImage = null;
-      uploadedImageData = null;
-    }, 600);
+  // ── CROP ──
+  var cropRatio = 1, cropFree = false;
+  var cropX = 0, cropY = 0, cropW = 0, cropH = 0;
+  var cropDragging = false, cropResizing = false, cropDragHandle = null;
+  var cropDragStartMouse = null, cropDragStartBox = null;
+
+  function initCropOverlay() {
+    if (!psCtx) return;
+    var cw = psCanvas.width, ch = psCanvas.height;
+    if (cropFree) {
+      cropW = cw * 0.8; cropH = ch * 0.8;
+    } else {
+      if (cropRatio >= 1) { cropW = Math.min(cw * 0.8, ch * 0.8 * cropRatio); cropH = cropW / cropRatio; }
+      else               { cropH = Math.min(ch * 0.8, cw * 0.8 / cropRatio); cropW = cropH * cropRatio; }
+    }
+    cropX = (cw - cropW) / 2;
+    cropY = (ch - cropH) / 2;
+    updateCropBoxCSS();
+  }
+
+  function updateCropBoxCSS() {
+    var rect = psCanvas.getBoundingClientRect();
+    var sx = rect.width  / psCanvas.width;
+    var sy = rect.height / psCanvas.height;
+    psCropBox.style.left   = Math.round(cropX * sx) + 'px';
+    psCropBox.style.top    = Math.round(cropY * sy) + 'px';
+    psCropBox.style.width  = Math.round(cropW * sx) + 'px';
+    psCropBox.style.height = Math.round(cropH * sy) + 'px';
+  }
+
+  document.querySelectorAll('.ps-fmt-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.ps-fmt-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var r = btn.getAttribute('data-ratio');
+      if (r === 'free') { cropFree = true; }
+      else {
+        cropFree = false;
+        var p = r.split('/');
+        cropRatio = parseInt(p[0]) / parseInt(p[1]);
+      }
+      initCropOverlay();
+    });
+  });
+
+  psCropBox.addEventListener('pointerdown', function(e) {
+    if (e.target !== psCropBox) return;
+    cropDragging = true;
+    psCropBox.setPointerCapture(e.pointerId);
+    var rect = psCanvas.getBoundingClientRect();
+    cropDragStartMouse = { x: e.clientX / (rect.width / psCanvas.width), y: e.clientY / (rect.height / psCanvas.height) };
+    cropDragStartBox   = { x: cropX, y: cropY };
+    e.stopPropagation();
+  });
+  psCropBox.addEventListener('pointermove', function(e) {
+    if (!cropDragging) return;
+    var rect = psCanvas.getBoundingClientRect();
+    var sx = psCanvas.width / rect.width, sy = psCanvas.height / rect.height;
+    var dx = (e.clientX - cropDragStartMouse.x / sx) * sx;
+    var dy = (e.clientY - cropDragStartMouse.y / sy) * sy;
+    cropX = Math.max(0, Math.min(psCanvas.width  - cropW, cropDragStartBox.x + (e.clientX * sx - cropDragStartMouse.x)));
+    cropY = Math.max(0, Math.min(psCanvas.height - cropH, cropDragStartBox.y + (e.clientY * sy - cropDragStartMouse.y)));
+    updateCropBoxCSS();
+  });
+  psCropBox.addEventListener('pointerup', function() { cropDragging = false; });
+
+  document.querySelectorAll('.ps-crop-handle').forEach(function(handle) {
+    handle.addEventListener('pointerdown', function(e) {
+      cropResizing = true;
+      cropDragHandle = e.currentTarget.getAttribute('data-handle');
+      handle.setPointerCapture(e.pointerId);
+      var rect = psCanvas.getBoundingClientRect();
+      var sx = psCanvas.width / rect.width, sy = psCanvas.height / rect.height;
+      cropDragStartMouse = { x: e.clientX * sx, y: e.clientY * sy };
+      cropDragStartBox   = { x: cropX, y: cropY, w: cropW, h: cropH };
+      e.stopPropagation();
+    });
+    handle.addEventListener('pointermove', function(e) {
+      if (!cropResizing) return;
+      var rect = psCanvas.getBoundingClientRect();
+      var sx = psCanvas.width / rect.width, sy = psCanvas.height / rect.height;
+      var dx = e.clientX * sx - cropDragStartMouse.x;
+      var dy = e.clientY * sy - cropDragStartMouse.y;
+      var sb = cropDragStartBox;
+      var nx = sb.x, ny = sb.y, nw = sb.w, nh = sb.h;
+      var h = cropDragHandle;
+      if (h === 'tl') { nx = sb.x + dx; ny = sb.y + dy; nw = sb.w - dx; nh = sb.h - dy; }
+      else if (h === 'tr') { ny = sb.y + dy; nw = sb.w + dx; nh = sb.h - dy; }
+      else if (h === 'bl') { nx = sb.x + dx; nw = sb.w - dx; nh = sb.h + dy; }
+      else if (h === 'br') { nw = sb.w + dx; nh = sb.h + dy; }
+      if (!cropFree) {
+        nh = nw / cropRatio;
+        if (h === 'tl' || h === 'tr') ny = sb.y + sb.h - nh;
+      }
+      nw = Math.max(20, nw); nh = Math.max(20, nh);
+      if (nx < 0) { nw += nx; nx = 0; } if (ny < 0) { nh += ny; ny = 0; }
+      nw = Math.min(psCanvas.width  - nx, nw);
+      nh = Math.min(psCanvas.height - ny, nh);
+      cropX = nx; cropY = ny; cropW = nw; cropH = nh;
+      updateCropBoxCSS();
+    });
+    handle.addEventListener('pointerup', function() { cropResizing = false; });
+  });
+
+  document.getElementById('psCropApplyBtn').addEventListener('click', function() {
+    if (!psCtx) return;
+    var tmp = document.createElement('canvas');
+    var cx = Math.round(cropX), cy = Math.round(cropY);
+    var cw = Math.round(cropW), ch = Math.round(cropH);
+    tmp.width = cw; tmp.height = ch;
+    tmp.getContext('2d').drawImage(psCanvas, cx, cy, cw, ch, 0, 0, cw, ch);
+    psCanvas.width = cw; psCanvas.height = ch;
+    psCtx.drawImage(tmp, 0, 0);
+    var sz = psCalcCardSize(cw, ch);
+    psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
+    showPsPanel('default');
+  });
+  document.getElementById('psCropCancelBtn').addEventListener('click', function() {
+    showPsPanel('default');
+  });
+
+  // ── ERASER ──
+  var eraserSize = 30, eraserHard = 80;
+  var eraserDrawing = false, eraserLastPos = null;
+  var eraserUndoStack = [];
+
+  function updateEraserCursorSize() {
+    if (!psCanvas) return;
+    var rect = psCanvas.getBoundingClientRect();
+    var scale = rect.width / psCanvas.width;
+    var px = eraserSize * scale;
+    psEraserCursor.style.width  = px + 'px';
+    psEraserCursor.style.height = px + 'px';
+  }
+
+  document.getElementById('psEraserSize').addEventListener('input', function() {
+    eraserSize = parseInt(this.value);
+    document.getElementById('psEraserSizeVal').textContent = eraserSize;
+    updateEraserCursorSize();
+  });
+  document.getElementById('psEraserHard').addEventListener('input', function() {
+    eraserHard = parseInt(this.value);
+    document.getElementById('psEraserHardVal').textContent = eraserHard;
+  });
+
+  function eraseAtPoint(cx, cy) {
+    psCtx.save();
+    psCtx.globalCompositeOperation = 'destination-out';
+    var r = eraserSize / 2;
+    var grad = psCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    var edge = Math.min(0.99, eraserHard / 100);
+    grad.addColorStop(0,    'rgba(0,0,0,1)');
+    grad.addColorStop(edge, 'rgba(0,0,0,1)');
+    grad.addColorStop(1,    'rgba(0,0,0,0)');
+    psCtx.fillStyle = grad;
+    psCtx.beginPath();
+    psCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    psCtx.fill();
+    psCtx.restore();
+  }
+
+  function getCanvasPos(e) {
+    var rect = psCanvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * psCanvas.width  / rect.width,
+      y: (e.clientY - rect.top)  * psCanvas.height / rect.height
+    };
+  }
+
+  psCanvas.addEventListener('pointermove', function(e) {
+    var inEraser = !psEraserPanel.classList.contains('hidden');
+    if (inEraser) {
+      var rect = psCanvas.getBoundingClientRect();
+      psEraserCursor.style.left = (e.clientX - rect.left) + 'px';
+      psEraserCursor.style.top  = (e.clientY - rect.top)  + 'px';
+      updateEraserCursorSize();
+      if (eraserDrawing) {
+        var pos = getCanvasPos(e);
+        if (eraserLastPos) {
+          var dist = Math.hypot(pos.x - eraserLastPos.x, pos.y - eraserLastPos.y);
+          var step = Math.max(1, eraserSize * 0.2);
+          var steps = Math.ceil(dist / step);
+          for (var i = 1; i <= steps; i++) {
+            var t = i / steps;
+            eraseAtPoint(eraserLastPos.x + (pos.x - eraserLastPos.x) * t,
+                         eraserLastPos.y + (pos.y - eraserLastPos.y) * t);
+          }
+        }
+        eraserLastPos = pos;
+      }
+    }
+  });
+
+  psCanvas.addEventListener('pointerdown', function(e) {
+    if (psEraserPanel.classList.contains('hidden')) return;
+    eraserDrawing = true;
+    psCanvas.setPointerCapture(e.pointerId);
+    eraserUndoStack.push(psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height));
+    if (eraserUndoStack.length > 20) eraserUndoStack.shift();
+    var pos = getCanvasPos(e);
+    eraserLastPos = pos;
+    eraseAtPoint(pos.x, pos.y);
+  });
+
+  psCanvas.addEventListener('pointerup', function() {
+    eraserDrawing = false; eraserLastPos = null;
+  });
+  psCanvas.addEventListener('pointerleave', function() {
+    psEraserCursor.classList.remove('visible');
+  });
+  psCanvas.addEventListener('pointerenter', function() {
+    if (!psEraserPanel.classList.contains('hidden')) psEraserCursor.classList.add('visible');
+  });
+
+  document.getElementById('psUndoBtn').addEventListener('click', function() {
+    if (eraserUndoStack.length === 0) return;
+    psCtx.putImageData(eraserUndoStack.pop(), 0, 0);
+  });
+  document.getElementById('psEraserDoneBtn').addEventListener('click', function() {
+    showPsPanel('default');
   });
 
   // Color picker
