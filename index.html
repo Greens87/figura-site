@@ -404,15 +404,15 @@ h1, h2, h3 {
   transition: opacity 0.6s ease;
 }
 
-/* Demo bounce — быстрый рост → удержание → быстрый спуск */
+/* Demo bounce — весь блок (#resultArea) быстро растёт, держит, быстро возвращается */
 @keyframes demoBounce {
   0%   { transform: scale(1);    animation-timing-function: ease-out; }
   22%  { transform: scale(1.04); animation-timing-function: linear; }
   62%  { transform: scale(1.04); animation-timing-function: ease-in; }
   100% { transform: scale(1); }
 }
-.result-preview.demo-bounce {
-  animation: demoBounce 1400ms linear;
+#resultArea.demo-bounce {
+  animation: demoBounce 1000ms linear;
 }
 
 .result-image-wrap {
@@ -2146,14 +2146,18 @@ h1, h2, h3 {
   var demoLine          = document.getElementById('demoLine');
   var demoHandle        = document.getElementById('demoHandle');
   var demoHint          = document.getElementById('demoHint');
-  var demoPreviewParent = demoSliderWrap.closest('.result-preview');
+  var demoResultArea    = document.getElementById('resultArea');
   var demoAnimId        = null;
   var demoStartTime     = null;
   var demoPhase         = 'osc'; // 'osc' | 'settle' | 'done'
   var demoPhaseStart    = null;
-  var DEMO_OSC_PERIOD   = 6000; // мс на 1 цикл (оригинал)
-  var DEMO_OSC_END      = 2.75 * 6000; // 3-я яма: pct=20%, velocity=0
-  var DEMO_SETTLE_MS    = 1200;
+  var DEMO_OSC_PERIOD   = 4800; // 6000 * 0.8 = +20% быстрее
+  var DEMO_OSC_END      = 2.5 * 4800; // t=2.5 цикла: sin=0, скорость макс. влево
+  var DEMO_SETTLE_MS    = 1000;
+  // Hermite-параметры для бесшовного перехода:
+  // p0=47.5% (позиция на 2.5 цикла), v0=совпадает со скоростью синуса в этот момент
+  var SETTLE_P0 = 47.5;
+  var SETTLE_V0 = 27.5 * (2 * Math.PI / DEMO_OSC_PERIOD) * Math.cos(2.5 * 2 * Math.PI) * DEMO_SETTLE_MS;
 
   function setDemoPos(pct) {
     demoBefore.style.width = pct + '%';
@@ -2162,17 +2166,20 @@ h1, h2, h3 {
     demoBeforeImg.style.width = demoSliderWrap.offsetWidth + 'px';
   }
 
-  function easeInOut(t) {
-    return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+  // Кубический Hermite: p(0)=p0, p'(0)=v0, p(1)=0, p'(1)=0
+  function hermiteSettle(u) {
+    var h00 = 2*u*u*u - 3*u*u + 1;
+    var h10 = u*u*u - 2*u*u + u;
+    return h00 * SETTLE_P0 + h10 * SETTLE_V0;
   }
 
   function triggerDemoBounce() {
-    if (!demoPreviewParent) return;
-    demoPreviewParent.classList.remove('demo-bounce');
-    void demoPreviewParent.offsetWidth;
-    demoPreviewParent.classList.add('demo-bounce');
-    demoPreviewParent.addEventListener('animationend', function() {
-      demoPreviewParent.classList.remove('demo-bounce');
+    if (!demoResultArea) return;
+    demoResultArea.classList.remove('demo-bounce');
+    void demoResultArea.offsetWidth;
+    demoResultArea.classList.add('demo-bounce');
+    demoResultArea.addEventListener('animationend', function() {
+      demoResultArea.classList.remove('demo-bounce');
     }, { once: true });
   }
 
@@ -2200,10 +2207,9 @@ h1, h2, h3 {
         triggerDemoBounce();
         return;
       }
-      // easeInOut: стартует с нулевой скорости (совпадает с velocity=0 в яме)
-      var p = elapsed / DEMO_SETTLE_MS;
-      var eased = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
-      setDemoPos(20 * (1 - eased));
+      // Hermite: скорость на старте = скорость синуса → нет тормоза
+      var u = elapsed / DEMO_SETTLE_MS;
+      setDemoPos(Math.max(0, hermiteSettle(u)));
     }
 
     demoAnimId = requestAnimationFrame(demoStep);
