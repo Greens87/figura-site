@@ -1277,16 +1277,37 @@ body.ps-active { overflow: hidden; }
   position: relative;
   flex-shrink: 0;
   transition: width 0.7s cubic-bezier(0.34,1.1,0.64,1), height 0.7s cubic-bezier(0.34,1.1,0.64,1);
-  background: #f5f5f5;
+  background: #FFFFFF;
+  padding: 14px;
 }
 .ps-card.breathing { animation: psBreath 2.6s ease-in-out infinite; }
 @keyframes psBreath {
   0%,100% { transform: scale(1); }
   50%      { transform: scale(1.02); }
 }
+/* Inner artboard — sharp corners, holds canvas + overlays */
+.ps-canvas-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.ps-canvas-frame.checker-bg {
+  background-color: #f0f0f0;
+  background-image:
+    linear-gradient(45deg,#d8d8d8 25%,transparent 25%),
+    linear-gradient(-45deg,#d8d8d8 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#d8d8d8 75%),
+    linear-gradient(-45deg,transparent 75%,#d8d8d8 75%);
+  background-size: 20px 20px;
+  background-position: 0 0,0 10px,10px -10px,-10px 0;
+}
 .ps-shimmer {
   position: absolute;
-  inset: 0;
+  inset: 14px;
+  border-radius: 2px;
   z-index: 2;
   background: linear-gradient(110deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
   background-size: 300% 100%;
@@ -1309,30 +1330,27 @@ body.ps-active { overflow: hidden; }
   transition: transform 0.14s ease-out;
 }
 #psCanvas.no-transition { transition: none; }
-.ps-card.checker-bg {
-  background-color: #f0f0f0;
-  background-image:
-    linear-gradient(45deg,#d8d8d8 25%,transparent 25%),
-    linear-gradient(-45deg,#d8d8d8 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#d8d8d8 75%),
-    linear-gradient(-45deg,transparent 75%,#d8d8d8 75%);
-  background-size: 20px 20px;
-  background-position: 0 0,0 10px,10px -10px,-10px 0;
-}
-/* Crop overlay */
+/* Crop overlay — overflow visible so handles can extend past edges */
 #psCropOverlay {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  overflow: visible;
   z-index: 10;
   display: none;
+  cursor: crosshair;
 }
 #psCropOverlay.visible { display: block; }
+/* Darkening divs (4 sides around crop box) */
+.ps-crop-dark {
+  position: absolute;
+  background: rgba(0,0,0,0.48);
+  pointer-events: none;
+}
 #psCropBox {
   position: absolute;
-  border: 1.5px solid rgba(255,255,255,0.9);
-  box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
-  cursor: move;
+  border: 1.5px solid rgba(255,255,255,0.95);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+  cursor: crosshair;
   box-sizing: border-box;
 }
 .ps-crop-handle {
@@ -1351,18 +1369,48 @@ body.ps-active { overflow: hidden; }
 .ps-crop-handle-r  { top:50%;     right:-5px; margin-top:-5px; cursor:ew-resize; }
 .ps-crop-handle-b  { bottom:-5px; left:50%; margin-left:-5px; cursor:ns-resize; }
 .ps-crop-handle-l  { top:50%;     left:-5px; margin-top:-5px; cursor:ew-resize; }
-/* Eraser cursor */
+/* Eraser cursor — always visible crosshair + dynamic outer ring */
 #psEraserCursor {
   position: absolute;
-  border: 1.5px solid rgba(0,0,0,0.7);
-  border-radius: 50%;
   pointer-events: none;
   z-index: 11;
   display: none;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
+  width: 0; height: 0;
 }
 #psEraserCursor.visible { display: block; }
+#psEraserCursor .ps-eraser-ring {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(0,0,0,0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255,255,255,1), inset 0 0 0 1px rgba(255,255,255,1);
+}
+#psEraserCursor .ps-eraser-cross {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+}
+#psEraserCursor .ps-eraser-cross::before,
+#psEraserCursor .ps-eraser-cross::after {
+  content: '';
+  position: absolute;
+  background: rgba(0,0,0,0.9);
+  box-shadow: 0 0 0 1px rgba(255,255,255,1);
+}
+#psEraserCursor .ps-eraser-cross::before {
+  left: 0; top: 50%;
+  width: 14px; height: 1px;
+  margin-top: -0.5px;
+}
+#psEraserCursor .ps-eraser-cross::after {
+  left: 50%; top: 0;
+  width: 1px; height: 14px;
+  margin-left: -0.5px;
+}
 /* Eraser preview (shown while adjusting size/hardness sliders) */
 #psEraserPreview {
   position: absolute;
@@ -1424,23 +1472,136 @@ body.ps-active { overflow: hidden; }
 /* Pan cursor states */
 .ps-card.pannable #psCanvas { cursor: grab; }
 .ps-card.panning   #psCanvas { cursor: grabbing; }
-/* Color wheel swatch (opens native color picker) */
+/* Color wheel swatch — trigger for custom popover */
 .ps-swatch-wheel {
-  background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  background:
+    conic-gradient(from 90deg,
+      #ff0000, #ffae00, #ffff00, #00ff22, #00ffd0,
+      #0066ff, #4000ff, #bf00ff, #ff00c8, #ff0000);
   position: relative;
+  box-shadow: inset 0 0 0 3px #FFFFFF;
 }
-.ps-swatch-wheel input[type="color"] {
+.ps-swatch-wheel::after {
+  content: '';
   position: absolute;
-  inset: -4px;
-  width: calc(100% + 8px);
-  height: calc(100% + 8px);
-  opacity: 0;
-  cursor: pointer;
-  border: none;
-  padding: 0;
-  background: none;
+  inset: 9px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
 }
-/* Hex input with fixed # prefix */
+/* Custom color picker popover */
+#psPickerPopover {
+  position: absolute;
+  z-index: 600;
+  display: none;
+  background: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.16), 0 4px 12px rgba(0,0,0,0.06);
+  padding: 16px;
+  width: 248px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#psPickerPopover.visible { display: block; }
+.ps-picker-sv {
+  width: 216px;
+  height: 140px;
+  border-radius: 8px;
+  position: relative;
+  cursor: crosshair;
+  overflow: hidden;
+  background-color: hsl(0, 100%, 50%);
+}
+.ps-picker-sv::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #fff, transparent);
+}
+.ps-picker-sv::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000, transparent);
+}
+.ps-picker-sv-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+.ps-picker-hue {
+  width: 216px;
+  height: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  background: linear-gradient(to right,
+    hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%),
+    hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
+  position: relative;
+  cursor: ew-resize;
+}
+.ps-picker-hue-marker {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  transform: translate(-50%, -50%);
+  background: hsl(0,100%,50%);
+  pointer-events: none;
+}
+.ps-picker-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.ps-picker-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #E8E8E8;
+  flex-shrink: 0;
+}
+.ps-picker-hex-wrap {
+  position: relative;
+  flex: 1;
+}
+.ps-picker-hex-wrap::before {
+  content: '#';
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--gray);
+  pointer-events: none;
+}
+.ps-picker-hex {
+  width: 100%;
+  padding: 8px 12px 8px 22px;
+  border: 1.5px solid #E8E8E8;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--black);
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: border-color 0.2s;
+}
+.ps-picker-hex:focus { border-color: #003AE7; }
+/* Hex input beside swatches */
 .ps-hex-wrap {
   position: relative;
   display: inline-flex;
@@ -1817,21 +1978,30 @@ body.ps-active #slideCta {
 <div id="processingScreen" aria-hidden="true">
   <div class="ps-card" id="psCard">
     <div class="ps-shimmer" id="psShimmer"></div>
-    <canvas id="psCanvas"></canvas>
-    <div id="psCropOverlay">
-      <div id="psCropBox">
-        <div class="ps-crop-handle ps-crop-handle-tl" data-handle="tl"></div>
-        <div class="ps-crop-handle ps-crop-handle-tr" data-handle="tr"></div>
-        <div class="ps-crop-handle ps-crop-handle-bl" data-handle="bl"></div>
-        <div class="ps-crop-handle ps-crop-handle-br" data-handle="br"></div>
-        <div class="ps-crop-handle ps-crop-handle-t"  data-handle="t"></div>
-        <div class="ps-crop-handle ps-crop-handle-r"  data-handle="r"></div>
-        <div class="ps-crop-handle ps-crop-handle-b"  data-handle="b"></div>
-        <div class="ps-crop-handle ps-crop-handle-l"  data-handle="l"></div>
+    <div class="ps-canvas-frame" id="psFrame">
+      <canvas id="psCanvas"></canvas>
+      <div id="psCropOverlay">
+        <div class="ps-crop-dark" id="psDarkT"></div>
+        <div class="ps-crop-dark" id="psDarkR"></div>
+        <div class="ps-crop-dark" id="psDarkB"></div>
+        <div class="ps-crop-dark" id="psDarkL"></div>
+        <div id="psCropBox">
+          <div class="ps-crop-handle ps-crop-handle-tl" data-handle="tl"></div>
+          <div class="ps-crop-handle ps-crop-handle-tr" data-handle="tr"></div>
+          <div class="ps-crop-handle ps-crop-handle-bl" data-handle="bl"></div>
+          <div class="ps-crop-handle ps-crop-handle-br" data-handle="br"></div>
+          <div class="ps-crop-handle ps-crop-handle-t"  data-handle="t"></div>
+          <div class="ps-crop-handle ps-crop-handle-r"  data-handle="r"></div>
+          <div class="ps-crop-handle ps-crop-handle-b"  data-handle="b"></div>
+          <div class="ps-crop-handle ps-crop-handle-l"  data-handle="l"></div>
+        </div>
       </div>
+      <div id="psEraserCursor">
+        <div class="ps-eraser-ring"></div>
+        <div class="ps-eraser-cross"></div>
+      </div>
+      <div id="psEraserPreview"></div>
     </div>
-    <div id="psEraserCursor"></div>
-    <div id="psEraserPreview"></div>
     <div id="psZoomCtrls">
       <button class="ps-zoom-btn" id="psZoomOutBtn" title="Уменьшить">−</button>
       <span id="psZoomLevel">100%</span>
@@ -1852,20 +2022,18 @@ body.ps-active #slideCta {
         <button class="ps-swatch" data-color="#F5F5F5" style="background:#F5F5F5;border-color:#ddd" title="Светло-серый"></button>
         <button class="ps-swatch" data-color="#00B140" style="background:#00B140" title="Зелёный (хромакей)"></button>
         <button class="ps-swatch" data-color="#003AE7" style="background:#003AE7" title="Синий"></button>
-        <label class="ps-swatch ps-swatch-wheel" title="Любой цвет">
-          <input type="color" id="psCustomColor" value="#ff0000">
-        </label>
+        <button class="ps-swatch ps-swatch-wheel" id="psWheelBtn" type="button" title="Выбрать любой цвет"></button>
         <span class="ps-hex-wrap">
           <input type="text" id="psHexInput" class="ps-hex-input" placeholder="FFFFFF" maxlength="6">
         </span>
       </div>
       <div id="psToolbar" class="hidden">
         <button id="psCropToolBtn" class="ps-tool-btn">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 4.5h9M4.5 1v9M4.5 10.5v2a2 2 0 002 2h2M10.5 4.5h2a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
           Обрезать
         </button>
         <button id="psEraserToolBtn" class="ps-tool-btn">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 9.5l4-4 4 4-2 2H3l-2-2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M1 13.5h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
           Ластик
         </button>
       </div>
@@ -1898,8 +2066,8 @@ body.ps-active #slideCta {
       <div class="ps-panel-title">Ластик</div>
       <div class="ps-slider-row">
         <span>Размер</span>
-        <input type="range" id="psEraserSize" min="5" max="150" value="30">
-        <span class="ps-slider-val"><span id="psEraserSizeVal">30</span>px</span>
+        <input type="range" id="psEraserSize" min="5" max="500" value="40">
+        <span class="ps-slider-val"><span id="psEraserSizeVal">40</span>px</span>
       </div>
       <div class="ps-slider-row">
         <span>Жёсткость</span>
@@ -1911,6 +2079,21 @@ body.ps-active #slideCta {
         <button id="psEraserCancelBtn" class="ps-back-btn">Отмена</button>
         <button id="psEraserDoneBtn" class="btn-primary">Готово</button>
       </div>
+    </div>
+  </div>
+  <!-- Custom color picker popover -->
+  <div id="psPickerPopover">
+    <div class="ps-picker-sv" id="psPickerSV">
+      <div class="ps-picker-sv-marker" id="psPickerSVMarker"></div>
+    </div>
+    <div class="ps-picker-hue" id="psPickerHue">
+      <div class="ps-picker-hue-marker" id="psPickerHueMarker"></div>
+    </div>
+    <div class="ps-picker-bottom">
+      <div class="ps-picker-preview" id="psPickerPreview"></div>
+      <span class="ps-picker-hex-wrap">
+        <input type="text" class="ps-picker-hex" id="psPickerHex" placeholder="FFFFFF" maxlength="6">
+      </span>
     </div>
   </div>
 </div>
@@ -2418,35 +2601,50 @@ body.ps-active #slideCta {
   var psCropOverlay = document.getElementById('psCropOverlay');
   var psCropBox    = document.getElementById('psCropBox');
   var psEraserCursor = document.getElementById('psEraserCursor');
+  var psEraserRing   = psEraserCursor.querySelector('.ps-eraser-ring');
   var psEraserPreview = document.getElementById('psEraserPreview');
   var psZoomCtrls    = document.getElementById('psZoomCtrls');
   var psZoomInBtn    = document.getElementById('psZoomInBtn');
   var psZoomOutBtn   = document.getElementById('psZoomOutBtn');
   var psZoomResetBtn = document.getElementById('psZoomResetBtn');
   var psZoomLevel    = document.getElementById('psZoomLevel');
-  var psCustomColor  = document.getElementById('psCustomColor');
+  var psFrame        = document.getElementById('psFrame');
+  var psDarkT        = document.getElementById('psDarkT');
+  var psDarkR        = document.getElementById('psDarkR');
+  var psDarkB        = document.getElementById('psDarkB');
+  var psDarkL        = document.getElementById('psDarkL');
+  var psWheelBtn     = document.getElementById('psWheelBtn');
+  var psPickerPop    = document.getElementById('psPickerPopover');
+  var psPickerSV     = document.getElementById('psPickerSV');
+  var psPickerSVMarker = document.getElementById('psPickerSVMarker');
+  var psPickerHue    = document.getElementById('psPickerHue');
+  var psPickerHueMarker = document.getElementById('psPickerHueMarker');
+  var psPickerPreview = document.getElementById('psPickerPreview');
+  var psPickerHex    = document.getElementById('psPickerHex');
   var psCtx = null;
 
   function psCalcCardSize(imgW, imgH) {
     var ratio = imgW / imgH;
-    var maxW = Math.min(window.innerWidth * 0.78, 600);
-    var maxH = Math.min(window.innerHeight * 0.62, 520);
-    var w, h;
-    if (ratio >= 1) { w = Math.min(maxW, maxH * ratio); h = w / ratio; }
-    else            { h = Math.min(maxH, maxW / ratio); w = h * ratio; }
-    return { w: Math.round(w), h: Math.round(h) };
+    // Frame should fit within max bounds; card = frame + 2*14px padding + 2*1px border
+    var PAD = 30;
+    var maxFrameW = Math.min(window.innerWidth * 0.78, 600) - PAD;
+    var maxFrameH = Math.min(window.innerHeight * 0.62, 520) - PAD;
+    var fw, fh;
+    if (ratio >= 1) { fw = Math.min(maxFrameW, maxFrameH * ratio); fh = fw / ratio; }
+    else            { fh = Math.min(maxFrameH, maxFrameW / ratio); fw = fh * ratio; }
+    return { w: Math.round(fw + PAD), h: Math.round(fh + PAD) };
   }
 
   function psBgApply(color) {
     currentBgColor = color;
     if (color === 'transparent') {
-      psCard.classList.add('checker-bg');
-      psCard.style.backgroundColor = '';
-      psCard.style.backgroundImage = '';
+      psFrame.classList.add('checker-bg');
+      psFrame.style.backgroundColor = '';
+      psFrame.style.backgroundImage = '';
     } else {
-      psCard.classList.remove('checker-bg');
-      psCard.style.backgroundColor = color;
-      psCard.style.backgroundImage = 'none';
+      psFrame.classList.remove('checker-bg');
+      psFrame.style.backgroundColor = color;
+      psFrame.style.backgroundImage = 'none';
     }
     document.querySelectorAll('#psBgPicker .ps-swatch').forEach(function(s) {
       s.classList.toggle('active', s.getAttribute('data-color') === color);
@@ -2459,36 +2657,169 @@ body.ps-active #slideCta {
   }
 
   psBgPicker.addEventListener('click', function(e) {
-    // Don't trigger swatch click for the color wheel label (handled by input[type=color])
-    if (e.target.closest('.ps-swatch-wheel')) return;
+    if (e.target.closest('.ps-swatch-wheel')) return; // handled separately
     var s = e.target.closest('.ps-swatch');
     if (s) psBgApply(s.getAttribute('data-color'));
   });
 
   psHexInput.addEventListener('input', function() {
-    // Strip any '#' the user might paste
     var val = psHexInput.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
     if (val !== psHexInput.value) psHexInput.value = val;
     if (/^[0-9A-F]{6}$/.test(val)) {
       var hex = '#' + val;
-      currentBgColor = hex;
-      psCard.classList.remove('checker-bg');
-      psCard.style.backgroundColor = hex;
-      psCard.style.backgroundImage = 'none';
-      document.querySelectorAll('#psBgPicker .ps-swatch').forEach(function(s) {
-        s.classList.remove('active');
-      });
+      psBgApply(hex);
+      psWheelBtn.classList.remove('active');
     }
   });
 
-  // Color wheel (native color picker)
-  psCustomColor.addEventListener('input', function() {
-    psBgApply(psCustomColor.value.toUpperCase());
-    // Mark the wheel swatch as active
+  // ── Custom color picker popover ──
+  var pickerH = 0, pickerS = 1, pickerV = 1;
+
+  function hsvToRgb(h, s, v) {
+    h = h / 360;
+    var i = Math.floor(h * 6);
+    var f = h * 6 - i;
+    var p = v * (1 - s);
+    var q = v * (1 - f * s);
+    var t = v * (1 - (1 - f) * s);
+    var r, g, b;
+    switch (i % 6) {
+      case 0: r = v; g = t; b = p; break;
+      case 1: r = q; g = v; b = p; break;
+      case 2: r = p; g = v; b = t; break;
+      case 3: r = p; g = q; b = v; break;
+      case 4: r = t; g = p; b = v; break;
+      case 5: r = v; g = p; b = q; break;
+    }
+    return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+  }
+  function rgbToHex(r, g, b) {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+  }
+  function hexToHsv(hex) {
+    var m = /^#?([0-9A-Fa-f]{6})$/.exec(hex);
+    if (!m) return null;
+    var r = parseInt(m[1].substring(0,2),16)/255;
+    var g = parseInt(m[1].substring(2,4),16)/255;
+    var b = parseInt(m[1].substring(4,6),16)/255;
+    var max = Math.max(r,g,b), min = Math.min(r,g,b);
+    var v = max, d = max - min;
+    var s = max === 0 ? 0 : d / max;
+    var h = 0;
+    if (d !== 0) {
+      switch(max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+        case g: h = ((b - r) / d + 2); break;
+        case b: h = ((r - g) / d + 4); break;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s: s, v: v };
+  }
+
+  function updatePickerUI() {
+    var rgb = hsvToRgb(pickerH, pickerS, pickerV);
+    var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+    psPickerSV.style.backgroundColor = 'hsl(' + pickerH + ', 100%, 50%)';
+    psPickerSVMarker.style.left = (pickerS * 100) + '%';
+    psPickerSVMarker.style.top  = ((1 - pickerV) * 100) + '%';
+    psPickerHueMarker.style.left = (pickerH / 360 * 100) + '%';
+    psPickerHueMarker.style.background = 'hsl(' + pickerH + ', 100%, 50%)';
+    psPickerPreview.style.background = hex;
+    psPickerHex.value = hex.substring(1);
+    return hex;
+  }
+  function applyPickerColor() {
+    var hex = updatePickerUI();
+    psBgApply(hex);
+    // Mark wheel as active
     document.querySelectorAll('#psBgPicker .ps-swatch').forEach(function(s) {
       s.classList.remove('active');
     });
-    psCustomColor.parentElement.classList.add('active');
+    psWheelBtn.classList.add('active');
+  }
+
+  function positionPicker() {
+    var btnRect = psWheelBtn.getBoundingClientRect();
+    var popRect = psPickerPop.getBoundingClientRect();
+    var left = btnRect.left + btnRect.width / 2 - popRect.width / 2;
+    var top  = btnRect.bottom + 10;
+    // Clamp to viewport
+    left = Math.max(10, Math.min(window.innerWidth - popRect.width - 10, left));
+    if (top + popRect.height > window.innerHeight - 10) {
+      top = btnRect.top - popRect.height - 10;
+    }
+    psPickerPop.style.left = left + 'px';
+    psPickerPop.style.top  = top + 'px';
+  }
+
+  psWheelBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (psPickerPop.classList.contains('visible')) {
+      psPickerPop.classList.remove('visible');
+      return;
+    }
+    // Initialize from current color if hex
+    if (/^#[0-9A-Fa-f]{6}$/.test(currentBgColor)) {
+      var hsv = hexToHsv(currentBgColor);
+      if (hsv) { pickerH = hsv.h; pickerS = hsv.s; pickerV = hsv.v; }
+    }
+    updatePickerUI();
+    psPickerPop.classList.add('visible');
+    positionPicker();
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!psPickerPop.classList.contains('visible')) return;
+    if (psPickerPop.contains(e.target) || psWheelBtn.contains(e.target)) return;
+    psPickerPop.classList.remove('visible');
+  });
+
+  // SV drag
+  var svDragging = false;
+  function handleSV(e) {
+    var rect = psPickerSV.getBoundingClientRect();
+    var x = Math.max(0, Math.min(rect.width,  e.clientX - rect.left));
+    var y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+    pickerS = x / rect.width;
+    pickerV = 1 - y / rect.height;
+    applyPickerColor();
+  }
+  psPickerSV.addEventListener('pointerdown', function(e) {
+    svDragging = true;
+    psPickerSV.setPointerCapture(e.pointerId);
+    handleSV(e);
+  });
+  psPickerSV.addEventListener('pointermove', function(e) { if (svDragging) handleSV(e); });
+  psPickerSV.addEventListener('pointerup',   function() { svDragging = false; });
+
+  // Hue drag
+  var hueDragging = false;
+  function handleHue(e) {
+    var rect = psPickerHue.getBoundingClientRect();
+    var x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    pickerH = x / rect.width * 360;
+    applyPickerColor();
+  }
+  psPickerHue.addEventListener('pointerdown', function(e) {
+    hueDragging = true;
+    psPickerHue.setPointerCapture(e.pointerId);
+    handleHue(e);
+  });
+  psPickerHue.addEventListener('pointermove', function(e) { if (hueDragging) handleHue(e); });
+  psPickerHue.addEventListener('pointerup',   function() { hueDragging = false; });
+
+  // Hex input in popover
+  psPickerHex.addEventListener('input', function() {
+    var val = psPickerHex.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    if (val !== psPickerHex.value) psPickerHex.value = val;
+    if (/^[0-9A-F]{6}$/.test(val)) {
+      var hsv = hexToHsv('#' + val);
+      if (hsv) {
+        pickerH = hsv.h; pickerS = hsv.s; pickerV = hsv.v;
+        applyPickerColor();
+      }
+    }
   });
 
   function showPsPanel(panel) {
@@ -2534,11 +2865,13 @@ body.ps-active #slideCta {
       psToolbar.classList.add('hidden');
       psActions.classList.remove('visible');
       psDownloadBtn.disabled = true;
-      psCard.classList.remove('checker-bg', 'has-image', 'pannable', 'panning');
-      psCard.style.backgroundColor = '';
-      psCard.style.backgroundImage = '';
+      psCard.classList.remove('has-image', 'pannable', 'panning');
+      psFrame.classList.remove('checker-bg');
+      psFrame.style.backgroundColor = '';
+      psFrame.style.backgroundImage = '';
       zoom = 1; panX = 0; panY = 0;
       psCanvas.style.transform = '';
+      if (psPickerPop) psPickerPop.classList.remove('visible');
     }, 600);
   }
 
@@ -2564,9 +2897,10 @@ body.ps-active #slideCta {
     stopDemo();
     document.body.classList.add('ps-active');
 
-    psCard.classList.remove('checker-bg', 'has-image');
-    psCard.style.backgroundColor = '';
-    psCard.style.backgroundImage = '';
+    psCard.classList.remove('has-image');
+    psFrame.classList.remove('checker-bg');
+    psFrame.style.backgroundColor = '';
+    psFrame.style.backgroundImage = '';
     psShimmer.classList.remove('hidden');
     psActions.classList.remove('visible');
     psDownloadBtn.disabled = true;
@@ -2681,16 +3015,37 @@ body.ps-active #slideCta {
   }
 
   function updateCropBoxCSS() {
-    var cardRect = psCard.getBoundingClientRect();
-    var canvRect = psCanvas.getBoundingClientRect();
-    var offX = canvRect.left - cardRect.left;
-    var offY = canvRect.top  - cardRect.top;
+    var frameRect = psFrame.getBoundingClientRect();
+    var canvRect  = psCanvas.getBoundingClientRect();
+    var offX = canvRect.left - frameRect.left;
+    var offY = canvRect.top  - frameRect.top;
     var sx = canvRect.width  / psCanvas.width;
     var sy = canvRect.height / psCanvas.height;
-    psCropBox.style.left   = Math.round(offX + cropX * sx) + 'px';
-    psCropBox.style.top    = Math.round(offY + cropY * sy) + 'px';
-    psCropBox.style.width  = Math.round(cropW * sx) + 'px';
-    psCropBox.style.height = Math.round(cropH * sy) + 'px';
+
+    var bx = offX + cropX * sx;
+    var by = offY + cropY * sy;
+    var bw = cropW * sx;
+    var bh = cropH * sy;
+
+    psCropBox.style.left   = Math.round(bx) + 'px';
+    psCropBox.style.top    = Math.round(by) + 'px';
+    psCropBox.style.width  = Math.round(bw) + 'px';
+    psCropBox.style.height = Math.round(bh) + 'px';
+
+    // Update 4 darkening divs (clamped to frame bounds)
+    var fw = frameRect.width, fh = frameRect.height;
+    var bT = Math.max(0, Math.min(fh, by));
+    var bB = Math.max(0, Math.min(fh, by + bh));
+    var bL = Math.max(0, Math.min(fw, bx));
+    var bR = Math.max(0, Math.min(fw, bx + bw));
+    psDarkT.style.left = '0px';   psDarkT.style.top = '0px';
+    psDarkT.style.width = fw + 'px'; psDarkT.style.height = bT + 'px';
+    psDarkB.style.left = '0px';   psDarkB.style.top = bB + 'px';
+    psDarkB.style.width = fw + 'px'; psDarkB.style.height = Math.max(0, fh - bB) + 'px';
+    psDarkL.style.left = '0px';   psDarkL.style.top = bT + 'px';
+    psDarkL.style.width = bL + 'px'; psDarkL.style.height = Math.max(0, bB - bT) + 'px';
+    psDarkR.style.left = bR + 'px'; psDarkR.style.top = bT + 'px';
+    psDarkR.style.width = Math.max(0, fw - bR) + 'px'; psDarkR.style.height = Math.max(0, bB - bT) + 'px';
   }
 
   document.querySelectorAll('.ps-fmt-btn').forEach(function(btn) {
@@ -2708,30 +3063,81 @@ body.ps-active #slideCta {
     });
   });
 
-  // Drag whole box to move
-  psCropBox.addEventListener('pointerdown', function(e) {
-    if (e.target !== psCropBox) return;
-    cropDragging = true;
-    psCropBox.setPointerCapture(e.pointerId);
+  // ── Marquee selection on overlay ──
+  var cropMarquee = false;
+  var cropMarqueeOrigin = null;
+
+  function getCropCanvasPos(e) {
     var rect = psCanvas.getBoundingClientRect();
-    var sx = psCanvas.width / rect.width;
-    var sy = psCanvas.height / rect.height;
-    cropDragStartMouse = { x: e.clientX * sx, y: e.clientY * sy };
-    cropDragStartBox   = { x: cropX, y: cropY, w: cropW, h: cropH };
+    var x = (e.clientX - rect.left) * psCanvas.width  / rect.width;
+    var y = (e.clientY - rect.top)  * psCanvas.height / rect.height;
+    return {
+      x: Math.max(0, Math.min(psCanvas.width,  x)),
+      y: Math.max(0, Math.min(psCanvas.height, y))
+    };
+  }
+
+  psCropOverlay.addEventListener('pointerdown', function(e) {
+    if (e.target.classList.contains('ps-crop-handle')) return;
+    if (e.button !== 0) return;
     e.stopPropagation();
-  });
-  psCropBox.addEventListener('pointermove', function(e) {
-    if (!cropDragging) return;
-    var rect = psCanvas.getBoundingClientRect();
-    var sx = psCanvas.width / rect.width;
-    var sy = psCanvas.height / rect.height;
-    var dx = e.clientX * sx - cropDragStartMouse.x;
-    var dy = e.clientY * sy - cropDragStartMouse.y;
-    cropX = Math.max(0, Math.min(psCanvas.width  - cropW, cropDragStartBox.x + dx));
-    cropY = Math.max(0, Math.min(psCanvas.height - cropH, cropDragStartBox.y + dy));
+    e.preventDefault();
+    cropMarquee = true;
+    try { psCropOverlay.setPointerCapture(e.pointerId); } catch (err) {}
+    var p = getCropCanvasPos(e);
+    cropMarqueeOrigin = { x: p.x, y: p.y };
+    cropX = p.x; cropY = p.y; cropW = 0; cropH = 0;
     updateCropBoxCSS();
   });
-  psCropBox.addEventListener('pointerup', function() { cropDragging = false; });
+
+  psCropOverlay.addEventListener('pointermove', function(e) {
+    if (!cropMarquee) return;
+    var p = getCropCanvasPos(e);
+    var sx = cropMarqueeOrigin.x, sy = cropMarqueeOrigin.y;
+    var dxR = p.x - sx, dyR = p.y - sy;
+    var w = Math.abs(dxR), h = Math.abs(dyR);
+    var x = Math.min(sx, p.x);
+    var y = Math.min(sy, p.y);
+
+    var ratio = null;
+    if (cropActiveRatio !== null) ratio = cropActiveRatio;
+    else if (e.shiftKey) ratio = 1;
+
+    if (ratio !== null) {
+      // Enforce ratio, using dominant dimension
+      if (w / ratio >= h) h = w / ratio;
+      else               w = h * ratio;
+      // Position based on drag direction (anchor to origin)
+      x = dxR < 0 ? sx - w : sx;
+      y = dyR < 0 ? sy - h : sy;
+    }
+
+    // Clamp to canvas bounds
+    var cw = psCanvas.width, ch = psCanvas.height;
+    if (x < 0) { w += x; x = 0; }
+    if (y < 0) { h += y; y = 0; }
+    if (x + w > cw) w = cw - x;
+    if (y + h > ch) h = ch - y;
+
+    if (ratio !== null) {
+      // Re-enforce ratio by shrinking the excess dimension
+      if (w / ratio > h) w = h * ratio;
+      else               h = w / ratio;
+    }
+
+    cropX = x; cropY = y; cropW = w; cropH = h;
+    updateCropBoxCSS();
+  });
+
+  psCropOverlay.addEventListener('pointerup', function(e) {
+    if (!cropMarquee) return;
+    cropMarquee = false;
+    try { psCropOverlay.releasePointerCapture(e.pointerId); } catch (err) {}
+    // If marquee too small, treat as click — reset to initial
+    if (cropW < 8 || cropH < 8) {
+      initCropOverlay();
+    }
+  });
 
   // Resize handles
   document.querySelectorAll('.ps-crop-handle').forEach(function(handle) {
@@ -2909,39 +3315,39 @@ body.ps-active #slideCta {
   });
 
   // ── ERASER ──
-  var eraserSize = 30, eraserHard = 80;
+  var eraserSize = 40, eraserHard = 80;
   var eraserDrawing = false, eraserLastPos = null;
   var eraserUndoStack = [];
 
   function updateEraserCursorSize() {
-    if (!psCanvas) return;
-    var rect = psCanvas.getBoundingClientRect();
-    var scale = rect.width / psCanvas.width;
+    if (!psCanvas || !psEraserRing) return;
+    var canvRect = psCanvas.getBoundingClientRect();
+    var scale = canvRect.width / psCanvas.width;
     var px = eraserSize * scale;
-    psEraserCursor.style.width  = px + 'px';
-    psEraserCursor.style.height = px + 'px';
+    psEraserRing.style.width  = px + 'px';
+    psEraserRing.style.height = px + 'px';
   }
 
   var eraserPreviewTimer = null;
   function showEraserPreview() {
     if (psEraserPanel.classList.contains('hidden')) return;
-    var rect = psCanvas.getBoundingClientRect();
-    var scale = rect.width / psCanvas.width;
-    var px = eraserSize * scale * zoom;
+    var canvRect = psCanvas.getBoundingClientRect();
+    var scale = canvRect.width / psCanvas.width;
+    var px = eraserSize * scale;
     psEraserPreview.style.width  = px + 'px';
     psEraserPreview.style.height = px + 'px';
-    // Match background to show hardness feathering
     var h = eraserHard / 100;
-    var plateau = Math.round(h * 82);
+    var centerA = (0.4 + h * 0.5).toFixed(2); // 0.4 at 0, 0.9 at 1
+    var plateau = Math.round(h * 75);
     var mid     = Math.round(plateau + (100 - plateau) * 0.45);
-    var midAlpha = (0.18 + h * 0.28).toFixed(2);
+    var midAlpha = (0.1 + h * 0.28).toFixed(2);
     psEraserPreview.style.background =
-      'radial-gradient(circle, rgba(0,58,231,0.55) 0%, rgba(0,58,231,0.55) ' + plateau + '%, rgba(0,58,231,' + midAlpha + ') ' + mid + '%, rgba(0,58,231,0) 100%)';
+      'radial-gradient(circle, rgba(0,58,231,' + centerA + ') 0%, rgba(0,58,231,' + centerA + ') ' + plateau + '%, rgba(0,58,231,' + midAlpha + ') ' + mid + '%, rgba(0,58,231,0) 100%)';
     psEraserPreview.classList.add('visible');
     if (eraserPreviewTimer) clearTimeout(eraserPreviewTimer);
     eraserPreviewTimer = setTimeout(function() {
       psEraserPreview.classList.remove('visible');
-    }, 850);
+    }, 950);
   }
 
   document.getElementById('psEraserSize').addEventListener('input', function() {
@@ -2962,14 +3368,15 @@ body.ps-active #slideCta {
     var r = eraserSize / 2;
     var h = eraserHard / 100; // 0..1
     var grad = psCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    // Three-stop gradient: hard plateau → quick drop → smooth fade out
-    // At h=0: plateau=0, mid=0.42 @ alpha 0.18 → very soft feather
-    // At h=1: plateau=0.82, mid=0.9 @ alpha 0.46 → nearly hard edge
-    var plateau = h * 0.82;
+    // Center alpha is reduced at low hardness for very soft feather
+    // At h=0: center 0.4, plateau 0 → linear fade (very soft)
+    // At h=1: center 1.0, plateau 0.75 → sharp edge
+    var centerA = 0.4 + h * 0.6;
+    var plateau = h * 0.75;
     var mid     = plateau + (1 - plateau) * 0.45;
-    var midAlpha = 0.18 + h * 0.28;
-    grad.addColorStop(0,       'rgba(0,0,0,1)');
-    grad.addColorStop(plateau, 'rgba(0,0,0,1)');
+    var midAlpha = (0.1 + h * 0.28) * centerA;
+    grad.addColorStop(0,       'rgba(0,0,0,' + centerA + ')');
+    grad.addColorStop(plateau, 'rgba(0,0,0,' + centerA + ')');
     grad.addColorStop(mid,     'rgba(0,0,0,' + midAlpha + ')');
     grad.addColorStop(1,       'rgba(0,0,0,0)');
     psCtx.fillStyle = grad;
@@ -2990,9 +3397,9 @@ body.ps-active #slideCta {
   psCanvas.addEventListener('pointermove', function(e) {
     var inEraser = !psEraserPanel.classList.contains('hidden');
     if (inEraser) {
-      var rect = psCanvas.getBoundingClientRect();
-      psEraserCursor.style.left = (e.clientX - rect.left) + 'px';
-      psEraserCursor.style.top  = (e.clientY - rect.top)  + 'px';
+      var frameRect = psFrame.getBoundingClientRect();
+      psEraserCursor.style.left = (e.clientX - frameRect.left) + 'px';
+      psEraserCursor.style.top  = (e.clientY - frameRect.top)  + 'px';
       updateEraserCursorSize();
       if (eraserDrawing) {
         var pos = getCanvasPos(e);
@@ -3316,20 +3723,6 @@ body.ps-active #slideCta {
   mainAfter.addEventListener('load', syncBeforeImgWidth);
   window.addEventListener('resize', syncBeforeImgWidth);
   syncBeforeImgWidth();
-
-  // Zoom через scroll wheel для hero BA slider
-  var heroZoom = 1;
-  mainSlider.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    var factor = e.deltaY < 0 ? 1.18 : 1/1.18;
-    heroZoom = Math.max(1, Math.min(3, heroZoom * factor));
-    mainSlider.style.transform = heroZoom > 1 ? 'scale(' + heroZoom + ')' : '';
-    mainSlider.style.transformOrigin = 'center center';
-  }, { passive: false });
-  mainSlider.addEventListener('dblclick', function() {
-    heroZoom = 1;
-    mainSlider.style.transform = '';
-  });
 
   // Клик по миниатюре — меняем главный слайдер
   document.querySelectorAll('.ba-thumb').forEach(function(thumb) {
