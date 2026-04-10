@@ -327,6 +327,12 @@ h1, h2, h3 {
   border-radius: 20px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  max-width: 80%;
+  margin: 0 auto;
+  transition: max-width 0.5s cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+.result-area.has-image {
+  max-width: 100%;
 }
 
 .result-preview {
@@ -404,16 +410,6 @@ h1, h2, h3 {
   transition: opacity 0.6s ease;
 }
 
-/* Demo bounce — весь блок (#resultArea) быстро растёт, держит, быстро возвращается */
-@keyframes demoBounce {
-  0%   { transform: scale(1);    animation-timing-function: ease-out; }
-  22%  { transform: scale(1.04); animation-timing-function: linear; }
-  62%  { transform: scale(1.04); animation-timing-function: ease-in; }
-  100% { transform: scale(1); }
-}
-#resultArea.demo-bounce {
-  animation: demoBounce 500ms linear;
-}
 
 .result-image-wrap {
   display: none;
@@ -2146,14 +2142,14 @@ h1, h2, h3 {
   var demoLine          = document.getElementById('demoLine');
   var demoHandle        = document.getElementById('demoHandle');
   var demoHint          = document.getElementById('demoHint');
-  var demoResultArea    = document.getElementById('resultArea');
   var demoAnimId        = null;
   var demoStartTime     = null;
   var demoPhase         = 'osc'; // 'osc' | 'settle' | 'done'
   var demoPhaseStart    = null;
-  var DEMO_OSC_PERIOD   = 4800; // 6000 * 0.8 = +20% быстрее
-  var DEMO_OSC_END      = 2.75 * 4800; // t=2.75: 3-я яма (pct=20%)
-  var DEMO_SETTLE_MS    = 700;
+  var DEMO_OSC_PERIOD   = 4800;
+  var DEMO_SETTLE_MS    = 1300;
+  // Переход фиксируется динамически когда pct ≤ 27.5% на 3-м нисходящем участке
+  var settleP0 = 0, settleV0 = 0, settleTriggered = false;
 
   function setDemoPos(pct) {
     demoBefore.style.width = pct + '%';
@@ -2162,20 +2158,12 @@ h1, h2, h3 {
     demoBeforeImg.style.width = demoSliderWrap.offsetWidth + 'px';
   }
 
-  // Settle: cubic ease-out от 20% до 0% — быстрый старт, плавное торможение
-  function settlePos(u) {
-    var inv = 1 - u;
-    return 20 * inv * inv * inv;
-  }
-
-  function triggerDemoBounce() {
-    if (!demoResultArea) return;
-    demoResultArea.classList.remove('demo-bounce');
-    void demoResultArea.offsetWidth;
-    demoResultArea.classList.add('demo-bounce');
-    demoResultArea.addEventListener('animationend', function() {
-      demoResultArea.classList.remove('demo-bounce');
-    }, { once: true });
+  // Hermite сплайн C1: p(0)=p0, p'(0)=v0_norm, p(1)=0, p'(1)=0
+  // Монотонно убывает, нет оверш ута (математически доказано для t≈2.62)
+  function hermiteSettle(u) {
+    var h00 = 2*u*u*u - 3*u*u + 1;
+    var h10 = u*u*u - 2*u*u + u;
+    return h00 * settleP0 + h10 * settleV0;
   }
 
   function demoStep(ts) {
@@ -2183,13 +2171,20 @@ h1, h2, h3 {
 
     if (demoPhase === 'osc') {
       var elapsed = ts - demoPhaseStart;
-      if (elapsed >= DEMO_OSC_END) {
-        // Конец на 3-й яме: pct=20%, velocity=0 → плавно дотягиваем до 0%
+      var t = elapsed / DEMO_OSC_PERIOD;
+      var pct = 47.5 + 27.5 * Math.sin(t * 2 * Math.PI);
+
+      // Динамический переход: 3-й нисходящий участок, pct ≤ 27.5%
+      if (!settleTriggered && elapsed > 2.5 * DEMO_OSC_PERIOD && pct <= 27.5) {
+        settleTriggered = true;
+        // Фиксируем реальную позицию и скорость в момент перехода
+        settleP0 = pct;
+        var v0raw = 27.5 * (2 * Math.PI / DEMO_OSC_PERIOD) * Math.cos(t * 2 * Math.PI);
+        settleV0 = v0raw * DEMO_SETTLE_MS; // нормализованная скорость
         demoPhase = 'settle';
         demoPhaseStart = ts;
       } else {
-        var t = elapsed / DEMO_OSC_PERIOD;
-        setDemoPos(47.5 + 27.5 * Math.sin(t * 2 * Math.PI));
+        setDemoPos(pct);
       }
     }
 
@@ -2199,11 +2194,10 @@ h1, h2, h3 {
         setDemoPos(0);
         demoPhase = 'done';
         demoAnimId = null;
-        triggerDemoBounce();
         return;
       }
       var u = elapsed / DEMO_SETTLE_MS;
-      setDemoPos(settlePos(u));
+      setDemoPos(Math.max(0, hermiteSettle(u)));
     }
 
     demoAnimId = requestAnimationFrame(demoStep);
@@ -2214,6 +2208,7 @@ h1, h2, h3 {
       demoPhase = 'osc';
       demoStartTime = null;
       demoPhaseStart = null;
+      settleTriggered = false;
       demoAnimId = requestAnimationFrame(demoStep);
     }
   }
