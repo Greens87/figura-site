@@ -1777,6 +1777,12 @@ h1, h2, h3 {
 (function() {
   'use strict';
 
+  // Сброс хэша при загрузке — браузер не прокручивает к якорю
+  if (window.location.hash) {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+  window.scrollTo(0, 0);
+
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
@@ -2146,8 +2152,8 @@ h1, h2, h3 {
   var demoStartTime  = null;
 
   // 5 прогонов: 100→0, 0→100, 100→0, 0→100, 100→0  (3 прогона влево, стоп)
-  var DEMO_SWEEPS    = [[100,0],[0,100],[100,0],[0,100],[100,0]];
-  var DEMO_HALF_MS   = 2200; // мс на один прогон
+  var DEMO_SWEEPS    = [[100,0],[0,100],[100,0],[0,100],[100,0],[0,100],[100,0]];
+  var DEMO_HALF_MS   = 2530; // 2200 * 1.15 ≈ +15% медленнее
 
   function setDemoPos(pct) {
     demoBefore.style.width        = pct + '%';
