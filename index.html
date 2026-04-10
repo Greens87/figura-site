@@ -404,14 +404,15 @@ h1, h2, h3 {
   transition: opacity 0.6s ease;
 }
 
-/* Demo bounce — весь блок (рамка+изображение) масштабируется по дуге */
+/* Demo bounce — быстрый рост → удержание → быстрый спуск */
 @keyframes demoBounce {
-  0%   { transform: scale(1);    animation-timing-function: ease-in; }
-  50%  { transform: scale(1.04); animation-timing-function: ease-out; }
+  0%   { transform: scale(1);    animation-timing-function: ease-out; }
+  22%  { transform: scale(1.04); animation-timing-function: linear; }
+  62%  { transform: scale(1.04); animation-timing-function: ease-in; }
   100% { transform: scale(1); }
 }
 .result-preview.demo-bounce {
-  animation: demoBounce 900ms linear;
+  animation: demoBounce 1400ms linear;
 }
 
 .result-image-wrap {
@@ -2150,9 +2151,9 @@ h1, h2, h3 {
   var demoStartTime     = null;
   var demoPhase         = 'osc'; // 'osc' | 'settle' | 'done'
   var demoPhaseStart    = null;
-  var DEMO_OSC_PERIOD   = 2000; // мс на 1 цикл
-  var DEMO_OSC_CYCLES   = 3;
-  var DEMO_SETTLE_MS    = 500;
+  var DEMO_OSC_PERIOD   = 6000; // мс на 1 цикл (оригинал)
+  var DEMO_OSC_END      = 2.75 * 6000; // 3-я яма: pct=20%, velocity=0
+  var DEMO_SETTLE_MS    = 1200;
 
   function setDemoPos(pct) {
     demoBefore.style.width = pct + '%';
@@ -2180,7 +2181,8 @@ h1, h2, h3 {
 
     if (demoPhase === 'osc') {
       var elapsed = ts - demoPhaseStart;
-      if (elapsed >= DEMO_OSC_CYCLES * DEMO_OSC_PERIOD) {
+      if (elapsed >= DEMO_OSC_END) {
+        // Конец на 3-й яме: pct=20%, velocity=0 → плавно дотягиваем до 0%
         demoPhase = 'settle';
         demoPhaseStart = ts;
       } else {
@@ -2198,7 +2200,10 @@ h1, h2, h3 {
         triggerDemoBounce();
         return;
       }
-      setDemoPos(47.5 * (1 - easeInOut(elapsed / DEMO_SETTLE_MS)));
+      // easeInOut: стартует с нулевой скорости (совпадает с velocity=0 в яме)
+      var p = elapsed / DEMO_SETTLE_MS;
+      var eased = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
+      setDemoPos(20 * (1 - eased));
     }
 
     demoAnimId = requestAnimationFrame(demoStep);
