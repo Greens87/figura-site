@@ -450,7 +450,9 @@ h1, h2, h3 {
 
 /* ===== STATS STRIP ===== */
 .stats-strip {
-  background: #F9F9F9;
+  background-color: #F9F9F9;
+  background-image: radial-gradient(circle, #e0e0e0 1px, transparent 1px);
+  background-size: 36px 36px;
   border-top: 1px solid #E8E8E8;
   border-bottom: 1px solid #E8E8E8;
   overflow: hidden;
@@ -507,6 +509,8 @@ h1, h2, h3 {
 .features-section {
   padding: 48px 0;
   border-bottom: 1px solid var(--gray-border);
+  background-image: radial-gradient(circle, #e2e2e2 1px, transparent 1px);
+  background-size: 36px 36px;
 }
 
 .features-inner {
@@ -620,6 +624,11 @@ h1, h2, h3 {
 .ba-section {
   padding: 48px 0;
   border-bottom: 1px solid var(--gray-border);
+  background-color: #fff;
+  background-image:
+    linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.85) 65%, #fff 100%),
+    radial-gradient(circle, #e2e2e2 1px, transparent 1px);
+  background-size: 100% 100%, 36px 36px;
 }
 
 .ba-inner {
@@ -646,30 +655,21 @@ h1, h2, h3 {
 }
 
 .ba-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
   flex-shrink: 0;
+  width: 228px;
 }
 
 .ba-thumb {
-  width: 130px;
-  height: 155px;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: var(--gray-bg);
-}
-
-.ba-thumb:hover {
-  border-color: rgba(0,58,231,0.4);
-}
-
-.ba-thumb.active {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(0,58,231,0.12);
+  aspect-ratio: 2/3;
 }
 
 .ba-thumb img {
@@ -677,6 +677,22 @@ h1, h2, h3 {
   height: 100%;
   object-fit: cover;
   display: block;
+  filter: brightness(0.72) saturate(0.55);
+  transition: filter 0.35s ease, transform 0.35s ease;
+}
+
+.ba-thumb:hover img {
+  filter: brightness(1) saturate(1);
+  transform: scale(1.06);
+}
+
+.ba-thumb.active {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,58,231,0.12);
+}
+
+.ba-thumb.active img {
+  filter: brightness(1) saturate(1);
 }
 
 .ba-main {
@@ -769,6 +785,11 @@ h1, h2, h3 {
 .pricing-section {
   padding: 48px 0;
   border-bottom: 1px solid var(--gray-border);
+  background-color: #fff;
+  background-image:
+    linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.85) 60%, #fff 100%),
+    radial-gradient(circle, rgba(226,226,226,0.7) 1px, transparent 1px);
+  background-size: 100% 100%, 36px 36px;
 }
 
 .pricing-inner {
@@ -1237,13 +1258,8 @@ h1, h2, h3 {
   }
 
   .ba-sidebar {
-    flex-direction: row;
-    justify-content: center;
-  }
-
-  .ba-thumb {
-    width: 100px;
-    height: 120px;
+    width: 100%;
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .ba-main {
@@ -1476,19 +1492,19 @@ h1, h2, h3 {
     <h2 class="ba-title">Результат</h2>
     <div class="ba-showcase">
 
-      <!-- Левая колонка миниатюр -->
-      <div class="ba-sidebar ba-sidebar--left">
+      <!-- Левая сетка 2×2 -->
+      <div class="ba-sidebar">
         <div class="ba-thumb" data-before="assets/results/before/Image_01.png" data-after="assets/results/after/Image_01.png">
           <img src="assets/results/before/Image_01.png" alt="">
         </div>
         <div class="ba-thumb" data-before="assets/results/before/Image_03.png" data-after="assets/results/after/Image_03.png">
           <img src="assets/results/before/Image_03.png" alt="">
         </div>
-        <div class="ba-thumb" data-before="assets/results/before/Image_04.jpg" data-after="assets/results/after/Image_04.png">
-          <img src="assets/results/before/Image_04.jpg" alt="">
-        </div>
         <div class="ba-thumb" data-before="assets/results/before/Image_05.png" data-after="assets/results/after/Image_05.png">
           <img src="assets/results/before/Image_05.png" alt="">
+        </div>
+        <div class="ba-thumb" data-before="assets/results/before/Image_06.png" data-after="assets/results/after/Image_06.png">
+          <img src="assets/results/before/Image_06.png" alt="">
         </div>
       </div>
 
@@ -1508,11 +1524,8 @@ h1, h2, h3 {
         </div>
       </div>
 
-      <!-- Правая колонка миниатюр -->
-      <div class="ba-sidebar ba-sidebar--right">
-        <div class="ba-thumb" data-before="assets/results/before/Image_06.png" data-after="assets/results/after/Image_06.png">
-          <img src="assets/results/before/Image_06.png" alt="">
-        </div>
+      <!-- Правая сетка 2×2 (3 изображения) -->
+      <div class="ba-sidebar">
         <div class="ba-thumb" data-before="assets/results/before/Image_07.jpg" data-after="assets/results/after/Image_07.png">
           <img src="assets/results/before/Image_07.jpg" alt="">
         </div>
