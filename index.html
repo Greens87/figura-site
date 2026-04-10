@@ -1245,6 +1245,116 @@ h1, h2, h3 {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ===== PROCESSING SCREEN ===== */
+#processingScreen {
+  position: fixed;
+  inset: 0;
+  background: #FFFFFF;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.55s ease;
+}
+#processingScreen.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.ps-card {
+  border: 1px solid #E8E8E8;
+  border-radius: 20px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.10);
+  overflow: hidden;
+  width: 380px;
+  height: 380px;
+  position: relative;
+  transition: width 0.7s cubic-bezier(0.34,1.1,0.64,1), height 0.7s cubic-bezier(0.34,1.1,0.64,1);
+  background: #f5f5f5;
+}
+.ps-card.breathing {
+  animation: psBreath 2.6s ease-in-out infinite;
+}
+@keyframes psBreath {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.02); }
+}
+.ps-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 300% 100%;
+  animation: psShimmerAnim 1.5s ease-in-out infinite;
+  transition: opacity 0.4s ease;
+}
+@keyframes psShimmerAnim {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.ps-shimmer.hidden { opacity: 0; }
+.ps-result-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.ps-result-img.visible { opacity: 1; }
+.ps-card.checkerboard {
+  background-color: #f0f0f0;
+  background-image:
+    linear-gradient(45deg,#d8d8d8 25%,transparent 25%),
+    linear-gradient(-45deg,#d8d8d8 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#d8d8d8 75%),
+    linear-gradient(-45deg,transparent 75%,#d8d8d8 75%);
+  background-size: 20px 20px;
+  background-position: 0 0,0 10px,10px -10px,-10px 0;
+}
+.ps-actions {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
+}
+.ps-actions.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ps-back-btn {
+  background: transparent;
+  border: 1px solid #E8E8E8;
+  border-radius: 50px;
+  padding: 10px 24px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--gray);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.ps-back-btn:hover { border-color: #aaa; color: var(--black); }
+
+/* Hide page sections during processing */
+body.ps-active .hero,
+body.ps-active .stats-strip,
+body.ps-active .features-section,
+body.ps-active .how-section,
+body.ps-active .ba-section,
+body.ps-active .pricing-section,
+body.ps-active .faq-section,
+body.ps-active .email-section,
+body.ps-active .footer,
+body.ps-active #slideCta {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
 /* ===== RESPONSIVE ===== */
 
 /* Промежуточный — сайдбары уже, центр доминирует */
@@ -1405,6 +1515,18 @@ h1, h2, h3 {
     </div>
   </div>
 </nav>
+
+<!-- Processing Screen -->
+<div id="processingScreen" aria-hidden="true">
+  <div class="ps-card" id="psCard">
+    <div class="ps-shimmer" id="psShimmer"></div>
+    <img class="ps-result-img" id="psResultImg" src="" alt="Результат">
+  </div>
+  <div class="ps-actions" id="psActions">
+    <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
+    <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
+  </div>
+</div>
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
@@ -1894,26 +2016,57 @@ h1, h2, h3 {
 
   function handleFile(file) {
     var error = validateFile(file);
-    if (error) {
-      showToast(error, 4000);
-      return;
-    }
-
+    if (error) { showToast(error, 4000); return; }
     if (!canProcess()) {
       showToast('Лимит исчерпан: ' + DAILY_LIMIT + ' обработок в день. Попробуйте завтра.', 5000);
       return;
     }
 
     stopDemo();
-    uploadStatus.classList.add('visible');
-    uploadStatusText.textContent = 'Обработка...';
-    uploadProgressBar.style.width = '0%';
+
+    // ── Transition to processing screen ──
+    document.body.classList.add('ps-active');
+    var psScreen    = document.getElementById('processingScreen');
+    var psCard      = document.getElementById('psCard');
+    var psShimmer   = document.getElementById('psShimmer');
+    var psResultImg = document.getElementById('psResultImg');
+    var psActions   = document.getElementById('psActions');
+    var psDownload  = document.getElementById('psDownloadBtn');
+
+    psCard.classList.remove('checkerboard');
+    psShimmer.classList.remove('hidden');
+    psResultImg.classList.remove('visible');
+    psResultImg.src = '';
+    psActions.classList.remove('visible');
+    psDownload.disabled = true;
+    psCard.style.width  = '380px';
+    psCard.style.height = '380px';
+
+    setTimeout(function() {
+      psScreen.classList.add('visible');
+      psScreen.setAttribute('aria-hidden', 'false');
+    }, 50);
 
     var reader = new FileReader();
     reader.onload = function(e) {
       uploadedImageData = e.target.result;
 
-      // Simulated processing
+      // Detect aspect ratio and resize card
+      var probe = new Image();
+      probe.onload = function() {
+        var ratio = probe.naturalWidth / probe.naturalHeight;
+        var maxW  = Math.min(window.innerWidth  * 0.78, 600);
+        var maxH  = Math.min(window.innerHeight * 0.65, 520);
+        var w, h;
+        if (ratio >= 1) { w = Math.min(maxW, maxH * ratio); h = w / ratio; }
+        else             { h = Math.min(maxH, maxW / ratio); w = h * ratio; }
+        psCard.style.width  = Math.round(w) + 'px';
+        psCard.style.height = Math.round(h) + 'px';
+        psCard.classList.add('breathing');
+      };
+      probe.src = uploadedImageData;
+
+      // Simulate 2s processing
       var progress = 0;
       var interval = setInterval(function() {
         progress += Math.random() * 30 + 10;
@@ -1921,40 +2074,61 @@ h1, h2, h3 {
           progress = 100;
           clearInterval(interval);
 
-          uploadProgressBar.style.width = '100%';
-          uploadStatusText.textContent = 'Готово!';
-
-          setTimeout(function() {
-            uploadStatus.classList.remove('visible');
-            uploadProgressBar.style.width = '0%';
-          }, 800);
-
-          // Load the image
+          // Show result
           originalImage = new Image();
           originalImage.onload = function() {
             applyBackground(currentBgColor);
-            resultArea.classList.add('has-image');
-            colorPickerRow.style.display = 'flex';
-            downloadRow.style.display = 'block';
-            downloadBtn.disabled = false;
+
+            psCard.classList.remove('breathing');
+            psCard.classList.add('checkerboard');
+            psShimmer.classList.add('hidden');
+            psResultImg.src = uploadedImageData;
+            psResultImg.classList.add('visible');
+            psActions.classList.add('visible');
+            psDownload.disabled = false;
 
             incrementDailyCount();
-
-            // Show slide-up CTA after first generation
-            if (!slideCtaShown) {
-              slideCtaShown = true;
-              setTimeout(function() {
-                document.getElementById('slideCta').classList.add('visible');
-              }, 2000);
-            }
           };
           originalImage.src = uploadedImageData;
         }
-        uploadProgressBar.style.width = Math.min(progress, 100) + '%';
       }, 400);
     };
     reader.readAsDataURL(file);
   }
+
+  // Processing screen: download
+  document.getElementById('psDownloadBtn').addEventListener('click', function() {
+    if (!originalImage) return;
+    var canvas = document.createElement('canvas');
+    canvas.width  = originalImage.naturalWidth;
+    canvas.height = originalImage.naturalHeight;
+    var ctx = canvas.getContext('2d');
+    if (currentBgColor !== 'transparent') {
+      ctx.fillStyle = currentBgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.drawImage(originalImage, 0, 0);
+    var fmt = currentBgColor === 'transparent' ? 'image/png' : 'image/jpeg';
+    var ext = currentBgColor === 'transparent' ? 'png' : 'jpg';
+    var link = document.createElement('a');
+    link.download = 'figura-result.' + ext;
+    link.href = canvas.toDataURL(fmt, 0.95);
+    link.click();
+  });
+
+  // Processing screen: back to landing
+  document.getElementById('psBackBtn').addEventListener('click', function() {
+    var psScreen = document.getElementById('processingScreen');
+    psScreen.classList.remove('visible');
+    psScreen.setAttribute('aria-hidden', 'true');
+    setTimeout(function() {
+      document.body.classList.remove('ps-active');
+      var fileInput = document.getElementById('fileInput');
+      if (fileInput) fileInput.value = '';
+      originalImage = null;
+      uploadedImageData = null;
+    }, 600);
+  });
 
   // Color picker
   function applyBackground(color) {
