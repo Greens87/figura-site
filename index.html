@@ -1306,6 +1306,12 @@ body.ps-active { overflow: hidden; }
     right: 8px;
     bottom: 8px;
   }
+  #psCropOverlay {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
 }
 /* Inner artboard — sharp corners, holds canvas + overlays */
 .ps-canvas-frame {
@@ -1372,9 +1378,12 @@ body.ps-active { overflow: hidden; }
 /* Crop overlay — overflow visible so handles can extend past edges */
 #psCropOverlay {
   position: absolute;
-  inset: 0;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
   overflow: visible;
-  z-index: 10;
+  z-index: 15;
   display: none;
   cursor: crosshair;
 }
@@ -2384,28 +2393,28 @@ body.ps-active #slideCta {
     <div class="ps-canvas-frame" id="psFrame">
       <canvas id="psOriginalCanvas"></canvas>
       <canvas id="psCanvas"></canvas>
-      <div id="psCropOverlay">
-        <div class="ps-crop-dark" id="psDarkT"></div>
-        <div class="ps-crop-dark" id="psDarkR"></div>
-        <div class="ps-crop-dark" id="psDarkB"></div>
-        <div class="ps-crop-dark" id="psDarkL"></div>
-        <div id="psCropBox">
-          <div class="ps-crop-handle ps-crop-handle-tl" data-handle="tl"></div>
-          <div class="ps-crop-handle ps-crop-handle-tr" data-handle="tr"></div>
-          <div class="ps-crop-handle ps-crop-handle-bl" data-handle="bl"></div>
-          <div class="ps-crop-handle ps-crop-handle-br" data-handle="br"></div>
-          <div class="ps-crop-handle ps-crop-handle-t"  data-handle="t"></div>
-          <div class="ps-crop-handle ps-crop-handle-r"  data-handle="r"></div>
-          <div class="ps-crop-handle ps-crop-handle-b"  data-handle="b"></div>
-          <div class="ps-crop-handle ps-crop-handle-l"  data-handle="l"></div>
-        </div>
-      </div>
       <div id="psBrushCursor">
         <div class="ps-brush-ring"></div>
         <div class="ps-brush-cross"></div>
       </div>
       <div id="psEraserPreview"></div>
       <canvas id="psSelectionCanvas"></canvas>
+    </div>
+    <div id="psCropOverlay">
+      <div class="ps-crop-dark" id="psDarkT"></div>
+      <div class="ps-crop-dark" id="psDarkR"></div>
+      <div class="ps-crop-dark" id="psDarkB"></div>
+      <div class="ps-crop-dark" id="psDarkL"></div>
+      <div id="psCropBox">
+        <div class="ps-crop-handle ps-crop-handle-tl" data-handle="tl"></div>
+        <div class="ps-crop-handle ps-crop-handle-tr" data-handle="tr"></div>
+        <div class="ps-crop-handle ps-crop-handle-bl" data-handle="bl"></div>
+        <div class="ps-crop-handle ps-crop-handle-br" data-handle="br"></div>
+        <div class="ps-crop-handle ps-crop-handle-t"  data-handle="t"></div>
+        <div class="ps-crop-handle ps-crop-handle-r"  data-handle="r"></div>
+        <div class="ps-crop-handle ps-crop-handle-b"  data-handle="b"></div>
+        <div class="ps-crop-handle ps-crop-handle-l"  data-handle="l"></div>
+      </div>
     </div>
     <div id="psCropRotateWidget" style="display:none;position:absolute;z-index:20;">
       <div class="ps-crop-rotate-line"></div>
@@ -2979,7 +2988,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T19:50';
+  const DEPLOY_VERSION = '2026-04-14T20:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
