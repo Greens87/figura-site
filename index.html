@@ -2969,7 +2969,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T18:45';
+  const DEPLOY_VERSION = '2026-04-14T19:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -4878,6 +4878,7 @@ body.ps-active #slideCta {
   var cropRotCurrentAngle = 0;
   var cropRotCenterX = 0, cropRotCenterY = 0;
   var psCropAngleTip = document.getElementById('psCropAngleTip');
+  var cropRotSnapshot = null;
 
   function getCropBoxCenter() {
     var boxRect = psCropBox.getBoundingClientRect();
@@ -4899,11 +4900,15 @@ body.ps-active #slideCta {
     cropRotCurrentAngle = 0;
     psCropAngleTip.style.display = 'block';
     psCropAngleTip.textContent = '0°';
-    psCanvas.style.transformOrigin = 'center center';
+    cropRotSnapshot = document.createElement('canvas');
+    cropRotSnapshot.width = psCanvas.width;
+    cropRotSnapshot.height = psCanvas.height;
+    cropRotSnapshot.getContext('2d').drawImage(psCanvas, 0, 0);
     psDarkT.style.display = 'none';
     psDarkR.style.display = 'none';
     psDarkB.style.display = 'none';
     psDarkL.style.display = 'none';
+    psCropBox.style.display = 'none';
   });
 
   document.addEventListener('pointermove', function(e) {
@@ -4916,8 +4921,14 @@ body.ps-active #slideCta {
       delta = Math.round(delta / 45) * 45;
     }
     cropRotCurrentAngle = delta;
-    psCanvas.style.transform = 'rotate(' + delta + 'deg)';
-    psCropBox.style.transform = 'rotate(' + delta + 'deg)';
+    var rad = delta * Math.PI / 180;
+    var w = psCanvas.width, h = psCanvas.height;
+    psCtx.clearRect(0, 0, w, h);
+    psCtx.save();
+    psCtx.translate(w / 2, h / 2);
+    psCtx.rotate(rad);
+    psCtx.drawImage(cropRotSnapshot, -w / 2, -h / 2);
+    psCtx.restore();
     psCropAngleTip.textContent = Math.round(delta) + '°';
   });
 
@@ -4925,14 +4936,20 @@ body.ps-active #slideCta {
     if (!cropRotating) return;
     cropRotating = false;
     psCropAngleTip.style.display = 'none';
-    psCanvas.style.transformOrigin = '0 0';
-    psCanvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
-    psCropBox.style.transform = '';
+    psCropBox.style.display = '';
     psDarkT.style.display = '';
     psDarkR.style.display = '';
     psDarkB.style.display = '';
     psDarkL.style.display = '';
-    if (Math.abs(cropRotCurrentAngle) < 1) return;
+    if (Math.abs(cropRotCurrentAngle) < 1) {
+      if (cropRotSnapshot) {
+        psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+        psCtx.drawImage(cropRotSnapshot, 0, 0);
+      }
+      cropRotSnapshot = null;
+      return;
+    }
+    cropRotSnapshot = null;
     applyFreeRotation(cropRotCurrentAngle);
     cropRotCurrentAngle = 0;
   });
