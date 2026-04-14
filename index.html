@@ -2969,7 +2969,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T19:00';
+  const DEPLOY_VERSION = '2026-04-14T19:15';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3734,7 +3734,7 @@ body.ps-active #slideCta {
       var dy = p.y - cropMoveStart.my;
       cropX = Math.max(0, Math.min(psCanvas.width  - cropW, cropMoveStart.bx + dx));
       cropY = Math.max(0, Math.min(psCanvas.height - cropH, cropMoveStart.by + dy));
-      if (!e.altKey) snapCropBox();
+      if (!e.altKey) snapMoveOnly();
       updateCropBoxCSS();
       return;
     }
@@ -3769,7 +3769,6 @@ body.ps-active #slideCta {
     }
 
     cropX = x; cropY = y; cropW = w; cropH = h;
-    if (!e.altKey) snapCropBox();
     updateCropBoxCSS();
   });
 
@@ -3944,43 +3943,25 @@ body.ps-active #slideCta {
     }
 
     cropX = nx; cropY = ny; cropW = nw; cropH = nh;
-    if (!e.altKey) snapCropBox();
     updateCropBoxCSS();
   }
 
   function getSnapThreshold() {
     var canvRect = psCanvas.getBoundingClientRect();
-    if (!canvRect.width) return 15;
-    return 15 * psCanvas.width / canvRect.width;
-  }
-  function snapCropValue(val, targets) {
-    var thresh = getSnapThreshold();
-    for (var i = 0; i < targets.length; i++) {
-      if (Math.abs(val - targets[i]) < thresh) return targets[i];
-    }
-    return val;
+    if (!canvRect.width) return 10;
+    return 10 * psCanvas.width / canvRect.width;
   }
 
-  function snapCropBox() {
+  function snapMoveOnly() {
     var cw = psCanvas.width, ch = psCanvas.height;
-    var snapX = [0, cw / 3, cw / 2, cw * 2 / 3, cw];
-    var snapY = [0, ch / 3, ch / 2, ch * 2 / 3, ch];
-
-    cropX = snapCropValue(cropX, snapX);
-    cropY = snapCropValue(cropY, snapY);
-    var r = cropX + cropW;
-    var b = cropY + cropH;
-    r = snapCropValue(r, snapX);
-    b = snapCropValue(b, snapY);
-    cropW = r - cropX;
-    cropH = b - cropY;
-
-    var cx = cropX + cropW / 2;
-    var cy = cropY + cropH / 2;
-    var snappedCX = snapCropValue(cx, [cw / 2]);
-    var snappedCY = snapCropValue(cy, [ch / 2]);
-    if (snappedCX !== cx) { cropX = snappedCX - cropW / 2; }
-    if (snappedCY !== cy) { cropY = snappedCY - cropH / 2; }
+    var thresh = getSnapThreshold();
+    var cx = cropX + cropW / 2, cy = cropY + cropH / 2;
+    if (Math.abs(cx - cw / 2) < thresh) cropX = cw / 2 - cropW / 2;
+    if (Math.abs(cy - ch / 2) < thresh) cropY = ch / 2 - cropH / 2;
+    if (Math.abs(cropX) < thresh) cropX = 0;
+    if (Math.abs(cropY) < thresh) cropY = 0;
+    if (Math.abs(cropX + cropW - cw) < thresh) cropX = cw - cropW;
+    if (Math.abs(cropY + cropH - ch) < thresh) cropY = ch - cropH;
   }
 
   document.getElementById('psCropApplyBtn').addEventListener('click', function() {
@@ -4009,23 +3990,21 @@ body.ps-active #slideCta {
   });
   document.getElementById('psCropCancelBtn').addEventListener('click', function() {
     if (cropEntryState) {
-      if (psCanvas.width !== cropEntryState.w || psCanvas.height !== cropEntryState.h ||
-          psCard.style.width !== cropEntryState.cardW) {
-        psCanvas.width = cropEntryState.w;
-        psCanvas.height = cropEntryState.h;
-        psCtx.putImageData(cropEntryState.data, 0, 0);
-        originalResultData = psCtx.getImageData(0, 0, cropEntryState.w, cropEntryState.h);
-        psSelectionCanvas.width = cropEntryState.w;
-        psSelectionCanvas.height = cropEntryState.h;
-        resizeCardInstant(parseInt(cropEntryState.cardW), parseInt(cropEntryState.cardH));
-        zoom = 1; panX = 0; panY = 0;
-        frameBaseW = 0; frameBaseH = 0;
-        psCanvas.style.width = '';
-        psCanvas.style.height = '';
-        psSelectionCanvas.style.width = '';
-        psSelectionCanvas.style.height = '';
-        requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
-      }
+      psCanvas.width = cropEntryState.w;
+      psCanvas.height = cropEntryState.h;
+      psCtx.putImageData(cropEntryState.data, 0, 0);
+      originalResultData = psCtx.getImageData(0, 0, cropEntryState.w, cropEntryState.h);
+      psSelectionCanvas.width = cropEntryState.w;
+      psSelectionCanvas.height = cropEntryState.h;
+      resizeCardInstant(parseInt(cropEntryState.cardW), parseInt(cropEntryState.cardH));
+      zoom = 1; panX = 0; panY = 0;
+      frameBaseW = 0; frameBaseH = 0;
+      psCanvas.style.width = '';
+      psCanvas.style.height = '';
+      psSelectionCanvas.style.width = '';
+      psSelectionCanvas.style.height = '';
+      requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
+      editStack = [];
       cropEntryState = null;
     }
     showPsPanel('default');
