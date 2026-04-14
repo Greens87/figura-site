@@ -2940,6 +2940,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
+  const DEPLOY_VERSION = '2026-04-14T17:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -2961,6 +2962,13 @@ body.ps-active #slideCta {
     });
   } else {
     visitorId = 'fallback-' + Math.random().toString(36).substr(2, 9);
+  }
+
+  // Reset counter on new deploy
+  if (localStorage.getItem('bg5_deploy') !== DEPLOY_VERSION) {
+    localStorage.setItem('bg5_deploy', DEPLOY_VERSION);
+    var d = new Date();
+    localStorage.removeItem('bg5_daily_' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate());
   }
 
   // Daily counter
