@@ -2582,7 +2582,8 @@ body.ps-active #slideCta {
           </svg>
         </div>
         <div class="upload-zone-text">Перетащите фото или нажмите для выбора</div>
-        <div class="upload-zone-hint">JPG, PNG, AVIF, WEBP до 10 MB</div>
+        <div class="upload-zone-hint">JPG, PNG, AVIF, WEBP до 15 MB</div>
+        <div class="upload-zone-hint" id="dailyCounter" style="margin-top:4px;color:#6B7280;"></div>
         <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.avif,.webp">
       </div>
       <div class="upload-status" id="uploadStatus">
@@ -2939,7 +2940,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
 
@@ -2984,6 +2985,15 @@ body.ps-active #slideCta {
     return getDailyCount() < DAILY_LIMIT;
   }
 
+  function updateDailyCounter() {
+    var el = document.getElementById('dailyCounter');
+    if (!el) return;
+    var remaining = Math.max(0, DAILY_LIMIT - getDailyCount());
+    el.textContent = 'Осталось обработок сегодня: ' + remaining + ' из ' + DAILY_LIMIT;
+    if (remaining === 0) el.style.color = '#EF4444';
+  }
+  updateDailyCounter();
+
   // Toast
   function showToast(msg, duration) {
     duration = duration || 3000;
@@ -3003,7 +3013,7 @@ body.ps-active #slideCta {
       return 'Неподдерживаемый формат. Используйте JPG, PNG, AVIF или WEBP.';
     }
     if (file.size > MAX_FILE_SIZE) {
-      return 'Файл слишком большой. Максимум 10 MB.';
+      return 'Файл слишком большой. Максимум 15 MB.';
     }
     return null;
   }
@@ -3492,6 +3502,7 @@ body.ps-active #slideCta {
               frameBaseW = 0; frameBaseH = 0;
               requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
               incrementDailyCount();
+              updateDailyCounter();
             };
             originalImage.src = uploadedImageData;
           }
