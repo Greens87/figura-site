@@ -1355,8 +1355,8 @@ body.ps-active { overflow: hidden; }
 }
 #psCropBox {
   position: absolute;
-  border: 1.5px solid rgba(255,255,255,0.95);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+  border: 2px solid #4A90FF;
+  box-shadow: none;
   cursor: move;
   box-sizing: border-box;
   transition:
@@ -1370,20 +1370,67 @@ body.ps-active { overflow: hidden; }
 #psCropOverlay.dragging .ps-crop-dark { transition: none; }
 .ps-crop-handle {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: #fff;
-  border: 1.5px solid rgba(0,0,0,0.3);
+  border: 2px solid #4A90FF;
+  border-radius: 50%;
   box-sizing: border-box;
+  z-index: 2;
 }
-.ps-crop-handle-tl { top:-5px; left:-5px; cursor:nwse-resize; }
-.ps-crop-handle-tr { top:-5px; right:-5px; cursor:nesw-resize; }
-.ps-crop-handle-bl { bottom:-5px; left:-5px; cursor:nesw-resize; }
-.ps-crop-handle-br { bottom:-5px; right:-5px; cursor:nwse-resize; }
-.ps-crop-handle-t  { top:-5px;    left:50%; margin-left:-5px; cursor:ns-resize; }
-.ps-crop-handle-r  { top:50%;     right:-5px; margin-top:-5px; cursor:ew-resize; }
-.ps-crop-handle-b  { bottom:-5px; left:50%; margin-left:-5px; cursor:ns-resize; }
-.ps-crop-handle-l  { top:50%;     left:-5px; margin-top:-5px; cursor:ew-resize; }
+.ps-crop-handle-tl { top:-6px; left:-6px; cursor:nwse-resize; }
+.ps-crop-handle-tr { top:-6px; right:-6px; cursor:nesw-resize; }
+.ps-crop-handle-bl { bottom:-6px; left:-6px; cursor:nesw-resize; }
+.ps-crop-handle-br { bottom:-6px; right:-6px; cursor:nwse-resize; }
+.ps-crop-handle-t  { top:-6px;    left:50%; margin-left:-6px; cursor:ns-resize; }
+.ps-crop-handle-r  { top:50%;     right:-6px; margin-top:-6px; cursor:ew-resize; }
+.ps-crop-handle-b  { bottom:-6px; left:50%; margin-left:-6px; cursor:ns-resize; }
+.ps-crop-handle-l  { top:50%;     left:-6px; margin-top:-6px; cursor:ew-resize; }
+.ps-crop-rotate-line {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  width: 2px;
+  height: 26px;
+  background: #4A90FF;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.ps-crop-rotate-handle {
+  position: absolute;
+  top: -52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border: 2px solid #4A90FF;
+  border-radius: 50%;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  touch-action: none;
+}
+.ps-crop-rotate-handle:active { cursor: grabbing; }
+.ps-crop-rotate-handle svg { pointer-events: none; }
+.ps-crop-angle-tip {
+  position: absolute;
+  top: -78px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  display: none;
+  z-index: 4;
+}
 /* Eraser cursor — always visible crosshair + dynamic outer ring */
 #psEraserCursor {
   position: absolute;
@@ -2287,6 +2334,11 @@ body.ps-active #slideCta {
           <div class="ps-crop-handle ps-crop-handle-r"  data-handle="r"></div>
           <div class="ps-crop-handle ps-crop-handle-b"  data-handle="b"></div>
           <div class="ps-crop-handle ps-crop-handle-l"  data-handle="l"></div>
+          <div class="ps-crop-rotate-line"></div>
+          <div class="ps-crop-rotate-handle" id="psCropRotateHandle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A90FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          </div>
+          <div class="ps-crop-angle-tip" id="psCropAngleTip"></div>
         </div>
       </div>
       <div id="psEraserCursor">
@@ -2350,10 +2402,6 @@ body.ps-active #slideCta {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
           Выделение
         </button>
-        <button class="ps-tool-icon-btn" data-tool="rotate">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-          Поворот
-        </button>
         <button class="ps-tool-icon-btn" data-tool="shadow">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="19" rx="8" ry="3" opacity="0.4"/><rect x="4" y="2" width="16" height="14" rx="3"/></svg>
           Тень
@@ -2365,9 +2413,9 @@ body.ps-active #slideCta {
         <button class="ps-help-circle-btn" id="psHelpBtn" type="button" aria-label="Горячие клавиши">?</button>
       </div>
     </div>
-    <!-- Crop panel -->
+    <!-- Crop + Rotate panel -->
     <div id="psCropPanel" class="ps-panel hidden">
-      <div class="ps-panel-title">Обрезать по формату</div>
+      <div class="ps-panel-title">Обрезать и повернуть</div>
       <div id="psCropFormats">
         <button class="ps-fmt-btn active" data-ratio="free">Свободно</button>
         <button class="ps-fmt-btn" data-ratio="1/1">1:1</button>
@@ -2378,7 +2426,18 @@ body.ps-active #slideCta {
         <button class="ps-fmt-btn" data-ratio="16/9">16:9</button>
         <button class="ps-fmt-btn" data-ratio="9/16">9:16</button>
       </div>
-      <div class="ps-crop-hint" style="font-size:11px;color:var(--gray);">Shift — квадрат · Alt/Option — от центра</div>
+      <div class="ps-section-divider" style="margin-top:10px;">Поворот</div>
+      <div class="ps-rotate-btns">
+        <button id="psRotCW90">90° →</button>
+        <button id="psRotCCW90">← 90°</button>
+        <button id="psRot180">180°</button>
+      </div>
+      <div class="ps-section-divider">Зеркалирование</div>
+      <div class="ps-rotate-btns">
+        <button id="psFlipH">↔ По горизонтали</button>
+        <button id="psFlipV">↕ По вертикали</button>
+      </div>
+      <div class="ps-crop-hint" style="font-size:11px;color:var(--gray);">Shift — квадрат · Alt — от центра · ⟳ ручка — свободный поворот (Shift — 45°)</div>
       <div class="ps-panel-actions">
         <button id="psCropApplyBtn" class="btn-primary">Применить</button>
         <button id="psCropCancelBtn" class="ps-back-btn">Отмена</button>
@@ -2439,23 +2498,6 @@ body.ps-active #slideCta {
         <button id="psWandCancelBtn" class="ps-back-btn">Отмена</button>
       </div>
     </div>
-    <!-- Rotate/Flip panel -->
-    <div id="psRotatePanel" class="ps-panel hidden">
-      <div class="ps-panel-title">Поворот и отражение</div>
-      <div class="ps-rotate-btns">
-        <button id="psRotCW90">90° →</button>
-        <button id="psRotCCW90">← 90°</button>
-        <button id="psRot180">180°</button>
-      </div>
-      <div class="ps-section-divider">Зеркалирование</div>
-      <div class="ps-rotate-btns">
-        <button id="psFlipH">↔ По горизонтали</button>
-        <button id="psFlipV">↕ По вертикали</button>
-      </div>
-      <div class="ps-panel-actions">
-        <button id="psRotateCancelBtn" class="ps-back-btn">Готово</button>
-      </div>
-    </div>
     <!-- Shadow panel -->
     <div id="psShadowPanel" class="ps-panel hidden">
       <div class="ps-panel-title">Тень</div>
@@ -2479,10 +2521,12 @@ body.ps-active #slideCta {
       <li><span>Уменьшить</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>−</kbd></span></li>
       <li><span>Сбросить масштаб</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>0</kbd></span></li>
       <li><span>Скачать PNG</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>S</kbd></span></li>
-      <li><span>Обрезать</span><span class="ps-help-keys"><kbd>C</kbd></span></li>
+      <li><span>Обрезать / Повернуть</span><span class="ps-help-keys"><kbd>C</kbd></span></li>
       <li><span>Ластик</span><span class="ps-help-keys"><kbd>E</kbd></span></li>
       <li><span>Восстановить</span><span class="ps-help-keys"><kbd>R</kbd></span></li>
       <li><span>Выделение</span><span class="ps-help-keys"><kbd>W</kbd></span></li>
+      <li><span>90° по часовой</span><span class="ps-help-keys"><kbd>]</kbd></span></li>
+      <li><span>90° против часовой</span><span class="ps-help-keys"><kbd>[</kbd></span></li>
       <li><span>Применить / Выйти</span><span class="ps-help-keys"><kbd>Enter</kbd> / <kbd>Esc</kbd></span></li>
       <li><span>Панорама</span><span class="ps-help-keys"><kbd>Space</kbd> + drag</span></li>
     </ul>
@@ -3023,7 +3067,6 @@ body.ps-active #slideCta {
   var psRestoreCursor  = document.getElementById('psRestoreCursor');
   var psRestoreRing    = psRestoreCursor.querySelector('.ps-restore-ring');
   var psWandPanel      = document.getElementById('psWandPanel');
-  var psRotatePanel    = document.getElementById('psRotatePanel');
   var psShadowPanel    = document.getElementById('psShadowPanel');
   var psSelectionCanvas = document.getElementById('psSelectionCanvas');
   var psSelCtx         = psSelectionCanvas.getContext('2d');
@@ -3239,13 +3282,12 @@ body.ps-active #slideCta {
   });
 
   function showPsPanel(panel) {
-    var allPanels = ['default','crop','eraser','restore','wand','rotate','shadow'];
+    var allPanels = ['default','crop','eraser','restore','wand','shadow'];
     psDefaultPanel.classList.toggle('hidden', panel !== 'default');
     psCropPanel.classList.toggle('hidden', panel !== 'crop');
     psEraserPanel.classList.toggle('hidden', panel !== 'eraser');
     psRestorePanel.classList.toggle('hidden', panel !== 'restore');
     psWandPanel.classList.toggle('hidden', panel !== 'wand');
-    psRotatePanel.classList.toggle('hidden', panel !== 'rotate');
     psShadowPanel.classList.toggle('hidden', panel !== 'shadow');
 
     // Highlight active tool button
@@ -3802,10 +3844,17 @@ body.ps-active #slideCta {
     tmp.getContext('2d').drawImage(psCanvas, cx, cy, cw, ch, 0, 0, cw, ch);
     psCanvas.width = cw; psCanvas.height = ch;
     psCtx.drawImage(tmp, 0, 0);
+    originalResultData = psCtx.getImageData(0, 0, cw, ch);
+    psSelectionCanvas.width = cw;
+    psSelectionCanvas.height = ch;
     var sz = psCalcCardSize(cw, ch);
     psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
     zoom = 1; panX = 0; panY = 0;
     frameBaseW = 0; frameBaseH = 0;
+    psCanvas.style.width = '';
+    psCanvas.style.height = '';
+    psSelectionCanvas.style.width = '';
+    psSelectionCanvas.style.height = '';
     requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
     showPsPanel('default');
   });
@@ -3986,7 +4035,7 @@ body.ps-active #slideCta {
     if (tag === 'INPUT' || tag === 'TEXTAREA') { document.activeElement.blur(); return; }
     if (!psCropPanel.classList.contains('hidden') || !psEraserPanel.classList.contains('hidden') ||
         !psRestorePanel.classList.contains('hidden') || !psWandPanel.classList.contains('hidden') ||
-        !psRotatePanel.classList.contains('hidden') || !psShadowPanel.classList.contains('hidden')) {
+        !psShadowPanel.classList.contains('hidden')) {
       showPsPanel('default');
       e.preventDefault();
     }
@@ -4207,6 +4256,20 @@ body.ps-active #slideCta {
         e.preventDefault();
         showPsPanel('wand');
       }
+      return;
+    }
+    // ] — rotate 90° CW
+    if (e.key === ']' || e.key === 'ъ' || e.key === 'Ъ') {
+      e.preventDefault();
+      rotateCanvas(90);
+      if (!psCropPanel.classList.contains('hidden')) initCropOverlay();
+      return;
+    }
+    // [ — rotate 90° CCW
+    if (e.key === '[' || e.key === 'х' || e.key === 'Х') {
+      e.preventDefault();
+      rotateCanvas(-90);
+      if (!psCropPanel.classList.contains('hidden')) initCropOverlay();
       return;
     }
   });
@@ -4616,12 +4679,93 @@ body.ps-active #slideCta {
     originalResultData = psCtx.getImageData(0, 0, w, h);
   }
 
-  document.getElementById('psRotCW90').addEventListener('click', function() { rotateCanvas(90); });
-  document.getElementById('psRotCCW90').addEventListener('click', function() { rotateCanvas(-90); });
-  document.getElementById('psRot180').addEventListener('click', function() { rotateCanvas(180); });
+  document.getElementById('psRotCW90').addEventListener('click', function() { rotateCanvas(90); initCropOverlay(); });
+  document.getElementById('psRotCCW90').addEventListener('click', function() { rotateCanvas(-90); initCropOverlay(); });
+  document.getElementById('psRot180').addEventListener('click', function() { rotateCanvas(180); initCropOverlay(); });
   document.getElementById('psFlipH').addEventListener('click', function() { flipCanvas('h'); });
   document.getElementById('psFlipV').addEventListener('click', function() { flipCanvas('v'); });
-  document.getElementById('psRotateCancelBtn').addEventListener('click', function() { showPsPanel('default'); });
+
+  // ── FREE ROTATION VIA HANDLE ──
+  var cropRotating = false;
+  var cropRotStartAngle = 0;
+  var cropRotCurrentAngle = 0;
+  var cropRotCenterX = 0, cropRotCenterY = 0;
+  var psCropAngleTip = document.getElementById('psCropAngleTip');
+
+  function getCropBoxCenter() {
+    var boxRect = psCropBox.getBoundingClientRect();
+    return {
+      x: boxRect.left + boxRect.width / 2,
+      y: boxRect.top + boxRect.height / 2
+    };
+  }
+
+  document.getElementById('psCropRotateHandle').addEventListener('pointerdown', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    cropRotating = true;
+    this.setPointerCapture(e.pointerId);
+    var c = getCropBoxCenter();
+    cropRotCenterX = c.x;
+    cropRotCenterY = c.y;
+    cropRotStartAngle = Math.atan2(e.clientX - cropRotCenterX, -(e.clientY - cropRotCenterY));
+    cropRotCurrentAngle = 0;
+    psCropAngleTip.style.display = 'block';
+    psCropAngleTip.textContent = '0°';
+  });
+
+  document.addEventListener('pointermove', function(e) {
+    if (!cropRotating) return;
+    var rawAngle = Math.atan2(e.clientX - cropRotCenterX, -(e.clientY - cropRotCenterY));
+    var delta = (rawAngle - cropRotStartAngle) * 180 / Math.PI;
+    while (delta > 180) delta -= 360;
+    while (delta < -180) delta += 360;
+    if (e.shiftKey) {
+      delta = Math.round(delta / 45) * 45;
+    }
+    cropRotCurrentAngle = delta;
+    psCanvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px) rotate(' + delta + 'deg)';
+    psCropAngleTip.textContent = Math.round(delta) + '°';
+  });
+
+  document.addEventListener('pointerup', function(e) {
+    if (!cropRotating) return;
+    cropRotating = false;
+    psCropAngleTip.style.display = 'none';
+    psCanvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
+    if (Math.abs(cropRotCurrentAngle) < 1) return;
+    applyFreeRotation(cropRotCurrentAngle);
+    cropRotCurrentAngle = 0;
+  });
+
+  function applyFreeRotation(degrees) {
+    pushEditState();
+    var rad = degrees * Math.PI / 180;
+    var w = psCanvas.width, h = psCanvas.height;
+    var cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
+    var nw = Math.ceil(w * cos + h * sin);
+    var nh = Math.ceil(w * sin + h * cos);
+    var tmp = document.createElement('canvas');
+    tmp.width = nw; tmp.height = nh;
+    var tCtx = tmp.getContext('2d');
+    tCtx.translate(nw / 2, nh / 2);
+    tCtx.rotate(rad);
+    tCtx.drawImage(psCanvas, -w / 2, -h / 2);
+    psCanvas.width = nw; psCanvas.height = nh;
+    psCtx.drawImage(tmp, 0, 0);
+    originalResultData = psCtx.getImageData(0, 0, nw, nh);
+    psSelectionCanvas.width = nw;
+    psSelectionCanvas.height = nh;
+    var sz = psCalcCardSize(nw, nh);
+    psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
+    zoom = 1; panX = 0; panY = 0;
+    frameBaseW = 0; frameBaseH = 0;
+    psCanvas.style.width = '';
+    psCanvas.style.height = '';
+    psSelectionCanvas.style.width = '';
+    psSelectionCanvas.style.height = '';
+    requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); initCropOverlay(); });
+  }
 
   // ── CONTACT SHADOW ──
   document.getElementById('psShadowBlur').addEventListener('input', function() {
