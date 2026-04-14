@@ -3010,7 +3010,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T22:30';
+  const DEPLOY_VERSION = '2026-04-14T22:35';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3527,8 +3527,9 @@ body.ps-active #slideCta {
       psCanvas.style.transform = '';
       if (psPickerPop) psPickerPop.classList.remove('visible');
       if (psHelpPop) psHelpPop.classList.remove('visible');
-      psToolsExpanded.classList.remove('visible');
+      psToolPanel.classList.add('hidden');
       psToolsToggleBtn.classList.remove('active');
+      toolPanelEntryState = null;
       editStack.length = 0;
       originalResultData = null;
       wandSelection = null;
@@ -3579,8 +3580,9 @@ body.ps-active #slideCta {
     });
     editStack.length = 0;
     originalResultData = null;
-    psToolsExpanded.classList.remove('visible');
+    psToolPanel.classList.add('hidden');
     psToolsToggleBtn.classList.remove('active');
+    toolPanelEntryState = null;
     if (psCtx) psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
 
     setTimeout(function() {
