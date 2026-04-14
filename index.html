@@ -1250,18 +1250,22 @@ body.ps-active { overflow: hidden; }
 
 #processingScreen {
   position: fixed;
-  inset: 0;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: #FFFFFF;
   z-index: 500;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px 32px;
+  padding: 16px 20px 16px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.55s ease;
   overflow-y: auto;
+  gap: 12px;
 }
 #processingScreen.visible {
   opacity: 1;
@@ -1287,6 +1291,17 @@ body.ps-active { overflow: hidden; }
 @keyframes psBreath {
   0%,100% { transform: scale(1); }
   50%      { transform: scale(1.02); }
+}
+@media (max-width: 768px) {
+  .ps-card {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 200px);
+    padding: 8px;
+  }
+  #psBottom {
+    margin-top: 8px;
+    gap: 8px;
+  }
 }
 /* Inner artboard — sharp corners, holds canvas + overlays */
 .ps-canvas-frame {
@@ -2025,6 +2040,19 @@ body.ps-active { overflow: hidden; }
   gap: 14px;
 }
 .ps-panel.hidden { display: none; }
+@media (max-width: 768px) {
+  .ps-panel {
+    top: auto;
+    bottom: 0;
+    left: 0 !important;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    transform: none;
+    border-radius: 16px 16px 0 0;
+    max-height: 50vh;
+  }
+}
 .ps-panel-title {
   font-family: var(--font-heading);
   font-size: 13px;
@@ -2941,7 +2969,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T18:15';
+  const DEPLOY_VERSION = '2026-04-14T18:45';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3115,8 +3143,13 @@ body.ps-active #slideCta {
   function psCalcCardSize(imgW, imgH) {
     var ratio = imgW / imgH;
     var PAD = 30;
-    var maxFrameW = Math.min(window.innerWidth * 0.88, 900) - PAD;
-    var maxFrameH = Math.min(window.innerHeight * 0.78, 720) - PAD;
+    var navH = 64;
+    var bottomH = 120;
+    var availW = window.innerWidth - 40;
+    var availH = window.innerHeight - navH - bottomH;
+    if (availW > 600) availW -= 40;
+    var maxFrameW = Math.min(availW * 0.92, 900) - PAD;
+    var maxFrameH = Math.min(availH * 0.92, 720) - PAD;
     var fw, fh;
     if (ratio >= 1) { fw = Math.min(maxFrameW, maxFrameH * ratio); fh = fw / ratio; }
     else            { fh = Math.min(maxFrameH, maxFrameW / ratio); fw = fh * ratio; }
@@ -3311,9 +3344,15 @@ body.ps-active #slideCta {
   });
 
   function positionToolPanel() {
+    if (window.innerWidth <= 768) return;
     var cardRect = psCard.getBoundingClientRect();
-    var gap = 20;
+    var gap = 16;
     var left = cardRect.right + gap;
+    var panelW = 280;
+    if (left + panelW > window.innerWidth - 10) {
+      left = cardRect.left - panelW - gap;
+    }
+    if (left < 10) left = 10;
     var panels = document.querySelectorAll('.ps-panel');
     panels.forEach(function(p) {
       if (!p.classList.contains('hidden')) {
@@ -3384,6 +3423,16 @@ body.ps-active #slideCta {
   window.addEventListener('resize', function() {
     if (!document.body.classList.contains('ps-active')) return;
     positionToolPanel();
+    if (psCanvas.width > 0 && psCanvas.height > 0) {
+      var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
+      resizeCardInstant(sz.w, sz.h);
+      frameBaseW = 0; frameBaseH = 0;
+      psCanvas.style.width = '';
+      psCanvas.style.height = '';
+      psSelectionCanvas.style.width = '';
+      psSelectionCanvas.style.height = '';
+      requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
+    }
   });
 
   // Tools toggle
@@ -3899,10 +3948,15 @@ body.ps-active #slideCta {
     updateCropBoxCSS();
   }
 
-  var SNAP_THRESHOLD = 8;
+  function getSnapThreshold() {
+    var canvRect = psCanvas.getBoundingClientRect();
+    if (!canvRect.width) return 15;
+    return 15 * psCanvas.width / canvRect.width;
+  }
   function snapCropValue(val, targets) {
+    var thresh = getSnapThreshold();
     for (var i = 0; i < targets.length; i++) {
-      if (Math.abs(val - targets[i]) < SNAP_THRESHOLD) return targets[i];
+      if (Math.abs(val - targets[i]) < thresh) return targets[i];
     }
     return val;
   }
