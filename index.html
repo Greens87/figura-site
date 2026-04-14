@@ -2969,7 +2969,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T19:20';
+  const DEPLOY_VERSION = '2026-04-14T19:25';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -4938,29 +4938,14 @@ body.ps-active #slideCta {
     pushEditState();
     var rad = degrees * Math.PI / 180;
     var w = source.width, h = source.height;
-    var cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
-    var nw = Math.ceil(w * cos + h * sin);
-    var nh = Math.ceil(w * sin + h * cos);
-    var tmp = document.createElement('canvas');
-    tmp.width = nw; tmp.height = nh;
-    var tCtx = tmp.getContext('2d');
-    tCtx.translate(nw / 2, nh / 2);
-    tCtx.rotate(rad);
-    tCtx.drawImage(source, -w / 2, -h / 2);
-    psCanvas.width = nw; psCanvas.height = nh;
-    psCtx.drawImage(tmp, 0, 0);
-    originalResultData = psCtx.getImageData(0, 0, nw, nh);
-    psSelectionCanvas.width = nw;
-    psSelectionCanvas.height = nh;
-    var sz = psCalcCardSize(nw, nh);
-    resizeCardInstant(sz.w, sz.h);
-    zoom = 1; panX = 0; panY = 0;
-    frameBaseW = 0; frameBaseH = 0;
-    psCanvas.style.width = '';
-    psCanvas.style.height = '';
-    psSelectionCanvas.style.width = '';
-    psSelectionCanvas.style.height = '';
-    requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); initCropOverlay(); });
+    psCtx.clearRect(0, 0, w, h);
+    psCtx.save();
+    psCtx.translate(w / 2, h / 2);
+    psCtx.rotate(rad);
+    psCtx.drawImage(source, -w / 2, -h / 2);
+    psCtx.restore();
+    originalResultData = psCtx.getImageData(0, 0, w, h);
+    initCropOverlay();
   }
 
   // ── CONTACT SHADOW ──
