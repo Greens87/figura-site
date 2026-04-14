@@ -1260,7 +1260,7 @@ body.ps-active { overflow: hidden; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px 20px 16px;
+  padding: 24px 20px 16px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.55s ease;
@@ -1291,6 +1291,9 @@ body.ps-active { overflow: hidden; }
   50%      { transform: scale(1.02); }
 }
 @media (max-width: 768px) {
+  #processingScreen {
+    padding: 16px 12px 12px;
+  }
   .ps-card {
     max-width: calc(100vw - 24px);
     max-height: calc(100vh - 200px);
@@ -2516,7 +2519,7 @@ body.ps-active #slideCta {
       <div class="ps-crop-hint" style="font-size:11px;color:var(--gray);">Shift — квадрат · Alt — от центра · ⟳ ручка — свободный поворот (Shift — 45°)</div>
       <div class="ps-panel-actions">
         <button id="psCropApplyBtn" class="btn-primary">Применить</button>
-        <button id="psCropCancelBtn" class="ps-back-btn">Отмена</button>
+        <button id="psCropCancelBtn" class="ps-back-btn">Сброс</button>
       </div>
     </div>
     <!-- Brush panel (Eraser + Restore) -->
@@ -2544,7 +2547,7 @@ body.ps-active #slideCta {
       <div class="ps-panel-actions">
         <button id="psBrushInvertBtn" class="ps-tool-btn">⊘ Инвертировать</button>
         <button id="psBrushUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psBrushCancelBtn" class="ps-back-btn">Отмена</button>
+        <button id="psBrushCancelBtn" class="ps-back-btn">Сброс</button>
         <button id="psBrushDoneBtn" class="btn-primary">Готово</button>
       </div>
     </div>
@@ -2562,7 +2565,8 @@ body.ps-active #slideCta {
       <div class="ps-panel-actions">
         <button id="psWandDeleteBtn" class="btn-primary">Удалить выделение</button>
         <button id="psWandInvertBtn" class="ps-tool-btn">Инвертировать</button>
-        <button id="psWandCancelBtn" class="ps-back-btn">Отмена</button>
+        <button id="psWandCancelBtn" class="ps-back-btn">Сброс</button>
+        <button id="psWandDoneBtn" class="btn-primary" style="flex:1;">Готово</button>
       </div>
     </div>
     <!-- Shadow panel -->
@@ -2575,7 +2579,7 @@ body.ps-active #slideCta {
       </div>
       <div class="ps-panel-actions">
         <button id="psShadowApplyBtn" class="btn-primary">Применить тень</button>
-        <button id="psShadowCancelBtn" class="ps-back-btn">Отмена</button>
+        <button id="psShadowCancelBtn" class="ps-back-btn">Сброс</button>
       </div>
     </div>
   </div>
@@ -2996,7 +3000,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T20:05';
+  const DEPLOY_VERSION = '2026-04-14T21:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3172,9 +3176,10 @@ body.ps-active #slideCta {
     var ratio = imgW / imgH;
     var PAD = 30;
     var navH = 64;
+    var topGap = 24;
     var bottomH = 120;
     var availW = window.innerWidth - 40;
-    var availH = window.innerHeight - navH - bottomH;
+    var availH = window.innerHeight - navH - topGap - bottomH;
     if (availW > 600) availW -= 40;
     var maxFrameW = Math.min(availW * 0.92, 900) - PAD;
     var maxFrameH = Math.min(availH * 0.92, 720) - PAD;
@@ -3421,6 +3426,7 @@ body.ps-active #slideCta {
       psCropRotateWidget.style.display = 'none';
     }
     if (panel === 'brush') {
+      brushEntryState = saveToolEntryState();
       psCanvas.style.cursor = 'none';
       psBrushCursor.classList.toggle('restore-mode', brushMode === 'restore');
       if (brushMode === 'restore' && originalResultData) {
@@ -3429,9 +3435,11 @@ body.ps-active #slideCta {
         psOriginalCanvas.classList.remove('visible');
       }
     } else if (panel === 'wand') {
+      wandEntryState = saveToolEntryState();
       psCanvas.style.cursor = 'crosshair';
       psOriginalCanvas.classList.remove('visible');
     } else {
+      if (panel === 'shadow') shadowEntryState = saveToolEntryState();
       psCanvas.style.cursor = '';
       psBrushCursor.classList.remove('visible');
       brushDrawing = false;
@@ -3632,6 +3640,37 @@ body.ps-active #slideCta {
   // ── CROP ──
   // cropActiveRatio: null = free mode, else number = width/height
   var cropEntryState = null;
+  var brushEntryState = null;
+  var wandEntryState = null;
+  var shadowEntryState = null;
+  function saveToolEntryState() {
+    if (!psCtx) return null;
+    return {
+      w: psCanvas.width,
+      h: psCanvas.height,
+      data: psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height),
+      cardW: psCard.style.width,
+      cardH: psCard.style.height
+    };
+  }
+  function restoreToolEntryState(state) {
+    if (!state) return;
+    psCanvas.width = state.w;
+    psCanvas.height = state.h;
+    psCtx.putImageData(state.data, 0, 0);
+    originalResultData = psCtx.getImageData(0, 0, state.w, state.h);
+    psSelectionCanvas.width = state.w;
+    psSelectionCanvas.height = state.h;
+    resizeCardInstant(parseInt(state.cardW), parseInt(state.cardH));
+    zoom = 1; panX = 0; panY = 0;
+    frameBaseW = 0; frameBaseH = 0;
+    psCanvas.style.width = '';
+    psCanvas.style.height = '';
+    psSelectionCanvas.style.width = '';
+    psSelectionCanvas.style.height = '';
+    requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
+    editStack = [];
+  }
   var cropActiveRatio = null;
   var cropX = 0, cropY = 0, cropW = 0, cropH = 0;
   var cropDragging = false, cropResizing = false, cropDragHandle = null;
@@ -4223,9 +4262,12 @@ body.ps-active #slideCta {
 
   document.getElementById('psBrushUndoBtn').addEventListener('click', undoEdit);
   document.getElementById('psBrushDoneBtn').addEventListener('click', function() {
+    brushEntryState = null;
     showPsPanel('default');
   });
   document.getElementById('psBrushCancelBtn').addEventListener('click', function() {
+    restoreToolEntryState(brushEntryState);
+    brushEntryState = null;
     showPsPanel('default');
   });
 
@@ -4826,6 +4868,15 @@ body.ps-active #slideCta {
     wandSelection = null;
     psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
     if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
+    restoreToolEntryState(wandEntryState);
+    wandEntryState = null;
+    showPsPanel('default');
+  });
+  document.getElementById('psWandDoneBtn').addEventListener('click', function() {
+    wandSelection = null;
+    psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
+    if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
+    wandEntryState = null;
     showPsPanel('default');
   });
   document.getElementById('psWandTolerance').addEventListener('input', function() {
@@ -5012,10 +5063,15 @@ body.ps-active #slideCta {
     psCtx.shadowBlur = 0;
     psCtx.shadowOffsetX = 0;
     psCtx.shadowOffsetY = 0;
+    shadowEntryState = null;
     showPsPanel('default');
   });
 
-  document.getElementById('psShadowCancelBtn').addEventListener('click', function() { showPsPanel('default'); });
+  document.getElementById('psShadowCancelBtn').addEventListener('click', function() {
+    restoreToolEntryState(shadowEntryState);
+    shadowEntryState = null;
+    showPsPanel('default');
+  });
 
   // Color picker
   function applyBackground(color) {
