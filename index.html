@@ -1360,11 +1360,6 @@ body.ps-active { overflow: hidden; }
   position: absolute;
   background: rgba(0,0,0,0.48);
   pointer-events: none;
-  transition:
-    left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #psCropBox {
   position: absolute;
@@ -1372,15 +1367,7 @@ body.ps-active { overflow: hidden; }
   box-shadow: none;
   cursor: move;
   box-sizing: border-box;
-  transition:
-    left 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    top 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* Disable transitions during active drag/resize/marquee for direct response */
-#psCropOverlay.dragging #psCropBox,
-#psCropOverlay.dragging .ps-crop-dark { transition: none; }
 .ps-crop-handle {
   position: absolute;
   width: 12px;
@@ -3637,7 +3624,7 @@ body.ps-active #slideCta {
   }
 
   psCropOverlay.addEventListener('pointerdown', function(e) {
-    if (e.target.classList.contains('ps-crop-handle')) return;
+    if (e.target.classList.contains('ps-crop-handle') || e.target.closest('.ps-crop-rotate-handle')) return;
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
@@ -3668,6 +3655,7 @@ body.ps-active #slideCta {
       var dy = p.y - cropMoveStart.my;
       cropX = Math.max(0, Math.min(psCanvas.width  - cropW, cropMoveStart.bx + dx));
       cropY = Math.max(0, Math.min(psCanvas.height - cropH, cropMoveStart.by + dy));
+      if (!e.altKey) snapCropBox();
       updateCropBoxCSS();
       return;
     }
@@ -3702,6 +3690,7 @@ body.ps-active #slideCta {
     }
 
     cropX = x; cropY = y; cropW = w; cropH = h;
+    if (!e.altKey) snapCropBox();
     updateCropBoxCSS();
   });
 
@@ -3876,7 +3865,38 @@ body.ps-active #slideCta {
     }
 
     cropX = nx; cropY = ny; cropW = nw; cropH = nh;
+    if (!e.altKey) snapCropBox();
     updateCropBoxCSS();
+  }
+
+  var SNAP_THRESHOLD = 8;
+  function snapCropValue(val, targets) {
+    for (var i = 0; i < targets.length; i++) {
+      if (Math.abs(val - targets[i]) < SNAP_THRESHOLD) return targets[i];
+    }
+    return val;
+  }
+
+  function snapCropBox() {
+    var cw = psCanvas.width, ch = psCanvas.height;
+    var snapX = [0, cw / 3, cw / 2, cw * 2 / 3, cw];
+    var snapY = [0, ch / 3, ch / 2, ch * 2 / 3, ch];
+
+    cropX = snapCropValue(cropX, snapX);
+    cropY = snapCropValue(cropY, snapY);
+    var r = cropX + cropW;
+    var b = cropY + cropH;
+    r = snapCropValue(r, snapX);
+    b = snapCropValue(b, snapY);
+    cropW = r - cropX;
+    cropH = b - cropY;
+
+    var cx = cropX + cropW / 2;
+    var cy = cropY + cropH / 2;
+    var snappedCX = snapCropValue(cx, [cw / 2]);
+    var snappedCY = snapCropValue(cy, [ch / 2]);
+    if (snappedCX !== cx) { cropX = snappedCX - cropW / 2; }
+    if (snappedCY !== cy) { cropY = snappedCY - cropH / 2; }
   }
 
   document.getElementById('psCropApplyBtn').addEventListener('click', function() {
@@ -4703,6 +4723,10 @@ body.ps-active #slideCta {
     psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
     zoom = 1; panX = 0; panY = 0;
     frameBaseW = 0; frameBaseH = 0;
+    psCanvas.style.width = '';
+    psCanvas.style.height = '';
+    psSelectionCanvas.style.width = '';
+    psSelectionCanvas.style.height = '';
     requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
   }
 
@@ -4753,6 +4777,11 @@ body.ps-active #slideCta {
     cropRotCurrentAngle = 0;
     psCropAngleTip.style.display = 'block';
     psCropAngleTip.textContent = '0°';
+    psCropBox.style.display = 'none';
+    psDarkT.style.display = 'none';
+    psDarkR.style.display = 'none';
+    psDarkB.style.display = 'none';
+    psDarkL.style.display = 'none';
   });
 
   document.addEventListener('pointermove', function(e) {
@@ -4774,6 +4803,11 @@ body.ps-active #slideCta {
     cropRotating = false;
     psCropAngleTip.style.display = 'none';
     psCanvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
+    psCropBox.style.display = '';
+    psDarkT.style.display = '';
+    psDarkR.style.display = '';
+    psDarkB.style.display = '';
+    psDarkL.style.display = '';
     if (Math.abs(cropRotCurrentAngle) < 1) return;
     applyFreeRotation(cropRotCurrentAngle);
     cropRotCurrentAngle = 0;
