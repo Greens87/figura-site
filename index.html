@@ -1284,7 +1284,6 @@ body.ps-active { overflow: hidden; }
   background: #FFFFFF;
   padding: 14px;
 }
-.ps-card.crop-active { overflow: visible; }
 .ps-card.crop-active .ps-canvas-frame { overflow: visible; }
 .ps-card.no-transition { transition: none !important; }
 .ps-card.breathing { animation: psBreath 2.6s ease-in-out infinite; }
@@ -1339,7 +1338,9 @@ body.ps-active { overflow: hidden; }
 .ps-shimmer.hidden { opacity: 0; pointer-events: none; }
 #psCanvas {
   display: block;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1;
   transform-origin: 0 0;
 }
@@ -2969,7 +2970,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T19:25';
+  const DEPLOY_VERSION = '2026-04-14T19:35';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
