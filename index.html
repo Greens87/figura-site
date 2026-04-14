@@ -1432,7 +1432,7 @@ body.ps-active { overflow: hidden; }
   z-index: 4;
 }
 /* Eraser cursor — always visible crosshair + dynamic outer ring */
-#psEraserCursor {
+#psBrushCursor {
   position: absolute;
   pointer-events: none;
   z-index: 11;
@@ -1440,38 +1440,40 @@ body.ps-active { overflow: hidden; }
   transform: translate(-50%, -50%);
   width: 0; height: 0;
 }
-#psEraserCursor.visible { display: block; }
-#psEraserCursor .ps-eraser-ring {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  border: 2px solid rgba(0,0,0,0.85);
+#psBrushCursor.visible { display: block; }
+#psBrushCursor .ps-brush-ring {
+  border: 2px solid rgba(239,68,68,0.7);
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(255,255,255,1), inset 0 0 0 1px rgba(255,255,255,1);
+  box-shadow: 0 0 0 1px rgba(239,68,68,0.15);
+  transition: width 0.1s ease, height 0.1s ease, border-color 0.2s;
 }
-#psEraserCursor .ps-eraser-cross {
+#psBrushCursor.restore-mode .ps-brush-ring {
+  border-color: rgba(34,197,94,0.7);
+  box-shadow: 0 0 0 1px rgba(34,197,94,0.15);
+}
+#psBrushCursor .ps-brush-cross {
   position: absolute;
-  left: 50%; top: 50%;
-  width: 14px;
-  height: 14px;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
+  width: 10px; height: 10px;
+  pointer-events: none;
 }
-#psEraserCursor .ps-eraser-cross::before,
-#psEraserCursor .ps-eraser-cross::after {
+#psBrushCursor .ps-brush-cross::before,
+#psBrushCursor .ps-brush-cross::after {
   content: '';
   position: absolute;
-  background: rgba(0,0,0,0.9);
-  box-shadow: 0 0 0 1px rgba(255,255,255,1);
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 0 1.5px rgba(0,0,0,0.6);
 }
-#psEraserCursor .ps-eraser-cross::before {
+#psBrushCursor .ps-brush-cross::before {
+  top: 0; left: 50%;
+  width: 1.5px; height: 100%;
+  transform: translateX(-50%);
+}
+#psBrushCursor .ps-brush-cross::after {
   left: 0; top: 50%;
-  width: 14px; height: 1px;
-  margin-top: -0.5px;
-}
-#psEraserCursor .ps-eraser-cross::after {
-  left: 50%; top: 0;
-  width: 1px; height: 14px;
-  margin-left: -0.5px;
+  height: 1.5px; width: 100%;
+  transform: translateY(-50%);
 }
 /* Eraser preview (shown while adjusting size/hardness sliders) */
 #psEraserPreview {
@@ -1487,6 +1489,38 @@ body.ps-active { overflow: hidden; }
   box-shadow: 0 0 0 1.5px rgba(255,255,255,0.9), 0 0 0 2.5px rgba(0,0,0,0.45);
 }
 #psEraserPreview.visible { opacity: 1; }
+.ps-brush-tabs {
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+.ps-brush-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ps-brush-tab:hover { color: #333; }
+.ps-brush-tab.active {
+  background: #1a1a1a;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.ps-brush-tab svg { width: 16px; height: 16px; }
 /* Zoom controls (bottom-right of card) */
 #psZoomCtrls {
   position: absolute;
@@ -2074,21 +2108,6 @@ body.ps-active { overflow: hidden; }
 .ps-tool-icon-btn svg { opacity: 0.7; }
 .ps-tool-icon-btn:hover svg, .ps-tool-icon-btn.active svg { opacity: 1; }
 
-/* Restore cursor (green ring) */
-#psRestoreCursor {
-  position: absolute;
-  pointer-events: none;
-  z-index: 12;
-  display: none;
-  transform: translate(-50%, -50%);
-}
-#psRestoreCursor.visible { display: block; }
-#psRestoreCursor .ps-restore-ring {
-  border: 2px solid rgba(34,197,94,0.7);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(34,197,94,0.15);
-}
-
 /* Selection canvas — styled in #psCanvas block above */
 
 /* Shadow panel */
@@ -2341,12 +2360,9 @@ body.ps-active #slideCta {
           <div class="ps-crop-angle-tip" id="psCropAngleTip"></div>
         </div>
       </div>
-      <div id="psEraserCursor">
-        <div class="ps-eraser-ring"></div>
-        <div class="ps-eraser-cross"></div>
-      </div>
-      <div id="psRestoreCursor">
-        <div class="ps-restore-ring"></div>
+      <div id="psBrushCursor">
+        <div class="ps-brush-ring"></div>
+        <div class="ps-brush-cross"></div>
       </div>
       <div id="psEraserPreview"></div>
       <canvas id="psSelectionCanvas"></canvas>
@@ -2390,13 +2406,9 @@ body.ps-active #slideCta {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
           Обрезать
         </button>
-        <button class="ps-tool-icon-btn" data-tool="eraser">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-          Ластик
-        </button>
-        <button class="ps-tool-icon-btn" data-tool="restore">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Восстановить
+        <button class="ps-tool-icon-btn" data-tool="brush">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/><path d="M14.5 17.5 4.5 15"/></svg>
+          Кисть
         </button>
         <button class="ps-tool-icon-btn" data-tool="wand">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
@@ -2443,42 +2455,33 @@ body.ps-active #slideCta {
         <button id="psCropCancelBtn" class="ps-back-btn">Отмена</button>
       </div>
     </div>
-    <!-- Eraser panel -->
-    <div id="psEraserPanel" class="ps-panel hidden">
-      <div class="ps-panel-title">Ластик</div>
+    <!-- Brush panel (Eraser + Restore) -->
+    <div id="psBrushPanel" class="ps-panel hidden">
+      <div class="ps-brush-tabs">
+        <button class="ps-brush-tab active" data-brush-mode="eraser">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          Ластик
+        </button>
+        <button class="ps-brush-tab" data-brush-mode="restore">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Восстановить
+        </button>
+      </div>
       <div class="ps-slider-row">
         <span>Размер</span>
-        <input type="range" id="psEraserSize" min="5" max="500" value="40">
-        <span class="ps-slider-val"><span id="psEraserSizeVal">40</span>px</span>
+        <input type="range" id="psBrushSize" min="5" max="500" value="40">
+        <span class="ps-slider-val"><span id="psBrushSizeVal">40</span>px</span>
       </div>
       <div class="ps-slider-row">
         <span>Жёсткость</span>
-        <input type="range" id="psEraserHard" min="0" max="100" value="80">
-        <span class="ps-slider-val"><span id="psEraserHardVal">80</span>%</span>
+        <input type="range" id="psBrushHard" min="0" max="100" value="80">
+        <span class="ps-slider-val"><span id="psBrushHardVal">80</span>%</span>
       </div>
       <div class="ps-panel-actions">
-        <button id="psUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psEraserCancelBtn" class="ps-back-btn">Отмена</button>
-        <button id="psEraserDoneBtn" class="btn-primary">Готово</button>
-      </div>
-    </div>
-    <!-- Restore panel -->
-    <div id="psRestorePanel" class="ps-panel hidden">
-      <div class="ps-panel-title">Восстанавливающая кисть</div>
-      <div class="ps-slider-row">
-        <span>Размер</span>
-        <input type="range" id="psRestoreSize" min="5" max="500" value="40">
-        <span class="ps-slider-val"><span id="psRestoreSizeVal">40</span>px</span>
-      </div>
-      <div class="ps-slider-row">
-        <span>Жёсткость</span>
-        <input type="range" id="psRestoreHard" min="0" max="100" value="80">
-        <span class="ps-slider-val"><span id="psRestoreHardVal">80</span>%</span>
-      </div>
-      <div class="ps-panel-actions">
-        <button id="psRestoreUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psRestoreCancelBtn" class="ps-back-btn">Отмена</button>
-        <button id="psRestoreDoneBtn" class="btn-primary">Готово</button>
+        <button id="psBrushInvertBtn" class="ps-tool-btn">⊘ Инвертировать</button>
+        <button id="psBrushUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+        <button id="psBrushCancelBtn" class="ps-back-btn">Отмена</button>
+        <button id="psBrushDoneBtn" class="btn-primary">Готово</button>
       </div>
     </div>
     <!-- Magic Wand panel -->
@@ -2522,8 +2525,8 @@ body.ps-active #slideCta {
       <li><span>Сбросить масштаб</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>0</kbd></span></li>
       <li><span>Скачать PNG</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>S</kbd></span></li>
       <li><span>Обрезать / Повернуть</span><span class="ps-help-keys"><kbd>C</kbd></span></li>
-      <li><span>Ластик</span><span class="ps-help-keys"><kbd>E</kbd></span></li>
-      <li><span>Восстановить</span><span class="ps-help-keys"><kbd>R</kbd></span></li>
+      <li><span>Кисть (ластик)</span><span class="ps-help-keys"><kbd>E</kbd></span></li>
+      <li><span>Кисть (восстановить)</span><span class="ps-help-keys"><kbd>R</kbd></span></li>
       <li><span>Выделение</span><span class="ps-help-keys"><kbd>W</kbd></span></li>
       <li><span>90° по часовой</span><span class="ps-help-keys"><kbd>]</kbd></span></li>
       <li><span>90° против часовой</span><span class="ps-help-keys"><kbd>[</kbd></span></li>
@@ -3047,11 +3050,11 @@ body.ps-active #slideCta {
   var psToolbar    = document.getElementById('psToolbar');
   var psDefaultPanel = document.getElementById('psDefaultPanel');
   var psCropPanel  = document.getElementById('psCropPanel');
-  var psEraserPanel = document.getElementById('psEraserPanel');
+  var psBrushPanel = document.getElementById('psBrushPanel');
   var psCropOverlay = document.getElementById('psCropOverlay');
   var psCropBox    = document.getElementById('psCropBox');
-  var psEraserCursor = document.getElementById('psEraserCursor');
-  var psEraserRing   = psEraserCursor.querySelector('.ps-eraser-ring');
+  var psBrushCursor = document.getElementById('psBrushCursor');
+  var psBrushRing   = psBrushCursor.querySelector('.ps-brush-ring');
   var psEraserPreview = document.getElementById('psEraserPreview');
   var psZoomCtrls    = document.getElementById('psZoomCtrls');
   var psZoomInBtn    = document.getElementById('psZoomInBtn');
@@ -3063,9 +3066,6 @@ body.ps-active #slideCta {
   var psDarkR        = document.getElementById('psDarkR');
   var psDarkB        = document.getElementById('psDarkB');
   var psDarkL        = document.getElementById('psDarkL');
-  var psRestorePanel   = document.getElementById('psRestorePanel');
-  var psRestoreCursor  = document.getElementById('psRestoreCursor');
-  var psRestoreRing    = psRestoreCursor.querySelector('.ps-restore-ring');
   var psWandPanel      = document.getElementById('psWandPanel');
   var psShadowPanel    = document.getElementById('psShadowPanel');
   var psSelectionCanvas = document.getElementById('psSelectionCanvas');
@@ -3282,15 +3282,13 @@ body.ps-active #slideCta {
   });
 
   function showPsPanel(panel) {
-    var allPanels = ['default','crop','eraser','restore','wand','shadow'];
+    var allPanels = ['default','crop','brush','wand','shadow'];
     psDefaultPanel.classList.toggle('hidden', panel !== 'default');
     psCropPanel.classList.toggle('hidden', panel !== 'crop');
-    psEraserPanel.classList.toggle('hidden', panel !== 'eraser');
-    psRestorePanel.classList.toggle('hidden', panel !== 'restore');
+    psBrushPanel.classList.toggle('hidden', panel !== 'brush');
     psWandPanel.classList.toggle('hidden', panel !== 'wand');
     psShadowPanel.classList.toggle('hidden', panel !== 'shadow');
 
-    // Highlight active tool button
     document.querySelectorAll('#psToolsExpanded .ps-tool-icon-btn').forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-tool') === panel);
     });
@@ -3301,18 +3299,15 @@ body.ps-active #slideCta {
     } else {
       psCropOverlay.classList.remove('visible');
     }
-    if (panel === 'eraser') {
+    if (panel === 'brush') {
       psCanvas.style.cursor = 'none';
-    } else if (panel === 'restore') {
-      psCanvas.style.cursor = 'none';
+      psBrushCursor.classList.toggle('restore-mode', brushMode === 'restore');
     } else if (panel === 'wand') {
       psCanvas.style.cursor = 'crosshair';
     } else {
       psCanvas.style.cursor = '';
-      psEraserCursor.classList.remove('visible');
-      psRestoreCursor.classList.remove('visible');
-      if (typeof eraserDrawing !== 'undefined') eraserDrawing = false;
-      if (typeof restoreDrawing !== 'undefined') restoreDrawing = false;
+      psBrushCursor.classList.remove('visible');
+      brushDrawing = false;
     }
     // Clear selection when leaving wand
     if (panel !== 'wand' && wandSelection) {
@@ -3894,60 +3889,60 @@ body.ps-active #slideCta {
     if (psCropOverlay.classList.contains('visible')) initCropOverlay();
   }
 
-  // ── ERASER ──
-  var eraserSize = 40, eraserHard = 80;
-  var eraserDrawing = false, eraserLastPos = null;
-  // Backwards compat: eraserUndoStack refers to unified editStack now
-  var eraserUndoStack = editStack;
+  // ── BRUSH (ERASER + RESTORE) ──
+  var brushMode = 'eraser';
+  var brushSize = 40, brushHard = 80;
+  var brushDrawing = false, brushLastPos = null;
 
-  function updateEraserCursorSize() {
-    if (!psCanvas || !psEraserRing) return;
+  function updateBrushCursorSize() {
+    if (!psCanvas || !psBrushRing) return;
     var canvRect = psCanvas.getBoundingClientRect();
     var scale = canvRect.width / psCanvas.width;
-    var px = eraserSize * scale;
-    psEraserRing.style.width  = px + 'px';
-    psEraserRing.style.height = px + 'px';
+    var px = brushSize * scale;
+    psBrushRing.style.width  = px + 'px';
+    psBrushRing.style.height = px + 'px';
   }
 
-  var eraserPreviewTimer = null;
-  function showEraserPreview() {
-    if (psEraserPanel.classList.contains('hidden')) return;
+  var brushPreviewTimer = null;
+  function showBrushPreview() {
+    if (psBrushPanel.classList.contains('hidden')) return;
     var canvRect = psCanvas.getBoundingClientRect();
     var scale = canvRect.width / psCanvas.width;
-    var px = eraserSize * scale;
+    var px = brushSize * scale;
     psEraserPreview.style.width  = px + 'px';
     psEraserPreview.style.height = px + 'px';
-    var h = eraserHard / 100;
-    var centerA = (0.4 + h * 0.5).toFixed(2); // 0.4 at 0, 0.9 at 1
+    var h = brushHard / 100;
+    var centerA = (0.4 + h * 0.5).toFixed(2);
     var plateau = Math.round(h * 75);
     var mid     = Math.round(plateau + (100 - plateau) * 0.45);
     var midAlpha = (0.1 + h * 0.28).toFixed(2);
+    var clr = brushMode === 'restore' ? '34,197,94' : '0,58,231';
     psEraserPreview.style.background =
-      'radial-gradient(circle, rgba(0,58,231,' + centerA + ') 0%, rgba(0,58,231,' + centerA + ') ' + plateau + '%, rgba(0,58,231,' + midAlpha + ') ' + mid + '%, rgba(0,58,231,0) 100%)';
+      'radial-gradient(circle, rgba(' + clr + ',' + centerA + ') 0%, rgba(' + clr + ',' + centerA + ') ' + plateau + '%, rgba(' + clr + ',' + midAlpha + ') ' + mid + '%, rgba(' + clr + ',0) 100%)';
     psEraserPreview.classList.add('visible');
-    if (eraserPreviewTimer) clearTimeout(eraserPreviewTimer);
-    eraserPreviewTimer = setTimeout(function() {
+    if (brushPreviewTimer) clearTimeout(brushPreviewTimer);
+    brushPreviewTimer = setTimeout(function() {
       psEraserPreview.classList.remove('visible');
     }, 950);
   }
 
-  document.getElementById('psEraserSize').addEventListener('input', function() {
-    eraserSize = parseInt(this.value);
-    document.getElementById('psEraserSizeVal').textContent = eraserSize;
-    updateEraserCursorSize();
-    showEraserPreview();
+  document.getElementById('psBrushSize').addEventListener('input', function() {
+    brushSize = parseInt(this.value);
+    document.getElementById('psBrushSizeVal').textContent = brushSize;
+    updateBrushCursorSize();
+    showBrushPreview();
   });
-  document.getElementById('psEraserHard').addEventListener('input', function() {
-    eraserHard = parseInt(this.value);
-    document.getElementById('psEraserHardVal').textContent = eraserHard;
-    showEraserPreview();
+  document.getElementById('psBrushHard').addEventListener('input', function() {
+    brushHard = parseInt(this.value);
+    document.getElementById('psBrushHardVal').textContent = brushHard;
+    showBrushPreview();
   });
 
   function eraseAtPoint(cx, cy) {
     psCtx.save();
     psCtx.globalCompositeOperation = 'destination-out';
-    var r = eraserSize / 2;
-    var h = eraserHard / 100; // 0..1
+    var r = brushSize / 2;
+    var h = brushHard / 100; // 0..1
     var grad = psCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
     // Center alpha is reduced at low hardness for very soft feather
     // At h=0: center 0.4, plateau 0 → linear fade (very soft)
@@ -3976,54 +3971,56 @@ body.ps-active #slideCta {
   }
 
   psCanvas.addEventListener('pointermove', function(e) {
-    var inEraser = !psEraserPanel.classList.contains('hidden');
-    if (inEraser) {
+    var inBrush = !psBrushPanel.classList.contains('hidden');
+    if (inBrush) {
       var frameRect = psFrame.getBoundingClientRect();
-      psEraserCursor.style.left = (e.clientX - frameRect.left) + 'px';
-      psEraserCursor.style.top  = (e.clientY - frameRect.top)  + 'px';
-      updateEraserCursorSize();
-      if (eraserDrawing) {
+      psBrushCursor.style.left = (e.clientX - frameRect.left) + 'px';
+      psBrushCursor.style.top  = (e.clientY - frameRect.top)  + 'px';
+      updateBrushCursorSize();
+      if (brushDrawing) {
         var pos = getCanvasPos(e);
-        if (eraserLastPos) {
-          var dist = Math.hypot(pos.x - eraserLastPos.x, pos.y - eraserLastPos.y);
-          var step = Math.max(1, eraserSize * 0.2);
+        var paintFn = brushMode === 'restore' ? restoreAtPoint : eraseAtPoint;
+        if (brushLastPos) {
+          var dist = Math.hypot(pos.x - brushLastPos.x, pos.y - brushLastPos.y);
+          var step = Math.max(1, brushSize * 0.2);
           var steps = Math.ceil(dist / step);
           for (var i = 1; i <= steps; i++) {
             var t = i / steps;
-            eraseAtPoint(eraserLastPos.x + (pos.x - eraserLastPos.x) * t,
-                         eraserLastPos.y + (pos.y - eraserLastPos.y) * t);
+            paintFn(brushLastPos.x + (pos.x - brushLastPos.x) * t,
+                    brushLastPos.y + (pos.y - brushLastPos.y) * t);
           }
         }
-        eraserLastPos = pos;
+        brushLastPos = pos;
       }
     }
   });
 
   psCanvas.addEventListener('pointerdown', function(e) {
-    if (psEraserPanel.classList.contains('hidden')) return;
-    eraserDrawing = true;
+    if (psBrushPanel.classList.contains('hidden')) return;
+    brushDrawing = true;
     psCanvas.setPointerCapture(e.pointerId);
     pushEditState();
     var pos = getCanvasPos(e);
-    eraserLastPos = pos;
-    eraseAtPoint(pos.x, pos.y);
+    brushLastPos = pos;
+    var paintFn = brushMode === 'restore' ? restoreAtPoint : eraseAtPoint;
+    paintFn(pos.x, pos.y);
   });
 
   psCanvas.addEventListener('pointerup', function() {
-    eraserDrawing = false; eraserLastPos = null;
+    brushDrawing = false; brushLastPos = null;
   });
   psCanvas.addEventListener('pointerleave', function() {
-    psEraserCursor.classList.remove('visible');
+    psBrushCursor.classList.remove('visible');
   });
   psCanvas.addEventListener('pointerenter', function() {
-    if (!psEraserPanel.classList.contains('hidden')) psEraserCursor.classList.add('visible');
+    if (!psBrushPanel.classList.contains('hidden')) psBrushCursor.classList.add('visible');
   });
 
-  document.getElementById('psUndoBtn').addEventListener('click', undoEdit);
-  document.getElementById('psEraserDoneBtn').addEventListener('click', function() {
+  document.getElementById('psBrushUndoBtn').addEventListener('click', undoEdit);
+  document.getElementById('psBrushDoneBtn').addEventListener('click', function() {
     showPsPanel('default');
   });
-  document.getElementById('psEraserCancelBtn').addEventListener('click', function() {
+  document.getElementById('psBrushCancelBtn').addEventListener('click', function() {
     showPsPanel('default');
   });
 
@@ -4033,9 +4030,8 @@ body.ps-active #slideCta {
     if (!document.body.classList.contains('ps-active')) return;
     var tag = (document.activeElement && document.activeElement.tagName) || '';
     if (tag === 'INPUT' || tag === 'TEXTAREA') { document.activeElement.blur(); return; }
-    if (!psCropPanel.classList.contains('hidden') || !psEraserPanel.classList.contains('hidden') ||
-        !psRestorePanel.classList.contains('hidden') || !psWandPanel.classList.contains('hidden') ||
-        !psShadowPanel.classList.contains('hidden')) {
+    if (!psCropPanel.classList.contains('hidden') || !psBrushPanel.classList.contains('hidden') ||
+        !psWandPanel.classList.contains('hidden') || !psShadowPanel.classList.contains('hidden')) {
       showPsPanel('default');
       e.preventDefault();
     }
@@ -4066,9 +4062,9 @@ body.ps-active #slideCta {
     psZoomLevel.textContent = Math.round(zoom * 100) + '%';
     psZoomOutBtn.disabled = zoom <= ZOOM_MIN + 0.001;
     psZoomInBtn.disabled  = zoom >= ZOOM_MAX - 0.001;
-    psCard.classList.toggle('pannable', zoom > 1 && psCropPanel.classList.contains('hidden') && psEraserPanel.classList.contains('hidden'));
+    psCard.classList.toggle('pannable', zoom > 1 && psCropPanel.classList.contains('hidden') && psBrushPanel.classList.contains('hidden'));
     psCard.classList.toggle('zoomed', zoom > 1);
-    updateEraserCursorSize();
+    updateBrushCursorSize();
     if (psCropOverlay.classList.contains('visible')) updateCropBoxCSS();
   }
 
@@ -4122,7 +4118,7 @@ body.ps-active #slideCta {
   psCard.addEventListener('pointerdown', function(e) {
     if (!psCtx || zoom <= 1) return;
     if (!psCropPanel.classList.contains('hidden')) return;
-    if (!psEraserPanel.classList.contains('hidden')) return;
+    if (!psBrushPanel.classList.contains('hidden')) return;
     if (e.target.closest('#psZoomCtrls')) return;
     if (e.button !== 0) return;
     panDragging = true;
@@ -4234,20 +4230,26 @@ body.ps-active #slideCta {
       }
       return;
     }
-    // E — eraser tool
+    // E — brush (eraser mode)
     if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') {
-      if (psEraserPanel.classList.contains('hidden')) {
-        e.preventDefault();
-        showPsPanel('eraser');
-      }
+      e.preventDefault();
+      brushMode = 'eraser';
+      document.querySelectorAll('.ps-brush-tab').forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('data-brush-mode') === 'eraser');
+      });
+      psBrushCursor.classList.remove('restore-mode');
+      showPsPanel('brush');
       return;
     }
-    // R — restore brush (К — русская)
+    // R — brush (restore mode)
     if (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К') {
-      if (psRestorePanel.classList.contains('hidden')) {
-        e.preventDefault();
-        showPsPanel('restore');
-      }
+      e.preventDefault();
+      brushMode = 'restore';
+      document.querySelectorAll('.ps-brush-tab').forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('data-brush-mode') === 'restore');
+      });
+      psBrushCursor.classList.add('restore-mode');
+      showPsPanel('brush');
       return;
     }
     // W — magic wand (Ц — русская)
@@ -4324,24 +4326,11 @@ body.ps-active #slideCta {
     psCard.classList.remove('space-panning');
   }, true);
 
-  // ── RESTORE BRUSH ──
-  var restoreSize = 40, restoreHard = 80;
-  var restoreDrawing = false, restoreLastPos = null;
-
-  function updateRestoreCursorSize() {
-    if (!psCanvas || !psRestoreRing) return;
-    var canvRect = psCanvas.getBoundingClientRect();
-    var scale = canvRect.width / psCanvas.width;
-    var px = restoreSize * scale;
-    psRestoreRing.style.width  = px + 'px';
-    psRestoreRing.style.height = px + 'px';
-  }
-
   function restoreAtPoint(cx, cy) {
     if (!originalResultData) return;
-    var r = restoreSize / 2;
+    var r = brushSize / 2;
     var ri = Math.ceil(r);
-    var h = restoreHard / 100;
+    var h = brushHard / 100;
     var sx = Math.max(0, Math.floor(cx - ri));
     var sy = Math.max(0, Math.floor(cy - ri));
     var ex = Math.min(psCanvas.width, Math.ceil(cx + ri));
@@ -4357,7 +4346,6 @@ body.ps-active #slideCta {
     mask.width = d2; mask.height = d2;
     var mCtx = mask.getContext('2d');
 
-    // Extract original patch
     var origPatch = new ImageData(lw, lh);
     var srcW = originalResultData.width;
     var origD = originalResultData.data;
@@ -4389,65 +4377,36 @@ body.ps-active #slideCta {
     psCtx.drawImage(mask, 0, 0, lw, lh, sx, sy, lw, lh);
   }
 
-  document.getElementById('psRestoreSize').addEventListener('input', function() {
-    restoreSize = parseInt(this.value);
-    document.getElementById('psRestoreSizeVal').textContent = restoreSize;
-    updateRestoreCursorSize();
-  });
-  document.getElementById('psRestoreHard').addEventListener('input', function() {
-    restoreHard = parseInt(this.value);
-    document.getElementById('psRestoreHardVal').textContent = restoreHard;
+  // Brush tab switching
+  document.querySelectorAll('.ps-brush-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.ps-brush-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      brushMode = tab.getAttribute('data-brush-mode');
+      psBrushCursor.classList.toggle('restore-mode', brushMode === 'restore');
+      showBrushPreview();
+    });
   });
 
-  psCanvas.addEventListener('pointermove', function(e) {
-    var inRestore = !psRestorePanel.classList.contains('hidden');
-    if (inRestore) {
-      var frameRect = psFrame.getBoundingClientRect();
-      psRestoreCursor.style.left = (e.clientX - frameRect.left) + 'px';
-      psRestoreCursor.style.top  = (e.clientY - frameRect.top)  + 'px';
-      updateRestoreCursorSize();
-      if (restoreDrawing) {
-        var pos = getCanvasPos(e);
-        if (restoreLastPos) {
-          var dist = Math.hypot(pos.x - restoreLastPos.x, pos.y - restoreLastPos.y);
-          var step = Math.max(1, restoreSize * 0.2);
-          var steps = Math.ceil(dist / step);
-          for (var i = 1; i <= steps; i++) {
-            var t = i / steps;
-            restoreAtPoint(restoreLastPos.x + (pos.x - restoreLastPos.x) * t,
-                           restoreLastPos.y + (pos.y - restoreLastPos.y) * t);
-          }
-        }
-        restoreLastPos = pos;
-      }
+  // Invert alpha
+  document.getElementById('psBrushInvertBtn').addEventListener('click', function() {
+    if (!originalResultData || !psCtx) return;
+    pushEditState();
+    var w = psCanvas.width, h = psCanvas.height;
+    var current = psCtx.getImageData(0, 0, w, h);
+    var orig = originalResultData.data;
+    var cur = current.data;
+    for (var i = 0; i < cur.length; i += 4) {
+      var origA = orig[i + 3];
+      var curA = cur[i + 3];
+      var newA = Math.max(0, origA - curA);
+      cur[i]     = orig[i];
+      cur[i + 1] = orig[i + 1];
+      cur[i + 2] = orig[i + 2];
+      cur[i + 3] = newA;
     }
+    psCtx.putImageData(current, 0, 0);
   });
-
-  psCanvas.addEventListener('pointerdown', function(e) {
-    if (!psRestorePanel.classList.contains('hidden')) {
-      restoreDrawing = true;
-      psCanvas.setPointerCapture(e.pointerId);
-      pushEditState();
-      var pos = getCanvasPos(e);
-      restoreLastPos = pos;
-      restoreAtPoint(pos.x, pos.y);
-      return;
-    }
-  });
-
-  psCanvas.addEventListener('pointerup', function() {
-    restoreDrawing = false; restoreLastPos = null;
-  });
-  psCanvas.addEventListener('pointerenter', function() {
-    if (!psRestorePanel.classList.contains('hidden')) psRestoreCursor.classList.add('visible');
-  });
-  psCanvas.addEventListener('pointerleave', function() {
-    psRestoreCursor.classList.remove('visible');
-  });
-
-  document.getElementById('psRestoreUndoBtn').addEventListener('click', undoEdit);
-  document.getElementById('psRestoreDoneBtn').addEventListener('click', function() { showPsPanel('default'); });
-  document.getElementById('psRestoreCancelBtn').addEventListener('click', function() { showPsPanel('default'); });
 
   // ── MAGIC WAND ──
   var wandSelection = null;
