@@ -2153,45 +2153,37 @@ body.ps-active { overflow: hidden; }
   z-index: 2;
 }
 .ps-panel-close:hover { background: #f0f0f0; color: var(--black); }
-/* ===== Expanded tools panel ===== */
-#psToolsExpanded {
-  display: none;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 10px 0 4px;
-  animation: toolsFadeIn 0.25s ease;
+/* ===== Tool panel tabs ===== */
+.ps-tool-tabs {
+  display: flex;
+  border-bottom: 1.5px solid #E8E8E8;
+  margin: -4px -20px 0;
+  padding: 0 8px;
 }
-#psToolsExpanded.visible { display: flex; }
-@keyframes toolsFadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.ps-tool-icon-btn {
+.ps-tool-tab {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 10px 14px;
-  border: 1.5px solid #E8E8E8;
-  border-radius: 14px;
-  background: #fff;
+  padding: 10px 4px 8px;
+  border: none;
+  background: transparent;
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 500;
   color: var(--gray);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
-  min-width: 72px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  transition: color 0.15s, border-color 0.15s;
 }
-.ps-tool-icon-btn:hover { border-color: #c0c0c0; background: #fafafa; color: var(--black); }
-.ps-tool-icon-btn.active {
-  border-color: #003AE7;
-  background: rgba(0,58,231,0.05);
-  color: #003AE7;
-  box-shadow: 0 0 0 2px rgba(0,58,231,0.08);
-}
-.ps-tool-icon-btn svg { opacity: 0.7; }
-.ps-tool-icon-btn:hover svg, .ps-tool-icon-btn.active svg { opacity: 1; }
+.ps-tool-tab:hover { color: var(--black); }
+.ps-tool-tab.active { color: #003AE7; border-bottom-color: #003AE7; }
+.ps-tool-tab svg { width: 20px; height: 20px; opacity: 0.7; }
+.ps-tool-tab:hover svg, .ps-tool-tab.active svg { opacity: 1; }
+.ps-tool-config { display: flex; flex-direction: column; gap: 14px; }
+.ps-tool-config.hidden { display: none; }
 
 /* Selection canvas — styled in #psCanvas block above */
 
@@ -2483,126 +2475,121 @@ body.ps-active #slideCta {
           <input type="text" id="psHexInput" class="ps-hex-input" placeholder="FFFFFF" maxlength="6">
         </span>
       </div>
+      <div id="psActions">
+        <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
+        <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
+        <button class="ps-help-circle-btn" id="psHelpBtn" type="button" aria-label="Горячие клавиши">?</button>
+      </div>
       <div id="psToolbar" class="hidden">
         <button id="psToolsToggleBtn" class="ps-tool-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
           Инструменты
         </button>
       </div>
-      <div id="psToolsExpanded">
-        <button class="ps-tool-icon-btn" data-tool="crop">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
+    </div>
+    <!-- Unified Tool Panel -->
+    <div id="psToolPanel" class="ps-panel hidden">
+      <button class="ps-panel-close" id="psToolPanelClose">×</button>
+      <div class="ps-tool-tabs">
+        <button class="ps-tool-tab active" data-tool="crop">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
           Обрезать
         </button>
-        <button class="ps-tool-icon-btn" data-tool="brush">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/><path d="M14.5 17.5 4.5 15"/></svg>
+        <button class="ps-tool-tab" data-tool="brush">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/><path d="M14.5 17.5 4.5 15"/></svg>
           Кисть
         </button>
-        <button class="ps-tool-icon-btn" data-tool="wand">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
+        <button class="ps-tool-tab" data-tool="wand">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
           Выделение
         </button>
-        <button class="ps-tool-icon-btn" data-tool="shadow">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="19" rx="8" ry="3" opacity="0.4"/><rect x="4" y="2" width="16" height="14" rx="3"/></svg>
+        <button class="ps-tool-tab" data-tool="shadow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="19" rx="8" ry="3" opacity="0.4"/><rect x="4" y="2" width="16" height="14" rx="3"/></svg>
           Тень
         </button>
       </div>
-      <div id="psActions">
-        <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
-        <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
-        <button class="ps-help-circle-btn" id="psHelpBtn" type="button" aria-label="Горячие клавиши">?</button>
+      <!-- Crop config -->
+      <div id="psCropPanel" class="ps-tool-config">
+        <div id="psCropFormats">
+          <button class="ps-fmt-btn active" data-ratio="free">Свободно</button>
+          <button class="ps-fmt-btn" data-ratio="1/1">1:1</button>
+          <button class="ps-fmt-btn" data-ratio="4/3">4:3</button>
+          <button class="ps-fmt-btn" data-ratio="3/4">3:4</button>
+          <button class="ps-fmt-btn" data-ratio="3/2">3:2</button>
+          <button class="ps-fmt-btn" data-ratio="2/3">2:3</button>
+          <button class="ps-fmt-btn" data-ratio="16/9">16:9</button>
+          <button class="ps-fmt-btn" data-ratio="9/16">9:16</button>
+        </div>
+        <div class="ps-section-divider" style="margin-top:10px;">Поворот</div>
+        <div class="ps-rotate-btns">
+          <button id="psRotCW90">90° →</button>
+          <button id="psRotCCW90">← 90°</button>
+          <button id="psRot180">180°</button>
+        </div>
+        <div class="ps-section-divider">Зеркалирование</div>
+        <div class="ps-rotate-btns">
+          <button id="psFlipH">↔ По горизонтали</button>
+          <button id="psFlipV">↕ По вертикали</button>
+        </div>
+        <div class="ps-crop-hint" style="font-size:11px;color:var(--gray);">Shift — квадрат · Alt — от центра · ⟳ ручка — свободный поворот (Shift — 45°)</div>
+        <div class="ps-panel-actions">
+          <button id="psCropUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+          <button id="psCropApplyBtn" class="btn-primary">Применить</button>
+        </div>
       </div>
-    </div>
-    <!-- Crop + Rotate panel -->
-    <div id="psCropPanel" class="ps-panel hidden">
-      <button class="ps-panel-close" id="psCropBackBtn">×</button>
-      <div class="ps-panel-title">Обрезать и повернуть</div>
-      <div id="psCropFormats">
-        <button class="ps-fmt-btn active" data-ratio="free">Свободно</button>
-        <button class="ps-fmt-btn" data-ratio="1/1">1:1</button>
-        <button class="ps-fmt-btn" data-ratio="4/3">4:3</button>
-        <button class="ps-fmt-btn" data-ratio="3/4">3:4</button>
-        <button class="ps-fmt-btn" data-ratio="3/2">3:2</button>
-        <button class="ps-fmt-btn" data-ratio="2/3">2:3</button>
-        <button class="ps-fmt-btn" data-ratio="16/9">16:9</button>
-        <button class="ps-fmt-btn" data-ratio="9/16">9:16</button>
+      <!-- Brush config -->
+      <div id="psBrushPanel" class="ps-tool-config hidden">
+        <div class="ps-brush-tabs">
+          <button class="ps-brush-tab active" data-brush-mode="eraser">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+            Ластик
+          </button>
+          <button class="ps-brush-tab" data-brush-mode="restore">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Восстановить
+          </button>
+        </div>
+        <div class="ps-slider-row">
+          <span>Размер</span>
+          <input type="range" id="psBrushSize" min="5" max="500" value="40">
+          <span class="ps-slider-val"><span id="psBrushSizeVal">40</span>px</span>
+        </div>
+        <div class="ps-slider-row">
+          <span>Жёсткость</span>
+          <input type="range" id="psBrushHard" min="0" max="100" value="80">
+          <span class="ps-slider-val"><span id="psBrushHardVal">80</span>%</span>
+        </div>
+        <div class="ps-panel-actions">
+          <button id="psBrushInvertBtn" class="ps-tool-btn">⊘ Инвертировать</button>
+          <button id="psBrushUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+        </div>
       </div>
-      <div class="ps-section-divider" style="margin-top:10px;">Поворот</div>
-      <div class="ps-rotate-btns">
-        <button id="psRotCW90">90° →</button>
-        <button id="psRotCCW90">← 90°</button>
-        <button id="psRot180">180°</button>
+      <!-- Wand config -->
+      <div id="psWandPanel" class="ps-tool-config hidden">
+        <div class="ps-slider-row">
+          <span>Допуск</span>
+          <input type="range" id="psWandTolerance" min="0" max="255" value="32">
+          <span class="ps-slider-val"><span id="psWandToleranceVal">32</span></span>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);cursor:pointer;">
+          <input type="checkbox" id="psWandContiguous" checked style="accent-color:#003AE7;"> Смежные пиксели
+        </label>
+        <div class="ps-panel-actions">
+          <button id="psWandDeleteBtn" class="btn-primary">Удалить выделение</button>
+          <button id="psWandInvertBtn" class="ps-tool-btn">Инвертировать</button>
+          <button id="psWandUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+        </div>
       </div>
-      <div class="ps-section-divider">Зеркалирование</div>
-      <div class="ps-rotate-btns">
-        <button id="psFlipH">↔ По горизонтали</button>
-        <button id="psFlipV">↕ По вертикали</button>
-      </div>
-      <div class="ps-crop-hint" style="font-size:11px;color:var(--gray);">Shift — квадрат · Alt — от центра · ⟳ ручка — свободный поворот (Shift — 45°)</div>
-      <div class="ps-panel-actions">
-        <button id="psCropUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psCropApplyBtn" class="btn-primary">Применить</button>
-      </div>
-    </div>
-    <!-- Brush panel (Eraser + Restore) -->
-    <div id="psBrushPanel" class="ps-panel hidden">
-      <button class="ps-panel-close" id="psBrushBackBtn">×</button>
-      <div class="ps-brush-tabs">
-        <button class="ps-brush-tab active" data-brush-mode="eraser">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-          Ластик
-        </button>
-        <button class="ps-brush-tab" data-brush-mode="restore">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Восстановить
-        </button>
-      </div>
-      <div class="ps-slider-row">
-        <span>Размер</span>
-        <input type="range" id="psBrushSize" min="5" max="500" value="40">
-        <span class="ps-slider-val"><span id="psBrushSizeVal">40</span>px</span>
-      </div>
-      <div class="ps-slider-row">
-        <span>Жёсткость</span>
-        <input type="range" id="psBrushHard" min="0" max="100" value="80">
-        <span class="ps-slider-val"><span id="psBrushHardVal">80</span>%</span>
-      </div>
-      <div class="ps-panel-actions">
-        <button id="psBrushInvertBtn" class="ps-tool-btn">⊘ Инвертировать</button>
-        <button id="psBrushUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psBrushDoneBtn" class="btn-primary">Готово</button>
-      </div>
-    </div>
-    <!-- Magic Wand panel -->
-    <div id="psWandPanel" class="ps-panel hidden">
-      <button class="ps-panel-close" id="psWandBackBtn">×</button>
-      <div class="ps-panel-title">Волшебное выделение</div>
-      <div class="ps-slider-row">
-        <span>Допуск</span>
-        <input type="range" id="psWandTolerance" min="0" max="255" value="32">
-        <span class="ps-slider-val"><span id="psWandToleranceVal">32</span></span>
-      </div>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);cursor:pointer;">
-        <input type="checkbox" id="psWandContiguous" checked style="accent-color:#003AE7;"> Смежные пиксели
-      </label>
-      <div class="ps-panel-actions">
-        <button id="psWandDeleteBtn" class="btn-primary">Удалить выделение</button>
-        <button id="psWandInvertBtn" class="ps-tool-btn">Инвертировать</button>
-        <button id="psWandUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psWandDoneBtn" class="btn-primary">Готово</button>
-      </div>
-    </div>
-    <!-- Shadow panel -->
-    <div id="psShadowPanel" class="ps-panel hidden">
-      <button class="ps-panel-close" id="psShadowBackBtn">×</button>
-      <div class="ps-panel-title">Тень</div>
-      <div class="ps-slider-row">
-        <span>Мягкость</span>
-        <input type="range" id="psShadowBlur" min="0" max="100" value="40">
-        <span class="ps-slider-val"><span id="psShadowBlurVal">40</span></span>
-      </div>
-      <div class="ps-panel-actions">
-        <button id="psShadowApplyBtn" class="btn-primary">Применить тень</button>
+      <!-- Shadow config -->
+      <div id="psShadowPanel" class="ps-tool-config hidden">
+        <div class="ps-slider-row">
+          <span>Мягкость</span>
+          <input type="range" id="psShadowBlur" min="0" max="100" value="40">
+          <span class="ps-slider-val"><span id="psShadowBlurVal">40</span></span>
+        </div>
+        <div class="ps-panel-actions">
+          <button id="psShadowApplyBtn" class="btn-primary">Применить тень</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3023,7 +3010,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T22:00';
+  const DEPLOY_VERSION = '2026-04-14T22:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3178,11 +3165,11 @@ body.ps-active #slideCta {
   var psDarkL        = document.getElementById('psDarkL');
   var psWandPanel      = document.getElementById('psWandPanel');
   var psShadowPanel    = document.getElementById('psShadowPanel');
+  var psToolPanel      = document.getElementById('psToolPanel');
   var psSelectionCanvas = document.getElementById('psSelectionCanvas');
   var psSelCtx         = psSelectionCanvas.getContext('2d');
   var psOriginalCanvas = document.getElementById('psOriginalCanvas');
   var psOriginalCtx    = psOriginalCanvas.getContext('2d');
-  var psToolsExpanded  = document.getElementById('psToolsExpanded');
   var psToolsToggleBtn = document.getElementById('psToolsToggleBtn');
   var originalResultData = null; // saved after bg removal for restore brush
   var psWheelBtn     = document.getElementById('psWheelBtn');
@@ -3403,6 +3390,7 @@ body.ps-active #slideCta {
 
   function positionToolPanel() {
     if (window.innerWidth <= 768) return;
+    if (psToolPanel.classList.contains('hidden')) return;
     var cardRect = psCard.getBoundingClientRect();
     var gap = 16;
     var left = cardRect.right + gap;
@@ -3411,47 +3399,60 @@ body.ps-active #slideCta {
       left = cardRect.left - panelW - gap;
     }
     if (left < 10) left = 10;
-    var panels = document.querySelectorAll('.ps-panel');
-    panels.forEach(function(p) {
-      if (!p.classList.contains('hidden')) {
-        p.style.left = left + 'px';
-      }
-    });
+    psToolPanel.style.left = left + 'px';
   }
 
+  var toolPanelEntryState = null;
+  var activeToolTab = null;
+
   function showPsPanel(panel) {
-    var allPanels = ['default','crop','brush','wand','shadow'];
     psDefaultPanel.classList.toggle('hidden', panel !== 'default');
+
+    // Cleanup previous tool state
+    psCropOverlay.classList.remove('visible');
+    psCard.classList.remove('crop-active');
+    psCropRotateWidget.style.display = 'none';
+    psCanvas.style.cursor = '';
+    psBrushCursor.classList.remove('visible');
+    brushDrawing = false;
+    psOriginalCanvas.classList.remove('visible');
+    if (panel !== 'wand' && wandSelection) {
+      wandSelection = null;
+      psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
+      if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
+    }
+
+    if (panel === 'default') {
+      psToolPanel.classList.add('hidden');
+      activeToolTab = null;
+      psToolsToggleBtn.classList.remove('active');
+      if (typeof zoom !== 'undefined') psCard.classList.toggle('pannable', zoom > 1);
+      return;
+    }
+
+    // Show unified tool panel
+    psToolPanel.classList.remove('hidden');
+    psToolsToggleBtn.classList.add('active');
+    activeToolTab = panel;
+
+    // Switch config sections
     psCropPanel.classList.toggle('hidden', panel !== 'crop');
     psBrushPanel.classList.toggle('hidden', panel !== 'brush');
     psWandPanel.classList.toggle('hidden', panel !== 'wand');
     psShadowPanel.classList.toggle('hidden', panel !== 'shadow');
 
-    document.querySelectorAll('#psToolsExpanded .ps-tool-icon-btn').forEach(function(btn) {
-      btn.classList.toggle('active', btn.getAttribute('data-tool') === panel);
+    // Update tab highlights
+    document.querySelectorAll('.ps-tool-tab').forEach(function(t) {
+      t.classList.toggle('active', t.getAttribute('data-tool') === panel);
     });
 
+    // Setup new tool state
     if (panel === 'crop') {
       psCropOverlay.classList.add('visible');
       psCard.classList.add('crop-active');
-      if (psCtx) {
-        cropEntryState = {
-          w: psCanvas.width,
-          h: psCanvas.height,
-          data: psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height),
-          cardW: psCard.style.width,
-          cardH: psCard.style.height
-        };
-      }
       initCropOverlay();
       psCropRotateWidget.style.display = 'block';
-    } else {
-      psCropOverlay.classList.remove('visible');
-      psCard.classList.remove('crop-active');
-      psCropRotateWidget.style.display = 'none';
-    }
-    if (panel === 'brush') {
-      brushEntryState = saveToolEntryState();
+    } else if (panel === 'brush') {
       psCanvas.style.cursor = 'none';
       psBrushCursor.classList.toggle('restore-mode', brushMode === 'restore');
       if (brushMode === 'restore' && originalResultData) {
@@ -3460,26 +3461,10 @@ body.ps-active #slideCta {
         psOriginalCanvas.classList.remove('visible');
       }
     } else if (panel === 'wand') {
-      wandEntryState = saveToolEntryState();
       psCanvas.style.cursor = 'crosshair';
-      psOriginalCanvas.classList.remove('visible');
-    } else {
-      if (panel === 'shadow') shadowEntryState = saveToolEntryState();
-      psCanvas.style.cursor = '';
-      psBrushCursor.classList.remove('visible');
-      brushDrawing = false;
-      psOriginalCanvas.classList.remove('visible');
     }
-    // Clear selection when leaving wand
-    if (panel !== 'wand' && wandSelection) {
-      wandSelection = null;
-      psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
-      if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
-    }
-    // Update pannable state
-    if (typeof zoom !== 'undefined') {
-      psCard.classList.toggle('pannable', zoom > 1 && panel === 'default');
-    }
+
+    psCard.classList.toggle('pannable', false);
     positionToolPanel();
   }
 
@@ -3500,15 +3485,25 @@ body.ps-active #slideCta {
 
   // Tools toggle
   psToolsToggleBtn.addEventListener('click', function() {
-    var isVis = psToolsExpanded.classList.contains('visible');
-    psToolsExpanded.classList.toggle('visible', !isVis);
-    psToolsToggleBtn.classList.toggle('active', !isVis);
+    if (psToolPanel.classList.contains('hidden')) {
+      toolPanelEntryState = saveToolEntryState();
+      showPsPanel('crop');
+    } else {
+      showPsPanel('default');
+    }
   });
-  psToolsExpanded.addEventListener('click', function(e) {
-    var btn = e.target.closest('.ps-tool-icon-btn');
-    if (!btn) return;
-    var tool = btn.getAttribute('data-tool');
-    if (tool) showPsPanel(tool);
+  // Tab clicks within tool panel
+  document.querySelector('.ps-tool-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.ps-tool-tab');
+    if (!tab) return;
+    var tool = tab.getAttribute('data-tool');
+    if (tool && tool !== activeToolTab) showPsPanel(tool);
+  });
+  // Close button = restore entry state
+  document.getElementById('psToolPanelClose').addEventListener('click', function() {
+    restoreToolEntryState(toolPanelEntryState);
+    toolPanelEntryState = null;
+    showPsPanel('default');
   });
 
   function psExitToLanding() {
@@ -3664,10 +3659,6 @@ body.ps-active #slideCta {
 
   // ── CROP ──
   // cropActiveRatio: null = free mode, else number = width/height
-  var cropEntryState = null;
-  var brushEntryState = null;
-  var wandEntryState = null;
-  var shadowEntryState = null;
   function saveToolEntryState() {
     if (!psCtx) return null;
     return {
@@ -4084,11 +4075,7 @@ body.ps-active #slideCta {
     psSelectionCanvas.style.width = '';
     psSelectionCanvas.style.height = '';
     requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
-    showPsPanel('default');
-  });
-  document.getElementById('psCropBackBtn').addEventListener('click', function() {
-    restoreToolEntryState(cropEntryState);
-    cropEntryState = null;
+    toolPanelEntryState = null;
     showPsPanel('default');
   });
   document.getElementById('psCropUndoBtn').addEventListener('click', undoEdit);
@@ -4271,33 +4258,15 @@ body.ps-active #slideCta {
   });
 
   document.getElementById('psBrushUndoBtn').addEventListener('click', undoEdit);
-  document.getElementById('psBrushDoneBtn').addEventListener('click', function() {
-    brushEntryState = null;
-    showPsPanel('default');
-  });
-  document.getElementById('psBrushBackBtn').addEventListener('click', function() {
-    restoreToolEntryState(brushEntryState);
-    brushEntryState = null;
-    showPsPanel('default');
-  });
 
-  // Escape key = back (exit tool without applying)
+  // Escape key = close tool panel (restore entry state)
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
     if (!document.body.classList.contains('ps-active')) return;
     var tag = (document.activeElement && document.activeElement.tagName) || '';
     if (tag === 'INPUT' || tag === 'TEXTAREA') { document.activeElement.blur(); return; }
-    if (!psCropPanel.classList.contains('hidden')) {
-      document.getElementById('psCropBackBtn').click();
-      e.preventDefault();
-    } else if (!psBrushPanel.classList.contains('hidden')) {
-      document.getElementById('psBrushBackBtn').click();
-      e.preventDefault();
-    } else if (!psWandPanel.classList.contains('hidden')) {
-      document.getElementById('psWandBackBtn').click();
-      e.preventDefault();
-    } else if (!psShadowPanel.classList.contains('hidden')) {
-      document.getElementById('psShadowBackBtn').click();
+    if (!psToolPanel.classList.contains('hidden')) {
+      document.getElementById('psToolPanelClose').click();
       e.preventDefault();
     }
   });
@@ -4508,15 +4477,17 @@ body.ps-active #slideCta {
       document.getElementById('psCropApplyBtn').click();
       return;
     }
-    // Tool shortcuts (only when toolbar is available, default panel visible)
+    // Tool shortcuts (only when toolbar is available)
     if (mod) return;
     if (psToolbar.classList.contains('hidden')) return;
+    function openTool(tool) {
+      if (!toolPanelEntryState) toolPanelEntryState = saveToolEntryState();
+      showPsPanel(tool);
+    }
     // C — crop tool
     if (e.key === 'c' || e.key === 'C' || e.key === 'с' || e.key === 'С') {
-      if (psCropPanel.classList.contains('hidden')) {
-        e.preventDefault();
-        showPsPanel('crop');
-      }
+      e.preventDefault();
+      openTool('crop');
       return;
     }
     // E — brush (eraser mode)
@@ -4526,9 +4497,7 @@ body.ps-active #slideCta {
       document.querySelectorAll('.ps-brush-tab').forEach(function(t) {
         t.classList.toggle('active', t.getAttribute('data-brush-mode') === 'eraser');
       });
-      psBrushCursor.classList.remove('restore-mode');
-      psOriginalCanvas.classList.remove('visible');
-      showPsPanel('brush');
+      openTool('brush');
       return;
     }
     // R — brush (restore mode)
@@ -4538,17 +4507,13 @@ body.ps-active #slideCta {
       document.querySelectorAll('.ps-brush-tab').forEach(function(t) {
         t.classList.toggle('active', t.getAttribute('data-brush-mode') === 'restore');
       });
-      psBrushCursor.classList.add('restore-mode');
-      if (originalResultData) showOriginalPreview();
-      showPsPanel('brush');
+      openTool('brush');
       return;
     }
     // W — magic wand (Ц — русская)
     if (e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') {
-      if (psWandPanel.classList.contains('hidden')) {
-        e.preventDefault();
-        showPsPanel('wand');
-      }
+      e.preventDefault();
+      openTool('wand');
       return;
     }
     // ] — rotate 90° CW
@@ -4882,22 +4847,7 @@ body.ps-active #slideCta {
 
   document.getElementById('psWandDeleteBtn').addEventListener('click', wandDeleteSelection);
   document.getElementById('psWandInvertBtn').addEventListener('click', wandInvertSelection);
-  document.getElementById('psWandBackBtn').addEventListener('click', function() {
-    wandSelection = null;
-    psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
-    if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
-    restoreToolEntryState(wandEntryState);
-    wandEntryState = null;
-    showPsPanel('default');
-  });
   document.getElementById('psWandUndoBtn').addEventListener('click', undoEdit);
-  document.getElementById('psWandDoneBtn').addEventListener('click', function() {
-    wandSelection = null;
-    psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
-    if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
-    wandEntryState = null;
-    showPsPanel('default');
-  });
   document.getElementById('psWandTolerance').addEventListener('input', function() {
     document.getElementById('psWandToleranceVal').textContent = this.value;
   });
@@ -5082,13 +5032,7 @@ body.ps-active #slideCta {
     psCtx.shadowBlur = 0;
     psCtx.shadowOffsetX = 0;
     psCtx.shadowOffsetY = 0;
-    shadowEntryState = null;
-    showPsPanel('default');
-  });
-
-  document.getElementById('psShadowBackBtn').addEventListener('click', function() {
-    restoreToolEntryState(shadowEntryState);
-    shadowEntryState = null;
+    toolPanelEntryState = null;
     showPsPanel('default');
   });
 
