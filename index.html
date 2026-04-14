@@ -1259,7 +1259,7 @@ body.ps-active { overflow: hidden; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 40px 20px 16px;
   opacity: 0;
   pointer-events: none;
@@ -1297,7 +1297,7 @@ body.ps-active { overflow: hidden; }
   0%,100% { transform: scale(1); }
   50%      { transform: scale(1.02); }
 }
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   #processingScreen {
     padding: 24px 12px 12px;
   }
@@ -2073,7 +2073,7 @@ body.ps-active { overflow: hidden; }
   position: relative;
 }
 .ps-panel.hidden { display: none; }
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   .ps-editor-row {
     flex-direction: column;
     align-items: center;
@@ -3017,7 +3017,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T23:00';
+  const DEPLOY_VERSION = '2026-04-14T23:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3193,12 +3193,13 @@ body.ps-active #slideCta {
     var ratio = imgW / imgH;
     var PAD = 30;
     var navH = 64;
-    var topPad = 40;
-    var bottomPad = 16;
+    var isMobile = window.innerWidth <= 960;
+    var topPad = isMobile ? 24 : 40;
+    var bottomPad = isMobile ? 12 : 16;
     var gapH = 12;
     var bottomH = 120;
-    var panelSpace = (!psToolPanel || psToolPanel.classList.contains('hidden') || window.innerWidth <= 768) ? 0 : 296;
-    var availW = window.innerWidth - 40 - panelSpace;
+    var panelSpace = (!psToolPanel || psToolPanel.classList.contains('hidden') || isMobile) ? 0 : 296;
+    var availW = window.innerWidth - (isMobile ? 24 : 40) - panelSpace;
     var availH = window.innerHeight - navH - topPad - bottomPad - gapH - bottomH;
     if (availW > 600) availW -= 40;
     var maxFrameW = Math.min(availW * 0.92, 900) - PAD;
@@ -3427,7 +3428,7 @@ body.ps-active #slideCta {
       psToolsToggleBtn.classList.remove('active');
       if (typeof zoom !== 'undefined') psCard.classList.toggle('pannable', zoom > 1);
       // Recalc card size when panel closes (more space)
-      if (wasVisible && psCanvas.width > 0 && window.innerWidth > 768) {
+      if (wasVisible && psCanvas.width > 0 && window.innerWidth > 960) {
         var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
         resizeCardInstant(sz.w, sz.h);
         frameBaseW = 0; frameBaseH = 0;
@@ -3444,7 +3445,7 @@ body.ps-active #slideCta {
     psToolsToggleBtn.classList.add('active');
     activeToolTab = panel;
     // Recalc card size when panel first appears (takes space)
-    if (wasHidden && psCanvas.width > 0 && window.innerWidth > 768) {
+    if (wasHidden && psCanvas.width > 0 && window.innerWidth > 960) {
       var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
       resizeCardInstant(sz.w, sz.h);
       frameBaseW = 0; frameBaseH = 0;
@@ -4311,7 +4312,7 @@ body.ps-active #slideCta {
       frameBaseW = r.width;
       frameBaseH = r.height;
     } else {
-      var pad = window.innerWidth <= 768 ? 16 : 28;
+      var pad = window.innerWidth <= 960 ? 16 : 28;
       frameBaseW = parseInt(psCard.style.width) - pad;
       frameBaseH = parseInt(psCard.style.height) - pad;
     }
@@ -4455,8 +4456,10 @@ body.ps-active #slideCta {
   // ── Keyboard shortcuts ──
   document.addEventListener('keydown', function(e) {
     if (!document.body.classList.contains('ps-active')) return;
-    var tag = (document.activeElement && document.activeElement.tagName) || '';
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    var aEl = document.activeElement;
+    var tag = (aEl && aEl.tagName) || '';
+    var isTextInput = tag === 'TEXTAREA' || (tag === 'INPUT' && aEl.type !== 'range' && aEl.type !== 'button' && aEl.type !== 'checkbox');
+    if (isTextInput) return;
     var mod = e.ctrlKey || e.metaKey;
 
     // Ctrl/Cmd+Z — undo
