@@ -1282,6 +1282,7 @@ body.ps-active { overflow: hidden; }
 }
 .ps-card.crop-active { overflow: visible; }
 .ps-card.crop-active .ps-canvas-frame { overflow: visible; }
+.ps-card.no-transition { transition: none !important; }
 .ps-card.breathing { animation: psBreath 2.6s ease-in-out infinite; }
 @keyframes psBreath {
   0%,100% { transform: scale(1); }
@@ -2940,7 +2941,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T17:30';
+  const DEPLOY_VERSION = '2026-04-14T18:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3336,6 +3337,15 @@ body.ps-active #slideCta {
     if (panel === 'crop') {
       psCropOverlay.classList.add('visible');
       psCard.classList.add('crop-active');
+      if (psCtx) {
+        cropEntryState = {
+          w: psCanvas.width,
+          h: psCanvas.height,
+          data: psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height),
+          cardW: psCard.style.width,
+          cardH: psCard.style.height
+        };
+      }
       initCropOverlay();
     } else {
       psCropOverlay.classList.remove('visible');
@@ -3542,6 +3552,7 @@ body.ps-active #slideCta {
 
   // ── CROP ──
   // cropActiveRatio: null = free mode, else number = width/height
+  var cropEntryState = null;
   var cropActiveRatio = null;
   var cropX = 0, cropY = 0, cropW = 0, cropH = 0;
   var cropDragging = false, cropResizing = false, cropDragHandle = null;
@@ -3932,7 +3943,7 @@ body.ps-active #slideCta {
     psSelectionCanvas.width = cw;
     psSelectionCanvas.height = ch;
     var sz = psCalcCardSize(cw, ch);
-    psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
+    resizeCardInstant(sz.w, sz.h);
     zoom = 1; panX = 0; panY = 0;
     frameBaseW = 0; frameBaseH = 0;
     psCanvas.style.width = '';
@@ -3943,6 +3954,26 @@ body.ps-active #slideCta {
     showPsPanel('default');
   });
   document.getElementById('psCropCancelBtn').addEventListener('click', function() {
+    if (cropEntryState) {
+      if (psCanvas.width !== cropEntryState.w || psCanvas.height !== cropEntryState.h ||
+          psCard.style.width !== cropEntryState.cardW) {
+        psCanvas.width = cropEntryState.w;
+        psCanvas.height = cropEntryState.h;
+        psCtx.putImageData(cropEntryState.data, 0, 0);
+        originalResultData = psCtx.getImageData(0, 0, cropEntryState.w, cropEntryState.h);
+        psSelectionCanvas.width = cropEntryState.w;
+        psSelectionCanvas.height = cropEntryState.h;
+        resizeCardInstant(parseInt(cropEntryState.cardW), parseInt(cropEntryState.cardH));
+        zoom = 1; panX = 0; panY = 0;
+        frameBaseW = 0; frameBaseH = 0;
+        psCanvas.style.width = '';
+        psCanvas.style.height = '';
+        psSelectionCanvas.style.width = '';
+        psSelectionCanvas.style.height = '';
+        requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
+      }
+      cropEntryState = null;
+    }
     showPsPanel('default');
   });
 
@@ -3968,8 +3999,11 @@ body.ps-active #slideCta {
     if (psCanvas.width !== s.w || psCanvas.height !== s.h) {
       psCanvas.width = s.w;
       psCanvas.height = s.h;
+      psCard.classList.add('no-transition');
       psCard.style.width  = s.cardW;
       psCard.style.height = s.cardH;
+      psCard.offsetHeight;
+      psCard.classList.remove('no-transition');
       zoom = 1; panX = 0; panY = 0;
       frameBaseW = 0; frameBaseH = 0;
       requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
@@ -4147,10 +4181,25 @@ body.ps-active #slideCta {
   var ZOOM_MIN = 1, ZOOM_MAX = 6;
   var frameBaseW = 0, frameBaseH = 0;
 
+  function resizeCardInstant(w, h) {
+    psCard.classList.add('no-transition');
+    psCard.style.width = w + 'px';
+    psCard.style.height = h + 'px';
+    psCard.offsetHeight;
+    psCard.classList.remove('no-transition');
+  }
+
   function cacheFrameSize() {
-    var r = psFrame.getBoundingClientRect();
-    frameBaseW = r.width;
-    frameBaseH = r.height;
+    var cardW = parseInt(psCard.style.width);
+    var cardH = parseInt(psCard.style.height);
+    if (cardW > 0 && cardH > 0) {
+      frameBaseW = cardW - 28;
+      frameBaseH = cardH - 28;
+    } else {
+      var r = psFrame.getBoundingClientRect();
+      frameBaseW = r.width;
+      frameBaseH = r.height;
+    }
   }
 
   function applyTransform() {
@@ -4739,14 +4788,14 @@ body.ps-active #slideCta {
     psSelectionCanvas.width = psCanvas.width;
     psSelectionCanvas.height = psCanvas.height;
     var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
-    psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
+    resizeCardInstant(sz.w, sz.h);
     zoom = 1; panX = 0; panY = 0;
     frameBaseW = 0; frameBaseH = 0;
     psCanvas.style.width = '';
     psCanvas.style.height = '';
     psSelectionCanvas.style.width = '';
     psSelectionCanvas.style.height = '';
-    requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
+    requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); initCropOverlay(); });
   }
 
   function flipCanvas(dir) {
@@ -4763,9 +4812,9 @@ body.ps-active #slideCta {
     originalResultData = psCtx.getImageData(0, 0, w, h);
   }
 
-  document.getElementById('psRotCW90').addEventListener('click', function() { rotateCanvas(90); initCropOverlay(); });
-  document.getElementById('psRotCCW90').addEventListener('click', function() { rotateCanvas(-90); initCropOverlay(); });
-  document.getElementById('psRot180').addEventListener('click', function() { rotateCanvas(180); initCropOverlay(); });
+  document.getElementById('psRotCW90').addEventListener('click', function() { rotateCanvas(90); });
+  document.getElementById('psRotCCW90').addEventListener('click', function() { rotateCanvas(-90); });
+  document.getElementById('psRot180').addEventListener('click', function() { rotateCanvas(180); });
   document.getElementById('psFlipH').addEventListener('click', function() { flipCanvas('h'); });
   document.getElementById('psFlipV').addEventListener('click', function() { flipCanvas('v'); });
 
@@ -4851,7 +4900,7 @@ body.ps-active #slideCta {
     psSelectionCanvas.width = nw;
     psSelectionCanvas.height = nh;
     var sz = psCalcCardSize(nw, nh);
-    psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
+    resizeCardInstant(sz.w, sz.h);
     zoom = 1; panX = 0; panY = 0;
     frameBaseW = 0; frameBaseH = 0;
     psCanvas.style.width = '';
