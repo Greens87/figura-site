@@ -2969,7 +2969,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T19:15';
+  const DEPLOY_VERSION = '2026-04-14T19:20';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -4928,15 +4928,16 @@ body.ps-active #slideCta {
       cropRotSnapshot = null;
       return;
     }
+    applyFreeRotation(cropRotCurrentAngle, cropRotSnapshot);
     cropRotSnapshot = null;
-    applyFreeRotation(cropRotCurrentAngle);
     cropRotCurrentAngle = 0;
   });
 
-  function applyFreeRotation(degrees) {
+  function applyFreeRotation(degrees, source) {
+    if (!source) source = psCanvas;
     pushEditState();
     var rad = degrees * Math.PI / 180;
-    var w = psCanvas.width, h = psCanvas.height;
+    var w = source.width, h = source.height;
     var cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
     var nw = Math.ceil(w * cos + h * sin);
     var nh = Math.ceil(w * sin + h * cos);
@@ -4945,7 +4946,7 @@ body.ps-active #slideCta {
     var tCtx = tmp.getContext('2d');
     tCtx.translate(nw / 2, nh / 2);
     tCtx.rotate(rad);
-    tCtx.drawImage(psCanvas, -w / 2, -h / 2);
+    tCtx.drawImage(source, -w / 2, -h / 2);
     psCanvas.width = nw; psCanvas.height = nh;
     psCtx.drawImage(tmp, 0, 0);
     originalResultData = psCtx.getImageData(0, 0, nw, nh);
