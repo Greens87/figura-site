@@ -7,7 +7,7 @@
 <meta name="description" content="Фигура — сервис удаления фона с продуктовых фотографий. Загрузите фото — получите чистый результат за один клик.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
 <style>
 *, *::before, *::after {
@@ -24,7 +24,7 @@
   --gray-border: #E8E8E8;
   --gray-bg: #F9F9F9;
   --font-heading: 'Unbounded', sans-serif;
-  --font-body: 'Onest', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 
 html {
@@ -432,9 +432,9 @@ h1, h2, h3 {
 }
 
 .checkerboard-bg {
-  background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-image: linear-gradient(45deg, #efefef 25%, transparent 25%), linear-gradient(-45deg, #efefef 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #efefef 75%), linear-gradient(-45deg, transparent 75%, #efefef 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
   background-color: #f0f0f0;
 }
 
@@ -1295,14 +1295,14 @@ body.ps-active { overflow: hidden; }
   background: #f5f5f5;
 }
 .ps-canvas-frame.checker-bg {
-  background-color: #f0f0f0;
+  background-color: #f7f7f7;
   background-image:
-    linear-gradient(45deg,#d8d8d8 25%,transparent 25%),
-    linear-gradient(-45deg,#d8d8d8 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#d8d8d8 75%),
-    linear-gradient(-45deg,transparent 75%,#d8d8d8 75%);
-  background-size: 20px 20px;
-  background-position: 0 0,0 10px,10px -10px,-10px 0;
+    linear-gradient(45deg,#efefef 25%,transparent 25%),
+    linear-gradient(-45deg,#efefef 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#efefef 75%),
+    linear-gradient(-45deg,transparent 75%,#efefef 75%);
+  background-size: 16px 16px;
+  background-position: 0 0,0 8px,8px -8px,-8px 0;
 }
 .ps-shimmer {
   position: absolute;
@@ -1326,7 +1326,6 @@ body.ps-active { overflow: hidden; }
   position: relative;
   z-index: 1;
   transform-origin: 0 0;
-  will-change: transform;
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #psCanvas.no-transition { transition: none; }
@@ -1500,27 +1499,7 @@ body.ps-active { overflow: hidden; }
 .ps-card.space-panning .ps-crop-handle { cursor: grabbing !important; }
 /* Pan hint — shown only when zoomed */
 #psPanHint {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  padding: 6px 10px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid #E8E8E8;
-  border-radius: 50px;
-  font-family: var(--font-body);
-  font-size: 10.5px;
-  color: var(--gray);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 16;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: none;
 }
 #psPanHint kbd {
   background: #FFFFFF;
@@ -2005,6 +1984,119 @@ body.ps-active { overflow: hidden; }
   display: flex;
   gap: 10px;
 }
+/* ===== Expanded tools panel ===== */
+#psToolsExpanded {
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 0 4px;
+  animation: toolsFadeIn 0.25s ease;
+}
+#psToolsExpanded.visible { display: flex; }
+@keyframes toolsFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ps-tool-icon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1.5px solid #E8E8E8;
+  border-radius: 14px;
+  background: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+  min-width: 72px;
+}
+.ps-tool-icon-btn:hover { border-color: #c0c0c0; background: #fafafa; color: var(--black); }
+.ps-tool-icon-btn.active {
+  border-color: #003AE7;
+  background: rgba(0,58,231,0.05);
+  color: #003AE7;
+  box-shadow: 0 0 0 2px rgba(0,58,231,0.08);
+}
+.ps-tool-icon-btn svg { opacity: 0.7; }
+.ps-tool-icon-btn:hover svg, .ps-tool-icon-btn.active svg { opacity: 1; }
+
+/* Restore cursor (green ring) */
+#psRestoreCursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 12;
+  display: none;
+  transform: translate(-50%, -50%);
+}
+#psRestoreCursor.visible { display: block; }
+#psRestoreCursor .ps-restore-ring {
+  border: 2px solid rgba(34,197,94,0.7);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(34,197,94,0.15);
+}
+
+/* Selection canvas overlay (magic wand) */
+#psSelectionCanvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  transform-origin: 0 0;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Shadow panel */
+.ps-shadow-preview {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  overflow: hidden;
+}
+.ps-shadow-preview-shape {
+  width: 60px;
+  height: 40px;
+  background: #333;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+}
+
+/* Rotate panel */
+.ps-rotate-btns {
+  display: flex;
+  gap: 6px;
+}
+.ps-rotate-btns button {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid #E8E8E8;
+  border-radius: 10px;
+  background: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.ps-rotate-btns button:hover { border-color: #aaa; background: #f8f8f8; }
+.ps-section-divider {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray);
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
 /* Hide page sections during upload */
 body.ps-active .hero,
 body.ps-active .stats-strip,
@@ -2208,7 +2300,11 @@ body.ps-active #slideCta {
         <div class="ps-eraser-ring"></div>
         <div class="ps-eraser-cross"></div>
       </div>
+      <div id="psRestoreCursor">
+        <div class="ps-restore-ring"></div>
+      </div>
       <div id="psEraserPreview"></div>
+      <canvas id="psSelectionCanvas"></canvas>
     </div>
     <div id="psZoomCtrls">
       <button class="ps-zoom-btn" id="psZoomOutBtn" title="Уменьшить">−</button>
@@ -2239,13 +2335,35 @@ body.ps-active #slideCta {
         </span>
       </div>
       <div id="psToolbar" class="hidden">
-        <button id="psCropToolBtn" class="ps-tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
+        <button id="psToolsToggleBtn" class="ps-tool-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Инструменты
+        </button>
+      </div>
+      <div id="psToolsExpanded">
+        <button class="ps-tool-icon-btn" data-tool="crop">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
           Обрезать
         </button>
-        <button id="psEraserToolBtn" class="ps-tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+        <button class="ps-tool-icon-btn" data-tool="eraser">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
           Ластик
+        </button>
+        <button class="ps-tool-icon-btn" data-tool="restore">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Восстановить
+        </button>
+        <button class="ps-tool-icon-btn" data-tool="wand">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
+          Выделение
+        </button>
+        <button class="ps-tool-icon-btn" data-tool="rotate">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          Поворот
+        </button>
+        <button class="ps-tool-icon-btn" data-tool="shadow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="19" rx="8" ry="3" opacity="0.4"/><rect x="4" y="2" width="16" height="14" rx="3"/></svg>
+          Тень
         </button>
       </div>
       <div id="psActions">
@@ -2292,6 +2410,72 @@ body.ps-active #slideCta {
         <button id="psEraserDoneBtn" class="btn-primary">Готово</button>
       </div>
     </div>
+    <!-- Restore panel -->
+    <div id="psRestorePanel" class="ps-panel hidden">
+      <div class="ps-panel-title">Восстанавливающая кисть</div>
+      <div class="ps-slider-row">
+        <span>Размер</span>
+        <input type="range" id="psRestoreSize" min="5" max="500" value="40">
+        <span class="ps-slider-val"><span id="psRestoreSizeVal">40</span>px</span>
+      </div>
+      <div class="ps-slider-row">
+        <span>Жёсткость</span>
+        <input type="range" id="psRestoreHard" min="0" max="100" value="80">
+        <span class="ps-slider-val"><span id="psRestoreHardVal">80</span>%</span>
+      </div>
+      <div class="ps-panel-actions">
+        <button id="psRestoreUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+        <button id="psRestoreCancelBtn" class="ps-back-btn">Отмена</button>
+        <button id="psRestoreDoneBtn" class="btn-primary">Готово</button>
+      </div>
+    </div>
+    <!-- Magic Wand panel -->
+    <div id="psWandPanel" class="ps-panel hidden">
+      <div class="ps-panel-title">Волшебное выделение</div>
+      <div class="ps-slider-row">
+        <span>Допуск</span>
+        <input type="range" id="psWandTolerance" min="0" max="255" value="32">
+        <span class="ps-slider-val"><span id="psWandToleranceVal">32</span></span>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);cursor:pointer;">
+        <input type="checkbox" id="psWandContiguous" checked style="accent-color:#003AE7;"> Смежные пиксели
+      </label>
+      <div class="ps-panel-actions">
+        <button id="psWandDeleteBtn" class="btn-primary">Удалить выделение</button>
+        <button id="psWandInvertBtn" class="ps-tool-btn">Инвертировать</button>
+        <button id="psWandCancelBtn" class="ps-back-btn">Отмена</button>
+      </div>
+    </div>
+    <!-- Rotate/Flip panel -->
+    <div id="psRotatePanel" class="ps-panel hidden">
+      <div class="ps-panel-title">Поворот и отражение</div>
+      <div class="ps-rotate-btns">
+        <button id="psRotCW90">90° →</button>
+        <button id="psRotCCW90">← 90°</button>
+        <button id="psRot180">180°</button>
+      </div>
+      <div class="ps-section-divider">Зеркалирование</div>
+      <div class="ps-rotate-btns">
+        <button id="psFlipH">↔ По горизонтали</button>
+        <button id="psFlipV">↕ По вертикали</button>
+      </div>
+      <div class="ps-panel-actions">
+        <button id="psRotateCancelBtn" class="ps-back-btn">Готово</button>
+      </div>
+    </div>
+    <!-- Shadow panel -->
+    <div id="psShadowPanel" class="ps-panel hidden">
+      <div class="ps-panel-title">Тень</div>
+      <div class="ps-slider-row">
+        <span>Мягкость</span>
+        <input type="range" id="psShadowBlur" min="0" max="100" value="40">
+        <span class="ps-slider-val"><span id="psShadowBlurVal">40</span></span>
+      </div>
+      <div class="ps-panel-actions">
+        <button id="psShadowApplyBtn" class="btn-primary">Применить тень</button>
+        <button id="psShadowCancelBtn" class="ps-back-btn">Отмена</button>
+      </div>
+    </div>
   </div>
   <!-- Help popover (keyboard shortcuts) -->
   <div id="psHelpPopover">
@@ -2304,8 +2488,10 @@ body.ps-active #slideCta {
       <li><span>Скачать PNG</span><span class="ps-help-keys"><kbd>Ctrl</kbd><span class="ps-help-sep">/</span><kbd>⌘</kbd><kbd>S</kbd></span></li>
       <li><span>Обрезать</span><span class="ps-help-keys"><kbd>C</kbd></span></li>
       <li><span>Ластик</span><span class="ps-help-keys"><kbd>E</kbd></span></li>
+      <li><span>Восстановить</span><span class="ps-help-keys"><kbd>R</kbd></span></li>
+      <li><span>Выделение</span><span class="ps-help-keys"><kbd>W</kbd></span></li>
       <li><span>Применить / Выйти</span><span class="ps-help-keys"><kbd>Enter</kbd> / <kbd>Esc</kbd></span></li>
-      <li><span>Панорама по изображению</span><span class="ps-help-keys"><kbd>Space</kbd> + drag</span></li>
+      <li><span>Панорама</span><span class="ps-help-keys"><kbd>Space</kbd> + drag</span></li>
     </ul>
   </div>
   <!-- Custom color picker popover -->
@@ -2840,6 +3026,17 @@ body.ps-active #slideCta {
   var psDarkR        = document.getElementById('psDarkR');
   var psDarkB        = document.getElementById('psDarkB');
   var psDarkL        = document.getElementById('psDarkL');
+  var psRestorePanel   = document.getElementById('psRestorePanel');
+  var psRestoreCursor  = document.getElementById('psRestoreCursor');
+  var psRestoreRing    = psRestoreCursor.querySelector('.ps-restore-ring');
+  var psWandPanel      = document.getElementById('psWandPanel');
+  var psRotatePanel    = document.getElementById('psRotatePanel');
+  var psShadowPanel    = document.getElementById('psShadowPanel');
+  var psSelectionCanvas = document.getElementById('psSelectionCanvas');
+  var psSelCtx         = psSelectionCanvas.getContext('2d');
+  var psToolsExpanded  = document.getElementById('psToolsExpanded');
+  var psToolsToggleBtn = document.getElementById('psToolsToggleBtn');
+  var originalResultData = null; // saved after bg removal for restore brush
   var psWheelBtn     = document.getElementById('psWheelBtn');
   var psPickerPop    = document.getElementById('psPickerPopover');
   var psPickerSV     = document.getElementById('psPickerSV');
@@ -2852,10 +3049,9 @@ body.ps-active #slideCta {
 
   function psCalcCardSize(imgW, imgH) {
     var ratio = imgW / imgH;
-    // Frame should fit within max bounds; card = frame + 2*14px padding + 2*1px border
     var PAD = 30;
-    var maxFrameW = Math.min(window.innerWidth * 0.78, 600) - PAD;
-    var maxFrameH = Math.min(window.innerHeight * 0.62, 520) - PAD;
+    var maxFrameW = Math.min(window.innerWidth * 0.88, 900) - PAD;
+    var maxFrameH = Math.min(window.innerHeight * 0.78, 720) - PAD;
     var fw, fh;
     if (ratio >= 1) { fw = Math.min(maxFrameW, maxFrameH * ratio); fh = fw / ratio; }
     else            { fh = Math.min(maxFrameH, maxFrameW / ratio); fw = fh * ratio; }
@@ -3050,9 +3246,20 @@ body.ps-active #slideCta {
   });
 
   function showPsPanel(panel) {
+    var allPanels = ['default','crop','eraser','restore','wand','rotate','shadow'];
     psDefaultPanel.classList.toggle('hidden', panel !== 'default');
     psCropPanel.classList.toggle('hidden', panel !== 'crop');
     psEraserPanel.classList.toggle('hidden', panel !== 'eraser');
+    psRestorePanel.classList.toggle('hidden', panel !== 'restore');
+    psWandPanel.classList.toggle('hidden', panel !== 'wand');
+    psRotatePanel.classList.toggle('hidden', panel !== 'rotate');
+    psShadowPanel.classList.toggle('hidden', panel !== 'shadow');
+
+    // Highlight active tool button
+    document.querySelectorAll('#psToolsExpanded .ps-tool-icon-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-tool') === panel);
+    });
+
     if (panel === 'crop') {
       psCropOverlay.classList.add('visible');
       initCropOverlay();
@@ -3061,10 +3268,22 @@ body.ps-active #slideCta {
     }
     if (panel === 'eraser') {
       psCanvas.style.cursor = 'none';
+    } else if (panel === 'restore') {
+      psCanvas.style.cursor = 'none';
+    } else if (panel === 'wand') {
+      psCanvas.style.cursor = 'crosshair';
     } else {
       psCanvas.style.cursor = '';
       psEraserCursor.classList.remove('visible');
+      psRestoreCursor.classList.remove('visible');
       if (typeof eraserDrawing !== 'undefined') eraserDrawing = false;
+      if (typeof restoreDrawing !== 'undefined') restoreDrawing = false;
+    }
+    // Clear selection when leaving wand
+    if (panel !== 'wand' && wandSelection) {
+      wandSelection = null;
+      psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
+      if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
     }
     // Update pannable state
     if (typeof zoom !== 'undefined') {
@@ -3072,11 +3291,17 @@ body.ps-active #slideCta {
     }
   }
 
-  document.getElementById('psCropToolBtn').addEventListener('click', function() {
-    showPsPanel('crop');
+  // Tools toggle
+  psToolsToggleBtn.addEventListener('click', function() {
+    var isVis = psToolsExpanded.classList.contains('visible');
+    psToolsExpanded.classList.toggle('visible', !isVis);
+    psToolsToggleBtn.classList.toggle('active', !isVis);
   });
-  document.getElementById('psEraserToolBtn').addEventListener('click', function() {
-    showPsPanel('eraser');
+  psToolsExpanded.addEventListener('click', function(e) {
+    var btn = e.target.closest('.ps-tool-icon-btn');
+    if (!btn) return;
+    var tool = btn.getAttribute('data-tool');
+    if (tool) showPsPanel(tool);
   });
 
   function psExitToLanding() {
@@ -3100,7 +3325,12 @@ body.ps-active #slideCta {
       psCanvas.style.transform = '';
       if (psPickerPop) psPickerPop.classList.remove('visible');
       if (psHelpPop) psHelpPop.classList.remove('visible');
+      psToolsExpanded.classList.remove('visible');
+      psToolsToggleBtn.classList.remove('active');
       editStack.length = 0;
+      originalResultData = null;
+      wandSelection = null;
+      if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
     }, 600);
   }
 
@@ -3146,6 +3376,9 @@ body.ps-active #slideCta {
       b.classList.toggle('active', b.getAttribute('data-ratio') === 'free');
     });
     editStack.length = 0;
+    originalResultData = null;
+    psToolsExpanded.classList.remove('visible');
+    psToolsToggleBtn.classList.remove('active');
     if (psCtx) psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
 
     setTimeout(function() {
@@ -3183,6 +3416,11 @@ body.ps-active #slideCta {
               psActions.classList.add('visible');
               psDownloadBtn.disabled = false;
               psToolbar.classList.remove('hidden');
+              // Save original result for restore brush
+              originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+              // Setup selection canvas
+              psSelectionCanvas.width = psCanvas.width;
+              psSelectionCanvas.height = psCanvas.height;
               applyTransform(true);
               incrementDailyCount();
             };
@@ -3750,7 +3988,9 @@ body.ps-active #slideCta {
     if (!document.body.classList.contains('ps-active')) return;
     var tag = (document.activeElement && document.activeElement.tagName) || '';
     if (tag === 'INPUT' || tag === 'TEXTAREA') { document.activeElement.blur(); return; }
-    if (!psCropPanel.classList.contains('hidden') || !psEraserPanel.classList.contains('hidden')) {
+    if (!psCropPanel.classList.contains('hidden') || !psEraserPanel.classList.contains('hidden') ||
+        !psRestorePanel.classList.contains('hidden') || !psWandPanel.classList.contains('hidden') ||
+        !psRotatePanel.classList.contains('hidden') || !psShadowPanel.classList.contains('hidden')) {
       showPsPanel('default');
       e.preventDefault();
     }
@@ -3762,10 +4002,11 @@ body.ps-active #slideCta {
   var ZOOM_MIN = 1, ZOOM_MAX = 6;
 
   function applyTransform(smooth) {
+    var tf = 'translate(' + panX + 'px,' + panY + 'px) scale(' + zoom + ')';
     if (!smooth) psCanvas.classList.add('no-transition');
-    psCanvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + zoom + ')';
+    psCanvas.style.transform = tf;
+    psSelectionCanvas.style.transform = tf;
     if (!smooth) {
-      // Force reflow, then remove
       void psCanvas.offsetWidth;
       psCanvas.classList.remove('no-transition');
     }
@@ -3955,6 +4196,22 @@ body.ps-active #slideCta {
       }
       return;
     }
+    // R — restore brush (К — русская)
+    if (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К') {
+      if (psRestorePanel.classList.contains('hidden')) {
+        e.preventDefault();
+        showPsPanel('restore');
+      }
+      return;
+    }
+    // W — magic wand (Ц — русская)
+    if (e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') {
+      if (psWandPanel.classList.contains('hidden')) {
+        e.preventDefault();
+        showPsPanel('wand');
+      }
+      return;
+    }
   });
 
   // ── Photoshop-style Space+drag to pan from any tool mode ──
@@ -4006,6 +4263,403 @@ body.ps-active #slideCta {
     spacePanDrag = false;
     psCard.classList.remove('space-panning');
   }, true);
+
+  // ── RESTORE BRUSH ──
+  var restoreSize = 40, restoreHard = 80;
+  var restoreDrawing = false, restoreLastPos = null;
+
+  function updateRestoreCursorSize() {
+    if (!psCanvas || !psRestoreRing) return;
+    var canvRect = psCanvas.getBoundingClientRect();
+    var scale = canvRect.width / psCanvas.width;
+    var px = restoreSize * scale;
+    psRestoreRing.style.width  = px + 'px';
+    psRestoreRing.style.height = px + 'px';
+  }
+
+  function restoreAtPoint(cx, cy) {
+    if (!originalResultData) return;
+    var r = restoreSize / 2;
+    var ri = Math.ceil(r);
+    var h = restoreHard / 100;
+    var sx = Math.max(0, Math.floor(cx - ri));
+    var sy = Math.max(0, Math.floor(cy - ri));
+    var ex = Math.min(psCanvas.width, Math.ceil(cx + ri));
+    var ey = Math.min(psCanvas.height, Math.ceil(cy + ri));
+    var lw = ex - sx, lh = ey - sy;
+    if (lw <= 0 || lh <= 0) return;
+
+    var d2 = ri * 2;
+    var tmp = document.createElement('canvas');
+    tmp.width = d2; tmp.height = d2;
+    var tCtx = tmp.getContext('2d');
+    var mask = document.createElement('canvas');
+    mask.width = d2; mask.height = d2;
+    var mCtx = mask.getContext('2d');
+
+    // Extract original patch
+    var origPatch = new ImageData(lw, lh);
+    var srcW = originalResultData.width;
+    var origD = originalResultData.data;
+    var pD = origPatch.data;
+    for (var py2 = 0; py2 < lh; py2++) {
+      var srcOff = ((sy + py2) * srcW + sx) * 4;
+      var dstOff = py2 * lw * 4;
+      for (var j = 0; j < lw * 4; j++) pD[dstOff + j] = origD[srcOff + j];
+    }
+    tCtx.putImageData(origPatch, 0, 0);
+
+    var centerA = 0.4 + h * 0.6;
+    var plateau = h * 0.75;
+    var mid = plateau + (1 - plateau) * 0.45;
+    var midAlpha = (0.1 + h * 0.28) * centerA;
+    var grad = mCtx.createRadialGradient(cx - sx, cy - sy, 0, cx - sx, cy - sy, ri);
+    grad.addColorStop(0, 'rgba(255,255,255,' + centerA + ')');
+    grad.addColorStop(plateau, 'rgba(255,255,255,' + centerA + ')');
+    grad.addColorStop(mid, 'rgba(255,255,255,' + midAlpha + ')');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    mCtx.fillStyle = grad;
+    mCtx.beginPath();
+    mCtx.arc(cx - sx, cy - sy, ri, 0, Math.PI * 2);
+    mCtx.fill();
+    mCtx.globalCompositeOperation = 'source-in';
+    mCtx.drawImage(tmp, 0, 0, lw, lh, 0, 0, lw, lh);
+    mCtx.globalCompositeOperation = 'source-over';
+
+    psCtx.drawImage(mask, 0, 0, lw, lh, sx, sy, lw, lh);
+  }
+
+  document.getElementById('psRestoreSize').addEventListener('input', function() {
+    restoreSize = parseInt(this.value);
+    document.getElementById('psRestoreSizeVal').textContent = restoreSize;
+    updateRestoreCursorSize();
+  });
+  document.getElementById('psRestoreHard').addEventListener('input', function() {
+    restoreHard = parseInt(this.value);
+    document.getElementById('psRestoreHardVal').textContent = restoreHard;
+  });
+
+  psCanvas.addEventListener('pointermove', function(e) {
+    var inRestore = !psRestorePanel.classList.contains('hidden');
+    if (inRestore) {
+      var frameRect = psFrame.getBoundingClientRect();
+      psRestoreCursor.style.left = (e.clientX - frameRect.left) + 'px';
+      psRestoreCursor.style.top  = (e.clientY - frameRect.top)  + 'px';
+      updateRestoreCursorSize();
+      if (restoreDrawing) {
+        var pos = getCanvasPos(e);
+        if (restoreLastPos) {
+          var dist = Math.hypot(pos.x - restoreLastPos.x, pos.y - restoreLastPos.y);
+          var step = Math.max(1, restoreSize * 0.2);
+          var steps = Math.ceil(dist / step);
+          for (var i = 1; i <= steps; i++) {
+            var t = i / steps;
+            restoreAtPoint(restoreLastPos.x + (pos.x - restoreLastPos.x) * t,
+                           restoreLastPos.y + (pos.y - restoreLastPos.y) * t);
+          }
+        }
+        restoreLastPos = pos;
+      }
+    }
+  });
+
+  psCanvas.addEventListener('pointerdown', function(e) {
+    if (!psRestorePanel.classList.contains('hidden')) {
+      restoreDrawing = true;
+      psCanvas.setPointerCapture(e.pointerId);
+      pushEditState();
+      var pos = getCanvasPos(e);
+      restoreLastPos = pos;
+      restoreAtPoint(pos.x, pos.y);
+      return;
+    }
+  });
+
+  psCanvas.addEventListener('pointerup', function() {
+    restoreDrawing = false; restoreLastPos = null;
+  });
+  psCanvas.addEventListener('pointerenter', function() {
+    if (!psRestorePanel.classList.contains('hidden')) psRestoreCursor.classList.add('visible');
+  });
+  psCanvas.addEventListener('pointerleave', function() {
+    psRestoreCursor.classList.remove('visible');
+  });
+
+  document.getElementById('psRestoreUndoBtn').addEventListener('click', undoEdit);
+  document.getElementById('psRestoreDoneBtn').addEventListener('click', function() { showPsPanel('default'); });
+  document.getElementById('psRestoreCancelBtn').addEventListener('click', function() { showPsPanel('default'); });
+
+  // ── MAGIC WAND ──
+  var wandSelection = null;
+  var wandAntsRAF = null;
+  var wandAntsOffset = 0;
+
+  function wandSelect(sx, sy) {
+    sx = Math.round(sx);
+    sy = Math.round(sy);
+    var w = psCanvas.width, h = psCanvas.height;
+    if (sx < 0 || sy < 0 || sx >= w || sy >= h) return;
+
+    var imgData = psCtx.getImageData(0, 0, w, h);
+    var data = imgData.data;
+    var tol = parseInt(document.getElementById('psWandTolerance').value) || 32;
+    var contiguous = document.getElementById('psWandContiguous').checked;
+    var sel = new Uint8Array(w * h);
+
+    var idx = (sy * w + sx) * 4;
+    var tr = data[idx], tg = data[idx+1], tb = data[idx+2], ta = data[idx+3];
+
+    function matches(i) {
+      return Math.abs(data[i] - tr) <= tol &&
+             Math.abs(data[i+1] - tg) <= tol &&
+             Math.abs(data[i+2] - tb) <= tol &&
+             Math.abs(data[i+3] - ta) <= tol;
+    }
+
+    if (contiguous) {
+      var visited = new Uint8Array(w * h);
+      var queue = [sx + sy * w];
+      visited[sx + sy * w] = 1;
+      while (queue.length) {
+        var pos = queue.pop();
+        var px = pos % w;
+        var py = (pos - px) / w;
+        var pi = pos * 4;
+        if (matches(pi)) {
+          sel[pos] = 1;
+          if (px > 0 && !visited[pos-1]) { visited[pos-1] = 1; queue.push(pos-1); }
+          if (px < w-1 && !visited[pos+1]) { visited[pos+1] = 1; queue.push(pos+1); }
+          if (py > 0 && !visited[pos-w]) { visited[pos-w] = 1; queue.push(pos-w); }
+          if (py < h-1 && !visited[pos+w]) { visited[pos+w] = 1; queue.push(pos+w); }
+        }
+      }
+    } else {
+      for (var i = 0; i < w * h; i++) {
+        if (matches(i * 4)) sel[i] = 1;
+      }
+    }
+
+    wandSelection = sel;
+    drawWandAnts();
+  }
+
+  function buildWandEdgeSegs() {
+    var w = psCanvas.width, h = psCanvas.height;
+    var sel = wandSelection;
+    if (!sel) return [];
+    var segs = [];
+    for (var y = 0; y < h; y++) {
+      var runStart = -1;
+      for (var x = 0; x <= w; x++) {
+        var i = y * w + x;
+        var isEdge = x < w && sel[i] && (
+          x === 0 || x === w-1 || y === 0 || y === h-1 ||
+          !sel[i-1] || !sel[i+1] || !sel[i-w] || !sel[i+w]
+        );
+        if (isEdge && runStart < 0) runStart = x;
+        else if (!isEdge && runStart >= 0) {
+          segs.push(runStart, y, x - runStart);
+          runStart = -1;
+        }
+      }
+    }
+    return segs;
+  }
+
+  function drawWandAnts() {
+    if (wandAntsRAF) cancelAnimationFrame(wandAntsRAF);
+    if (!wandSelection) return;
+    var segs = buildWandEdgeSegs();
+    var lastFrame = 0;
+
+    function animate(ts) {
+      if (ts - lastFrame < 50) { wandAntsRAF = requestAnimationFrame(animate); return; }
+      lastFrame = ts;
+      var cw = psSelectionCanvas.width, ch = psSelectionCanvas.height;
+      psSelCtx.clearRect(0, 0, cw, ch);
+      wandAntsOffset = (wandAntsOffset + 0.5) % 16;
+
+      if (segs.length > 0) {
+        psSelCtx.strokeStyle = '#00CCFF';
+        psSelCtx.lineWidth = 1;
+        psSelCtx.setLineDash([4, 4]);
+        psSelCtx.lineDashOffset = -wandAntsOffset;
+        psSelCtx.beginPath();
+        for (var si = 0; si < segs.length; si += 3) {
+          psSelCtx.rect(segs[si], segs[si+1], segs[si+2], 1);
+        }
+        psSelCtx.stroke();
+        psSelCtx.setLineDash([]);
+      }
+      wandAntsRAF = requestAnimationFrame(animate);
+    }
+    wandAntsRAF = requestAnimationFrame(animate);
+  }
+
+  function wandDeleteSelection() {
+    if (!wandSelection) return;
+    pushEditState();
+    var w = psCanvas.width, h = psCanvas.height;
+    var imgData = psCtx.getImageData(0, 0, w, h);
+    var data = imgData.data;
+    var sel = wandSelection;
+
+    // Gaussian blur on mask for soft edges
+    var mask = new Float32Array(w * h);
+    for (var i = 0; i < sel.length; i++) mask[i] = sel[i] ? 1.0 : 0.0;
+    var sigma = 1.2, R = 3;
+    var kernel = new Float32Array(2 * R + 1);
+    var ksum = 0;
+    for (var ki = 0; ki <= 2 * R; ki++) {
+      var xk = ki - R;
+      kernel[ki] = Math.exp(-(xk * xk) / (2 * sigma * sigma));
+      ksum += kernel[ki];
+    }
+    for (var ki2 = 0; ki2 <= 2 * R; ki2++) kernel[ki2] /= ksum;
+
+    var tmp = new Float32Array(w * h);
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var v = 0;
+        for (var k = -R; k <= R; k++) {
+          v += mask[y * w + Math.max(0, Math.min(w - 1, x + k))] * kernel[k + R];
+        }
+        tmp[y * w + x] = v;
+      }
+    }
+    var blurred = new Float32Array(w * h);
+    for (var y2 = 0; y2 < h; y2++) {
+      for (var x2 = 0; x2 < w; x2++) {
+        var v2 = 0;
+        for (var k2 = -R; k2 <= R; k2++) {
+          v2 += tmp[Math.max(0, Math.min(h - 1, y2 + k2)) * w + x2] * kernel[k2 + R];
+        }
+        blurred[y2 * w + x2] = v2;
+      }
+    }
+
+    for (var ii = 0; ii < w * h; ii++) {
+      var s = blurred[ii];
+      if (s > 0.001) {
+        data[ii * 4 + 3] = Math.round(data[ii * 4 + 3] * (1.0 - s));
+      }
+    }
+    psCtx.putImageData(imgData, 0, 0);
+    wandSelection = null;
+    psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
+    if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
+  }
+
+  function wandInvertSelection() {
+    if (!wandSelection) return;
+    for (var i = 0; i < wandSelection.length; i++) {
+      wandSelection[i] = wandSelection[i] ? 0 : 1;
+    }
+    drawWandAnts();
+  }
+
+  // Wand click handler
+  psCanvas.addEventListener('click', function(e) {
+    if (psWandPanel.classList.contains('hidden')) return;
+    var pos = getCanvasPos(e);
+    wandSelect(pos.x, pos.y);
+  });
+
+  document.getElementById('psWandDeleteBtn').addEventListener('click', wandDeleteSelection);
+  document.getElementById('psWandInvertBtn').addEventListener('click', wandInvertSelection);
+  document.getElementById('psWandCancelBtn').addEventListener('click', function() {
+    wandSelection = null;
+    psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
+    if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
+    showPsPanel('default');
+  });
+  document.getElementById('psWandTolerance').addEventListener('input', function() {
+    document.getElementById('psWandToleranceVal').textContent = this.value;
+  });
+
+  // ── ROTATE / FLIP ──
+  function rotateCanvas(degrees) {
+    pushEditState();
+    var w = psCanvas.width, h = psCanvas.height;
+    var tmp = document.createElement('canvas');
+    var tCtx = tmp.getContext('2d');
+    if (degrees === 90 || degrees === -90) {
+      tmp.width = h; tmp.height = w;
+      tCtx.translate(degrees === 90 ? h : 0, degrees === -90 ? w : 0);
+      tCtx.rotate(degrees * Math.PI / 180);
+    } else {
+      tmp.width = w; tmp.height = h;
+      tCtx.translate(w, h);
+      tCtx.rotate(Math.PI);
+    }
+    tCtx.drawImage(psCanvas, 0, 0);
+    psCanvas.width = tmp.width; psCanvas.height = tmp.height;
+    psCtx.drawImage(tmp, 0, 0);
+    originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+    psSelectionCanvas.width = psCanvas.width;
+    psSelectionCanvas.height = psCanvas.height;
+    var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
+    psCard.style.width = sz.w + 'px'; psCard.style.height = sz.h + 'px';
+    zoom = 1; panX = 0; panY = 0;
+    applyTransform(true);
+  }
+
+  function flipCanvas(dir) {
+    pushEditState();
+    var w = psCanvas.width, h = psCanvas.height;
+    var tmp = document.createElement('canvas');
+    tmp.width = w; tmp.height = h;
+    var tCtx = tmp.getContext('2d');
+    if (dir === 'h') { tCtx.translate(w, 0); tCtx.scale(-1, 1); }
+    else             { tCtx.translate(0, h); tCtx.scale(1, -1); }
+    tCtx.drawImage(psCanvas, 0, 0);
+    psCtx.clearRect(0, 0, w, h);
+    psCtx.drawImage(tmp, 0, 0);
+    originalResultData = psCtx.getImageData(0, 0, w, h);
+  }
+
+  document.getElementById('psRotCW90').addEventListener('click', function() { rotateCanvas(90); });
+  document.getElementById('psRotCCW90').addEventListener('click', function() { rotateCanvas(-90); });
+  document.getElementById('psRot180').addEventListener('click', function() { rotateCanvas(180); });
+  document.getElementById('psFlipH').addEventListener('click', function() { flipCanvas('h'); });
+  document.getElementById('psFlipV').addEventListener('click', function() { flipCanvas('v'); });
+  document.getElementById('psRotateCancelBtn').addEventListener('click', function() { showPsPanel('default'); });
+
+  // ── CONTACT SHADOW ──
+  document.getElementById('psShadowBlur').addEventListener('input', function() {
+    document.getElementById('psShadowBlurVal').textContent = this.value;
+  });
+
+  document.getElementById('psShadowApplyBtn').addEventListener('click', function() {
+    if (!psCtx) return;
+    pushEditState();
+    var w = psCanvas.width, h = psCanvas.height;
+    var softness = parseInt(document.getElementById('psShadowBlur').value) || 40;
+    var blurPx = Math.round(softness * Math.max(w, h) / 2000) + 3;
+    var offsetY = Math.round(h * 0.015) + 2;
+
+    // Save current image
+    var tmp = document.createElement('canvas');
+    tmp.width = w; tmp.height = h;
+    tmp.getContext('2d').drawImage(psCanvas, 0, 0);
+
+    // Draw with shadow
+    psCtx.clearRect(0, 0, w, h);
+    psCtx.shadowColor = 'rgba(0,0,0,0.22)';
+    psCtx.shadowBlur = blurPx;
+    psCtx.shadowOffsetX = 0;
+    psCtx.shadowOffsetY = offsetY;
+    psCtx.drawImage(tmp, 0, 0);
+
+    // Reset shadow
+    psCtx.shadowColor = 'transparent';
+    psCtx.shadowBlur = 0;
+    psCtx.shadowOffsetX = 0;
+    psCtx.shadowOffsetY = 0;
+    showPsPanel('default');
+  });
+
+  document.getElementById('psShadowCancelBtn').addEventListener('click', function() { showPsPanel('default'); });
 
   // Color picker
   function applyBackground(color) {
