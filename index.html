@@ -1419,9 +1419,16 @@ body.ps-active { overflow: hidden; }
 .ps-crop-handle-r  { top:50%;     right:-6px; margin-top:-6px; cursor:ew-resize; }
 .ps-crop-handle-b  { bottom:-6px; left:50%; margin-left:-6px; cursor:ns-resize; }
 .ps-crop-handle-l  { top:50%;     left:-6px; margin-top:-6px; cursor:ew-resize; }
+#psCropRotateWidget {
+  position: fixed;
+  z-index: 520;
+  width: 24px;
+  height: 52px;
+  pointer-events: none;
+}
 #psCropRotateWidget .ps-crop-rotate-line {
   position: absolute;
-  bottom: 24px;
+  bottom: 0;
   left: 50%;
   width: 2px;
   height: 26px;
@@ -1445,6 +1452,7 @@ body.ps-active { overflow: hidden; }
   justify-content: center;
   z-index: 3;
   touch-action: none;
+  pointer-events: auto;
 }
 .ps-crop-rotate-handle:active { cursor: grabbing; }
 .ps-crop-rotate-handle svg { pointer-events: none; }
@@ -2416,13 +2424,6 @@ body.ps-active #slideCta {
         <div class="ps-crop-handle ps-crop-handle-l"  data-handle="l"></div>
       </div>
     </div>
-    <div id="psCropRotateWidget" style="display:none;position:absolute;z-index:20;">
-      <div class="ps-crop-rotate-line"></div>
-      <div class="ps-crop-rotate-handle" id="psCropRotateHandle">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A90FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-      </div>
-      <div class="ps-crop-angle-tip" id="psCropAngleTip"></div>
-    </div>
     <div id="psZoomCtrls">
       <button class="ps-zoom-btn" id="psZoomOutBtn" title="Уменьшить">−</button>
       <span id="psZoomLevel">100%</span>
@@ -2432,6 +2433,13 @@ body.ps-active #slideCta {
       </button>
     </div>
     <div id="psPanHint">Удерживайте <kbd>Space</kbd> + перетаскивание — движение по изображению</div>
+  </div>
+  <div id="psCropRotateWidget" style="display:none;">
+    <div class="ps-crop-rotate-line"></div>
+    <div class="ps-crop-rotate-handle" id="psCropRotateHandle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A90FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+    </div>
+    <div class="ps-crop-angle-tip" id="psCropAngleTip"></div>
   </div>
   <div id="psBottom">
     <!-- Default panel -->
@@ -2988,7 +2996,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T20:00';
+  const DEPLOY_VERSION = '2026-04-14T20:05';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3683,9 +3691,8 @@ body.ps-active #slideCta {
     psDarkL.style.width = bL + 'px'; psDarkL.style.height = Math.max(0, bB - bT) + 'px';
     psDarkR.style.left = bR + 'px'; psDarkR.style.top = bT + 'px';
     psDarkR.style.width = Math.max(0, fw - bR) + 'px'; psDarkR.style.height = Math.max(0, bB - bT) + 'px';
-    var cardRect = psCard.getBoundingClientRect();
-    var widgetX = (canvRect.left - cardRect.left) + (bx + bw / 2);
-    var widgetY = (canvRect.top - cardRect.top) + by - 52;
+    var widgetX = canvRect.left + (bx + bw / 2) * canvRect.width / frameRect.width - 12;
+    var widgetY = canvRect.top + by * canvRect.height / frameRect.height - 52;
     psCropRotateWidget.style.left = Math.round(widgetX) + 'px';
     psCropRotateWidget.style.top = Math.round(widgetY) + 'px';
   }
