@@ -2073,7 +2073,7 @@ body.ps-active { overflow: hidden; }
   .ps-panel {
     position: sticky;
     top: calc(var(--ps-card-h, 380px) + 8px);
-    max-height: calc(var(--screen-h, 100vh) - 64px - var(--ps-card-h, 380px) - 8px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 64px - var(--ps-card-h, 380px) - 8px);
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
@@ -2108,6 +2108,7 @@ body.ps-active { overflow: hidden; }
     flex-shrink: 0;
     border-top: 1px solid var(--gray-border);
     padding-top: 4px;
+    padding-bottom: env(safe-area-inset-bottom, 8px);
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3405,7 +3406,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T20:00';
+  const DEPLOY_VERSION = '2026-04-15T21:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
