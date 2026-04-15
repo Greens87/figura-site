@@ -2074,32 +2074,32 @@ body.ps-active { overflow: hidden; }
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    overflow: visible;
-    display: block;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     box-shadow: none;
-    border-top: none;
+    border-top: 1px solid var(--gray-border);
     margin-top: 8px;
-    background: var(--white);
-  }
-  .ps-panel .tp-sticky-header {
-    position: sticky;
-    top: calc(var(--ps-card-h, 380px) + 8px);
-    z-index: 10;
-    border-radius: var(--r-lg) var(--r-lg) 0 0;
-    background: var(--white);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
   }
   .ps-panel .tp-drag-handle {
     display: flex;
+    flex-shrink: 0;
   }
   .ps-panel .ps-panel-close {
     top: 12px;
     right: 12px;
     z-index: 4;
   }
+  .ps-panel .tp-tabs-wrap {
+    flex-shrink: 0;
+  }
+  .ps-panel .tp-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+  }
   #psCropRotateWidget { display: none !important; }
 }
-.tp-sticky-header { position: relative; }
 /* Mobile drag handle — decorative grip */
 .tp-drag-handle {
   display: none;
@@ -2777,7 +2777,6 @@ body.ps-active #slideCta {
   </div>
   <!-- Unified Tool Panel (inside editor row for centering) -->
   <div id="psToolPanel" class="ps-panel hidden">
-    <div class="tp-sticky-header">
     <div class="tp-drag-handle" id="tpDragHandle"></div>
     <button class="ps-panel-close" id="psToolPanelClose">×</button>
     <!-- iOS Segmented Tabs -->
@@ -2804,7 +2803,6 @@ body.ps-active #slideCta {
         </div>
       </div>
     </div>
-    </div><!-- /tp-sticky-header -->
 
     <!-- Content -->
     <div class="tp-body">
@@ -3397,7 +3395,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T23:30';
+  const DEPLOY_VERSION = '2026-04-16T00:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
