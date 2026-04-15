@@ -2073,42 +2073,22 @@ body.ps-active { overflow: hidden; }
   .ps-panel {
     position: sticky;
     top: calc(var(--ps-card-h, 380px) + 8px);
-    max-height: calc(100dvh - 64px - var(--ps-card-h, 380px) - 8px);
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    overflow: visible;
+    display: block;
     box-shadow: none;
     border-top: 1px solid var(--gray-border);
     margin-top: 8px;
   }
   .ps-panel .tp-drag-handle {
     display: flex;
-    flex-shrink: 0;
   }
   .ps-panel .ps-panel-close {
     top: 12px;
     right: 12px;
     z-index: 4;
-  }
-  .ps-panel .tp-tabs-wrap {
-    flex-shrink: 0;
-    background: var(--white);
-  }
-  .ps-panel .tp-body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    min-height: 0;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), black 100%);
-    mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), black 100%);
-  }
-  .ps-panel .tp-footer {
-    flex-shrink: 0;
-    border-top: 1px solid var(--gray-border);
-    padding-top: 4px;
-    padding-bottom: env(safe-area-inset-bottom, 8px);
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3406,7 +3386,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T21:00';
+  const DEPLOY_VERSION = '2026-04-15T21:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
