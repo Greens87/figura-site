@@ -1324,18 +1324,18 @@ body.ps-active { overflow: hidden; }
   #processingScreen {
     padding: 12px 8px 0;
     justify-content: flex-start;
+    overflow: hidden;
   }
   .ps-editor-row {
-    flex-shrink: 0;
+    flex: 1 1 auto;
     min-height: 0;
+    overflow: hidden;
   }
   .ps-card {
     max-width: calc(100vw - 16px);
     padding: 8px;
     flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: static;
   }
   #psBottom {
     margin-top: 8px;
@@ -2069,32 +2069,43 @@ body.ps-active { overflow: hidden; }
     flex-direction: column;
     align-items: center;
     width: 100%;
+    overflow: hidden;
   }
   .ps-panel {
     position: relative;
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    max-height: none;
-    overflow: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     box-shadow: none;
     border-top: 1px solid var(--gray-border);
     margin-top: 8px;
   }
   .ps-panel .tp-drag-handle {
     display: flex;
+    flex-shrink: 0;
   }
   .ps-panel .ps-panel-close {
     top: 12px;
     right: 12px;
+    z-index: 4;
   }
-  /* Tab bar stays fixed below artboard while content scrolls */
   .ps-panel .tp-tabs-wrap {
-    position: sticky;
-    top: calc(var(--ps-card-h, 380px) + 20px);
-    z-index: 3;
+    flex-shrink: 0;
     background: var(--white);
-    padding-bottom: 2px;
+  }
+  .ps-panel .tp-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .ps-panel .tp-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--gray-border);
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3392,7 +3403,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T16:00';
+  const DEPLOY_VERSION = '2026-04-15T17:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
