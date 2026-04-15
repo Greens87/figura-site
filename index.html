@@ -2071,14 +2071,10 @@ body.ps-active { overflow: hidden; }
     width: 100%;
   }
   .ps-panel {
-    position: sticky;
-    top: calc(var(--ps-card-h, 380px) + 8px);
-    max-height: calc(100dvh - 64px - var(--ps-card-h, 380px) - 8px);
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: visible;
     display: block;
     box-shadow: none;
     border-top: none;
@@ -2086,13 +2082,13 @@ body.ps-active { overflow: hidden; }
   }
   .ps-panel .tp-sticky-header {
     position: sticky;
-    top: 0;
+    top: calc(var(--ps-card-h, 380px) + 8px);
     z-index: 10;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.85);
     -webkit-backdrop-filter: blur(20px) saturate(200%);
     backdrop-filter: blur(20px) saturate(200%);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07), 0 0 0 0.5px rgba(255,255,255,0.7) inset;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
   }
   .ps-panel .tp-drag-handle {
     display: flex;
@@ -3402,7 +3398,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T22:30';
+  const DEPLOY_VERSION = '2026-04-15T23:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
