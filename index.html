@@ -2094,13 +2094,10 @@ body.ps-active { overflow: hidden; }
   .ps-panel .tp-tabs-wrap {
     flex-shrink: 0;
   }
-  .ps-panel .tp-body {
+  .ps-panel .tp-scroll {
     flex: 1 1 auto;
     overflow-y: auto;
     min-height: 0;
-  }
-  .ps-panel .tp-footer {
-    flex-shrink: 0;
   }
   #psCropRotateWidget { display: none !important; }
 }
@@ -2808,6 +2805,8 @@ body.ps-active #slideCta {
       </div>
     </div>
 
+    <!-- Scrollable area: body + footer scroll together -->
+    <div class="tp-scroll">
     <!-- Content -->
     <div class="tp-body">
       <!-- CROP -->
@@ -2949,6 +2948,7 @@ body.ps-active #slideCta {
       <button class="tp-btn tp-btn-secondary" id="tpUndoBtn"><span class="ms">undo</span> Отменить</button>
       <button class="tp-btn tp-btn-primary" id="tpApplyBtn"><span class="ms">check</span> Применить</button>
     </div>
+    </div><!-- /.tp-scroll -->
   </div>
   </div><!-- /.ps-editor-row -->
   <div id="psBottom">
@@ -3399,7 +3399,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T16:30';
+  const DEPLOY_VERSION = '2026-04-15T17:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3587,7 +3587,7 @@ body.ps-active #slideCta {
     var maxFrameW = isMobile ? (availW - PAD) : (Math.min(availW * 0.92, 900) - PAD);
     var maxFrameH = Math.min(availH * 0.92, 720) - PAD;
     if (isMobile) {
-      var mobileCap = Math.floor((window.innerHeight - navH) * 0.48) - PAD;
+      var mobileCap = Math.floor((window.innerHeight - navH) * 0.55) - PAD;
       if (mobileCap > 80) maxFrameH = Math.min(maxFrameH, mobileCap);
     }
     var fw, fh;
