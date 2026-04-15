@@ -1331,7 +1331,7 @@ body.ps-active { overflow: hidden; }
   }
   .ps-card {
     max-width: calc(100vw - 16px);
-    padding: 8px;
+    padding: 0;
     flex-shrink: 0;
     position: sticky;
     top: 0;
@@ -1342,16 +1342,16 @@ body.ps-active { overflow: hidden; }
     gap: 8px;
   }
   .ps-canvas-frame {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
   #psCropOverlay {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 }
 /* Inner artboard — sharp corners, holds canvas + overlays */
@@ -3399,7 +3399,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T18:00';
+  const DEPLOY_VERSION = '2026-04-15T19:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3574,7 +3574,7 @@ body.ps-active #slideCta {
   function psCalcCardSize(imgW, imgH) {
     var ratio = imgW / imgH;
     var isMobile = window.innerWidth <= 960;
-    var PAD = isMobile ? 16 : 30;
+    var PAD = isMobile ? 0 : 30;
     var navH = 64;
     var topPad = isMobile ? 24 : 40;
     var bottomPad = isMobile ? 12 : 16;
@@ -4843,7 +4843,7 @@ body.ps-active #slideCta {
       frameBaseW = r.width;
       frameBaseH = r.height;
     } else {
-      var pad = window.innerWidth <= 960 ? 16 : 28;
+      var pad = window.innerWidth <= 960 ? 0 : 28;
       frameBaseW = parseInt(psCard.style.width) - pad;
       frameBaseH = parseInt(psCard.style.height) - pad;
     }
