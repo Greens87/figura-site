@@ -1336,7 +1336,6 @@ body.ps-active { overflow: hidden; }
     position: sticky;
     top: 0;
     z-index: 2;
-    overflow: visible;
   }
   #psBottom {
     margin-top: 8px;
@@ -3400,7 +3399,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T17:30';
+  const DEPLOY_VERSION = '2026-04-15T18:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -4151,11 +4150,41 @@ body.ps-active #slideCta {
     return { x: (cw - w) / 2, y: (ch - h) / 2, w: w, h: h };
   }
 
+  function findContentBounds() {
+    var w = psCanvas.width, h = psCanvas.height;
+    var data;
+    try { data = psCtx.getImageData(0, 0, w, h).data; } catch(e) { return null; }
+    var step = Math.max(1, Math.floor(Math.min(w, h) / 200));
+    var minX = w, minY = h, maxX = 0, maxY = 0, found = false;
+    for (var y = 0; y < h; y += step) {
+      for (var x = 0; x < w; x += step) {
+        if (data[(y * w + x) * 4 + 3] > 10) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+          found = true;
+        }
+      }
+    }
+    if (!found) return null;
+    var pad = Math.max(step * 2, 8);
+    minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad);
+    maxX = Math.min(w - 1, maxX + pad); maxY = Math.min(h - 1, maxY + pad);
+    var bw = maxX - minX, bh = maxY - minY;
+    if (bw >= w * 0.95 && bh >= h * 0.95) return null;
+    return { x: minX, y: minY, w: bw, h: bh };
+  }
+
   function initCropOverlay() {
     if (!psCtx) return;
     if (cropActiveRatio === null) {
-      // Free mode: use full image by default
-      cropX = 0; cropY = 0; cropW = psCanvas.width; cropH = psCanvas.height;
+      var bounds = findContentBounds();
+      if (bounds) {
+        cropX = bounds.x; cropY = bounds.y; cropW = bounds.w; cropH = bounds.h;
+      } else {
+        cropX = 0; cropY = 0; cropW = psCanvas.width; cropH = psCanvas.height;
+      }
     } else {
       var box = cropFitToRatio(cropActiveRatio);
       cropX = box.x; cropY = box.y; cropW = box.w; cropH = box.h;
