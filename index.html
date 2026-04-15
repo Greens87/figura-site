@@ -1324,18 +1324,18 @@ body.ps-active { overflow: hidden; }
   #processingScreen {
     padding: 12px 8px 0;
     justify-content: flex-start;
-    overflow: hidden;
   }
   .ps-editor-row {
-    flex: 1 1 auto;
+    flex-shrink: 0;
     min-height: 0;
-    overflow: hidden;
   }
   .ps-card {
     max-width: calc(100vw - 16px);
     padding: 8px;
     flex-shrink: 0;
-    position: static;
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
   #psBottom {
     margin-top: 8px;
@@ -1464,7 +1464,7 @@ body.ps-active { overflow: hidden; }
   position: fixed;
   z-index: 520;
   width: 24px;
-  height: 58px;
+  height: 52px;
   pointer-events: none;
 }
 #psCropRotateWidget .ps-crop-rotate-line {
@@ -2069,41 +2069,32 @@ body.ps-active { overflow: hidden; }
     flex-direction: column;
     align-items: center;
     width: 100%;
-    overflow: hidden;
   }
   .ps-panel {
     position: relative;
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    max-height: none;
+    overflow: visible;
     box-shadow: none;
     border-top: 1px solid var(--gray-border);
     margin-top: 8px;
   }
   .ps-panel .tp-drag-handle {
     display: flex;
-    flex-shrink: 0;
   }
   .ps-panel .ps-panel-close {
     top: 12px;
     right: 12px;
   }
+  /* Tab bar stays fixed below artboard while content scrolls */
   .ps-panel .tp-tabs-wrap {
-    flex-shrink: 0;
-  }
-  .ps-panel .tp-body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    min-height: 0;
-  }
-  .ps-panel .tp-footer {
-    flex-shrink: 0;
-    border-top: 1px solid var(--gray-border);
+    position: sticky;
+    top: calc(var(--ps-card-h, 380px) + 20px);
+    z-index: 3;
+    background: var(--white);
+    padding-bottom: 2px;
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3401,7 +3392,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T15:00';
+  const DEPLOY_VERSION = '2026-04-15T16:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -4007,6 +3998,7 @@ body.ps-active #slideCta {
     psDownloadBtn.disabled = true;
     psCard.style.width  = '380px';
     psCard.style.height = '380px';
+    document.documentElement.style.setProperty('--ps-card-h', '380px');
     psToolbar.classList.add('hidden');
     showPsPanel('default');
     // Reset zoom
@@ -4037,6 +4029,7 @@ body.ps-active #slideCta {
         var sz = psCalcCardSize(probe.naturalWidth, probe.naturalHeight);
         psCard.style.width  = sz.w + 'px';
         psCard.style.height = sz.h + 'px';
+        document.documentElement.style.setProperty('--ps-card-h', sz.h + 'px');
         psCard.classList.add('breathing');
 
         var progress = 0;
@@ -4189,13 +4182,8 @@ body.ps-active #slideCta {
     psDarkR.style.left = bR + 'px'; psDarkR.style.top = bT + 'px';
     psDarkR.style.width = Math.max(0, fw - bR) + 'px'; psDarkR.style.height = Math.max(0, bB - bT) + 'px';
     var widgetX = canvRect.left + (bx + bw / 2) * canvRect.width / frameRect.width - 12;
-    var widgetY = canvRect.top + by * canvRect.height / frameRect.height - 58;
-    var minWidgetY = 70; // never go under the navigation bar
-    if (widgetY < minWidgetY) {
-      // move to the right of the crop box center
-      widgetX = canvRect.left + (bx + bw) * canvRect.width / frameRect.width + 4;
-      widgetY = canvRect.top + (by + bh / 2) * canvRect.height / frameRect.height - 12;
-    }
+    var widgetY = canvRect.top + by * canvRect.height / frameRect.height - 52;
+    widgetY = Math.max(70, widgetY); // never go under the navigation bar
     psCropRotateWidget.style.left = Math.round(widgetX) + 'px';
     psCropRotateWidget.style.top = Math.round(widgetY) + 'px';
   }
@@ -4804,6 +4792,7 @@ body.ps-active #slideCta {
     psCard.style.height = h + 'px';
     psCard.offsetHeight;
     psCard.classList.remove('no-transition');
+    document.documentElement.style.setProperty('--ps-card-h', h + 'px');
   }
 
   function cacheFrameSize() {
