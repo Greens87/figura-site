@@ -1324,18 +1324,18 @@ body.ps-active { overflow: hidden; }
   #processingScreen {
     padding: 12px 8px 0;
     justify-content: flex-start;
+    overflow: hidden;
   }
   .ps-editor-row {
-    flex-shrink: 0;
+    flex: 1 1 auto;
     min-height: 0;
+    overflow: hidden;
   }
   .ps-card {
     max-width: calc(100vw - 16px);
     padding: 8px;
     flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: static;
   }
   #psBottom {
     margin-top: 8px;
@@ -1464,7 +1464,7 @@ body.ps-active { overflow: hidden; }
   position: fixed;
   z-index: 520;
   width: 24px;
-  height: 52px;
+  height: 58px;
   pointer-events: none;
 }
 #psCropRotateWidget .ps-crop-rotate-line {
@@ -2069,24 +2069,41 @@ body.ps-active { overflow: hidden; }
     flex-direction: column;
     align-items: center;
     width: 100%;
+    overflow: hidden;
   }
   .ps-panel {
-    position: static;
+    position: relative;
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
-    max-height: none;
-    overflow: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     box-shadow: none;
     border-top: 1px solid var(--gray-border);
     margin-top: 8px;
   }
   .ps-panel .tp-drag-handle {
     display: flex;
+    flex-shrink: 0;
   }
   .ps-panel .ps-panel-close {
     top: 12px;
     right: 12px;
+  }
+  .ps-panel .tp-tabs-wrap {
+    flex-shrink: 0;
+  }
+  .ps-panel .tp-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .ps-panel .tp-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--gray-border);
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3384,7 +3401,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T14:00';
+  const DEPLOY_VERSION = '2026-04-15T15:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3859,7 +3876,7 @@ body.ps-active #slideCta {
     if (applyBtn) {
       if (panel === 'crop') { applyBtn.innerHTML = '<span class="ms">check</span> Применить'; applyBtn.style.display = ''; }
       else if (panel === 'shadow') { applyBtn.innerHTML = '<span class="ms">check</span> Тень'; applyBtn.style.display = ''; }
-      else if (panel === 'brush') { applyBtn.style.display = 'none'; }
+      else if (panel === 'brush') { applyBtn.innerHTML = '<span class="ms">check</span> Применить'; applyBtn.style.display = ''; }
       else { applyBtn.style.display = ''; applyBtn.innerHTML = '<span class="ms">check</span> Применить'; }
     }
 
@@ -4172,7 +4189,13 @@ body.ps-active #slideCta {
     psDarkR.style.left = bR + 'px'; psDarkR.style.top = bT + 'px';
     psDarkR.style.width = Math.max(0, fw - bR) + 'px'; psDarkR.style.height = Math.max(0, bB - bT) + 'px';
     var widgetX = canvRect.left + (bx + bw / 2) * canvRect.width / frameRect.width - 12;
-    var widgetY = canvRect.top + by * canvRect.height / frameRect.height - 52;
+    var widgetY = canvRect.top + by * canvRect.height / frameRect.height - 58;
+    var minWidgetY = 70; // never go under the navigation bar
+    if (widgetY < minWidgetY) {
+      // move to the right of the crop box center
+      widgetX = canvRect.left + (bx + bw) * canvRect.width / frameRect.width + 4;
+      widgetY = canvRect.top + (by + bh / 2) * canvRect.height / frameRect.height - 12;
+    }
     psCropRotateWidget.style.left = Math.round(widgetX) + 'px';
     psCropRotateWidget.style.top = Math.round(widgetY) + 'px';
   }
@@ -4510,6 +4533,7 @@ body.ps-active #slideCta {
     if (activeToolTab === 'crop') doCropApply();
     else if (activeToolTab === 'shadow') doShadowApply();
     else if (activeToolTab === 'wand') wandDeleteSelection();
+    else if (activeToolTab === 'brush') pushEditState();
   });
 
   // ── UNIFIED UNDO STACK (eraser strokes + crops) ──
