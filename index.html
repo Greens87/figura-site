@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Фигура — Удаление фона с фотографий</title>
 <meta name="description" content="Фигура — сервис удаления фона с продуктовых фотографий. Загрузите фото — получите чистый результат за один клик.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2073,7 +2073,7 @@ body.ps-active { overflow: hidden; }
   .ps-panel {
     position: sticky;
     top: calc(var(--ps-card-h, 380px) + 8px);
-    max-height: calc(var(--screen-h, 100vh) - 64px - var(--ps-card-h, 380px) - 8px);
+    max-height: calc(var(--screen-h, 100vh) - 64px - var(--ps-card-h, 380px) - 8px - env(safe-area-inset-bottom, 0px));
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
@@ -2101,11 +2101,13 @@ body.ps-active { overflow: hidden; }
     flex: 1 1 auto;
     overflow-y: auto;
     min-height: 0;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), black 100%);
+    mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), black 100%);
   }
   .ps-panel .tp-footer {
     flex-shrink: 0;
     border-top: 1px solid var(--gray-border);
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    padding-top: 4px;
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3403,7 +3405,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T19:00';
+  const DEPLOY_VERSION = '2026-04-15T20:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
