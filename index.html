@@ -2080,6 +2080,7 @@ body.ps-active { overflow: hidden; }
     box-shadow: none;
     border-top: 1px solid var(--gray-border);
     margin-top: 8px;
+    height: calc(100dvh - 64px - 12px - var(--ps-card-h, 220px) - 8px - env(safe-area-inset-bottom, 0px));
   }
   .ps-panel .tp-drag-handle {
     display: flex;
@@ -2097,6 +2098,9 @@ body.ps-active { overflow: hidden; }
     flex: 1 1 auto;
     overflow-y: auto;
     min-height: 0;
+  }
+  .ps-panel .tp-footer {
+    flex-shrink: 0;
   }
   #psCropRotateWidget { display: none !important; }
 }
@@ -3395,7 +3399,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-16T00:00';
+  const DEPLOY_VERSION = '2026-04-15T16:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
