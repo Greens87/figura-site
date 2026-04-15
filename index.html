@@ -3399,7 +3399,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T20:00';
+  const DEPLOY_VERSION = '2026-04-15T20:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -5525,6 +5525,7 @@ body.ps-active #slideCta {
     e.preventDefault();
     cropRotating = true;
     this.setPointerCapture(e.pointerId);
+    pushEditState();
     var c = getCropBoxCenter();
     cropRotCenterX = c.x;
     cropRotCenterY = c.y;
@@ -5652,7 +5653,6 @@ body.ps-active #slideCta {
 
   function applyFreeRotation(degrees, source) {
     if (!source) source = psCanvas;
-    pushEditState();
     var rad = degrees * Math.PI / 180;
     var w = source.width, h = source.height;
     psCtx.clearRect(0, 0, w, h);
