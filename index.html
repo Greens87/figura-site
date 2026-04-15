@@ -2073,7 +2073,7 @@ body.ps-active { overflow: hidden; }
   .ps-panel {
     position: sticky;
     top: calc(var(--ps-card-h, 380px) + 8px);
-    max-height: calc(100vh - 64px - var(--ps-card-h, 380px) - 8px);
+    max-height: calc(var(--screen-h, 100vh) - 64px - var(--ps-card-h, 380px) - 8px);
     width: 100%;
     max-width: 100%;
     border-radius: var(--r-lg) var(--r-lg) 0 0;
@@ -2105,6 +2105,7 @@ body.ps-active { overflow: hidden; }
   .ps-panel .tp-footer {
     flex-shrink: 0;
     border-top: 1px solid var(--gray-border);
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   }
 }
 /* Mobile drag handle — decorative grip */
@@ -3402,7 +3403,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T18:00';
+  const DEPLOY_VERSION = '2026-04-15T19:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3903,6 +3904,12 @@ body.ps-active #slideCta {
     positionToolPanel();
   }
 
+  function updateScreenH() {
+    document.documentElement.style.setProperty('--screen-h', window.innerHeight + 'px');
+  }
+  updateScreenH();
+  window.addEventListener('resize', updateScreenH);
+
   window.addEventListener('resize', function() {
     if (!document.body.classList.contains('ps-active')) return;
     positionToolPanel();
@@ -4008,6 +4015,7 @@ body.ps-active #slideCta {
     psDownloadBtn.disabled = true;
     psCard.style.width  = '380px';
     psCard.style.height = '380px';
+    document.documentElement.style.setProperty('--ps-card-h', '380px');
     psToolbar.classList.add('hidden');
     showPsPanel('default');
     // Reset zoom
@@ -4038,6 +4046,7 @@ body.ps-active #slideCta {
         var sz = psCalcCardSize(probe.naturalWidth, probe.naturalHeight);
         psCard.style.width  = sz.w + 'px';
         psCard.style.height = sz.h + 'px';
+        document.documentElement.style.setProperty('--ps-card-h', sz.h + 'px');
         psCard.classList.add('breathing');
 
         var progress = 0;
