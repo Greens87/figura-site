@@ -7,7 +7,8 @@
 <meta name="description" content="Фигура — сервис удаления фона с продуктовых фотографий. Загрузите фото — получите чистый результат за один клик.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
 <style>
 *, *::before, *::after {
@@ -17,14 +18,36 @@
 }
 
 :root {
+  /* Radii */
+  --r-lg: 18px;
+  --r-full: 9999px;
+
+  /* Colors */
   --blue: #003AE7;
+  --blue-soft: rgba(0, 58, 231, 0.07);
+  --blue-hover: rgba(0, 58, 231, 0.12);
   --black: #0A0A0A;
   --white: #FFFFFF;
   --gray: #6B7280;
+  --gray-light: #9CA3AF;
   --gray-border: #E8E8E8;
-  --gray-bg: #F9F9F9;
+  --gray-bg: #F5F5F7;
+  --border-hover: #D1D5DB;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-panel: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+
+  /* Easing */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Fonts */
   --font-heading: 'Unbounded', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
 }
 
 html {
@@ -79,7 +102,7 @@ h1, h2, h3 {
   width: 28px;
   height: 28px;
   background: #003AE7;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,7 +157,7 @@ h1, h2, h3 {
   font-size: 14px;
   padding: 10px 24px;
   border: none;
-  border-radius: 50px;
+  border-radius: var(--r-full);
   cursor: pointer;
   text-decoration: none;
   transition: opacity 0.2s ease;
@@ -223,7 +246,7 @@ h1, h2, h3 {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 6px 16px;
-  border-radius: 50px;
+  border-radius: var(--r-full);
   margin-bottom: 24px;
 }
 
@@ -248,7 +271,7 @@ h1, h2, h3 {
 
 .upload-zone {
   border: 2px dashed var(--blue);
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   padding: 40px 24px;
   text-align: center;
   cursor: pointer;
@@ -324,7 +347,7 @@ h1, h2, h3 {
 .result-area {
   background: var(--white);
   border: 1px solid #E8E8E8;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   max-width: 90%;
@@ -347,7 +370,7 @@ h1, h2, h3 {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: var(--r-lg);
 }
 
 .result-area.has-image .result-preview-box {
@@ -357,7 +380,7 @@ h1, h2, h3 {
 .result-placeholder {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   position: relative;
 }
@@ -398,7 +421,7 @@ h1, h2, h3 {
   background: rgba(255,255,255,0.82);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 5px 14px;
   font-family: var(--font-body);
   font-size: 12px;
@@ -420,7 +443,7 @@ h1, h2, h3 {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
 }
 
 .result-area.has-image .result-placeholder {
@@ -450,7 +473,7 @@ h1, h2, h3 {
 .color-swatch {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   border: 2px solid var(--gray-border);
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
@@ -470,7 +493,7 @@ h1, h2, h3 {
   width: 90px;
   height: 32px;
   border: 1.5px solid var(--gray-border);
-  border-radius: 12px;
+  border-radius: var(--r-lg);
   padding: 0 8px;
   font-family: var(--font-body);
   font-size: 13px;
@@ -571,7 +594,7 @@ h1, h2, h3 {
 .feature-card {
   background: var(--white);
   border: 1px solid #E8E8E8;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 36px 28px;
 }
 
@@ -579,7 +602,7 @@ h1, h2, h3 {
   width: 56px;
   height: 56px;
   background: var(--blue);
-  border-radius: 30%;
+  border-radius: var(--r-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -706,7 +729,7 @@ h1, h2, h3 {
 .ba-thumb {
   position: relative;
   aspect-ratio: 4/5;
-  border-radius: 12px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
@@ -748,7 +771,7 @@ h1, h2, h3 {
 
 .ba-main {
   width: 100%;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   box-shadow: 0 16px 56px rgba(0,0,0,0.14);
   user-select: none;
@@ -867,7 +890,7 @@ h1, h2, h3 {
 }
 
 .pricing-card {
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 40px 32px;
   width: 100%;
   box-sizing: border-box;
@@ -904,7 +927,7 @@ h1, h2, h3 {
   font-weight: 600;
   font-size: 12px;
   padding: 4px 12px;
-  border-radius: 50px;
+  border-radius: var(--r-full);
 }
 
 .pricing-card-title {
@@ -1060,7 +1083,7 @@ h1, h2, h3 {
   flex: 1;
   height: 48px;
   border: 1.5px solid var(--blue);
-  border-radius: 12px;
+  border-radius: var(--r-lg);
   padding: 0 16px;
   font-family: var(--font-body);
   font-size: 15px;
@@ -1108,7 +1131,7 @@ h1, h2, h3 {
   background: var(--white);
   border-top: 1px solid var(--gray-border);
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
-  border-radius: 20px 20px 0 0;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
   padding: 16px 24px;
   text-align: center;
   transform: translateY(100%);
@@ -1232,7 +1255,7 @@ h1, h2, h3 {
   font-size: 14px;
   font-weight: 500;
   padding: 14px 28px;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   z-index: 9999;
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
@@ -1279,9 +1302,9 @@ body.ps-active { overflow: hidden; }
   pointer-events: all;
 }
 .ps-card {
-  border: 1px solid #E8E8E8;
-  border-radius: 20px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.10);
+  border: 1px solid var(--gray-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
   width: 380px;
   height: 380px;
@@ -1299,12 +1322,18 @@ body.ps-active { overflow: hidden; }
 }
 @media (max-width: 960px) {
   #processingScreen {
-    padding: 24px 12px 12px;
+    padding: 12px 8px 0;
+    justify-content: flex-start;
+  }
+  .ps-editor-row {
+    flex-shrink: 1;
+    min-height: 0;
   }
   .ps-card {
-    max-width: calc(100vw - 24px);
-    max-height: calc(100vh - 200px);
+    max-width: calc(100vw - 16px);
+    max-height: 50vh;
     padding: 8px;
+    flex-shrink: 1;
   }
   #psBottom {
     margin-top: 8px;
@@ -1497,34 +1526,14 @@ body.ps-active { overflow: hidden; }
   border-radius: 50%;
   box-shadow: 0 0 0 1px rgba(239,68,68,0.15);
   transition: width 0.1s ease, height 0.1s ease, border-color 0.2s;
+  transform: translate(-50%, -50%);
 }
 #psBrushCursor.restore-mode .ps-brush-ring {
   border-color: rgba(34,197,94,0.7);
   box-shadow: 0 0 0 1px rgba(34,197,94,0.15);
 }
 #psBrushCursor .ps-brush-cross {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 10px; height: 10px;
-  pointer-events: none;
-}
-#psBrushCursor .ps-brush-cross::before,
-#psBrushCursor .ps-brush-cross::after {
-  content: '';
-  position: absolute;
-  background: rgba(255,255,255,0.85);
-  box-shadow: 0 0 1.5px rgba(0,0,0,0.6);
-}
-#psBrushCursor .ps-brush-cross::before {
-  top: 0; left: 50%;
-  width: 1.5px; height: 100%;
-  transform: translateX(-50%);
-}
-#psBrushCursor .ps-brush-cross::after {
-  left: 0; top: 50%;
-  height: 1.5px; width: 100%;
-  transform: translateY(-50%);
+  display: none;
 }
 /* Eraser preview (shown while adjusting size/hardness sliders) */
 #psEraserPreview {
@@ -1540,38 +1549,7 @@ body.ps-active { overflow: hidden; }
   box-shadow: 0 0 0 1.5px rgba(255,255,255,0.9), 0 0 0 2.5px rgba(0,0,0,0.45);
 }
 #psEraserPreview.visible { opacity: 1; }
-.ps-brush-tabs {
-  display: flex;
-  background: #f0f0f0;
-  border-radius: 8px;
-  padding: 3px;
-  gap: 2px;
-  margin-bottom: 12px;
-}
-.ps-brush-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.ps-brush-tab:hover { color: #333; }
-.ps-brush-tab.active {
-  background: #1a1a1a;
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.ps-brush-tab svg { width: 16px; height: 16px; }
+/* Brush tabs — now uses .tp-seg-toggle / .tp-seg-btn globally */
 /* Zoom controls (bottom-right of card) */
 #psZoomCtrls {
   position: absolute;
@@ -1581,15 +1559,27 @@ body.ps-active { overflow: hidden; }
   display: none;
   align-items: center;
   gap: 2px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid #E8E8E8;
-  border-radius: 50px;
+  background: rgba(255,255,255,0.55);
+  border: 0.5px solid rgba(255,255,255,0.5);
+  border-radius: var(--r-full);
   padding: 3px 6px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
 }
 .ps-card.has-image #psZoomCtrls { display: flex; }
+#psZoomCtrls.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+#psZoomCtrls:hover {
+  opacity: 1 !important;
+  pointer-events: all !important;
+  background: rgba(255,255,255,0.8);
+}
 .ps-zoom-btn {
   width: 26px;
   height: 26px;
@@ -1681,7 +1671,7 @@ body.ps-active { overflow: hidden; }
   background: rgba(10,10,10,0.94);
   color: #FFFFFF;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 500;
@@ -1720,7 +1710,7 @@ body.ps-active { overflow: hidden; }
   display: none;
   background: #FFFFFF;
   border: 1px solid #E8E8E8;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   box-shadow: 0 16px 48px rgba(0,0,0,0.16), 0 4px 12px rgba(0,0,0,0.06);
   padding: 16px;
   width: 248px;
@@ -1731,7 +1721,7 @@ body.ps-active { overflow: hidden; }
 .ps-picker-sv {
   width: 216px;
   height: 140px;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   position: relative;
   cursor: crosshair;
   overflow: hidden;
@@ -1792,7 +1782,7 @@ body.ps-active { overflow: hidden; }
 .ps-picker-preview {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   border: 1px solid #E8E8E8;
   flex-shrink: 0;
 }
@@ -1815,7 +1805,7 @@ body.ps-active { overflow: hidden; }
   width: 100%;
   padding: 8px 12px 8px 22px;
   border: 1.5px solid #E8E8E8;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--black);
@@ -1861,7 +1851,7 @@ body.ps-active { overflow: hidden; }
   display: none;
   background: #FFFFFF;
   border: 1px solid #E8E8E8;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   box-shadow: 0 16px 48px rgba(0,0,0,0.16), 0 4px 12px rgba(0,0,0,0.06);
   padding: 18px 20px;
   width: 300px;
@@ -1998,7 +1988,7 @@ body.ps-active { overflow: hidden; }
   width: 92px;
   padding: 5px 10px 5px 22px;
   border: 1.5px solid #E8E8E8;
-  border-radius: 8px;
+  border-radius: var(--r-lg);
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--black);
@@ -2020,20 +2010,20 @@ body.ps-active { overflow: hidden; }
   align-items: center;
   gap: 6px;
   padding: 9px 18px;
-  border: 1.5px solid #E8E8E8;
-  border-radius: 50px;
+  border: 1.5px solid var(--gray-border);
+  border-radius: var(--r-lg);
   background: transparent;
   font-family: var(--font-body);
   font-size: 14px;
   color: var(--black);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease);
 }
-.ps-tool-btn:hover { border-color: #aaa; }
+.ps-tool-btn:hover { border-color: var(--border-hover); }
 .ps-tool-btn.active {
-  border-color: #003AE7;
-  background: rgba(0,58,231,0.06);
-  color: #003AE7;
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 /* Actions row */
 #psActions {
@@ -2047,7 +2037,7 @@ body.ps-active { overflow: hidden; }
 .ps-back-btn {
   background: transparent;
   border: 1px solid #E8E8E8;
-  border-radius: 50px;
+  border-radius: var(--r-full);
   padding: 10px 24px;
   font-family: var(--font-body);
   font-size: 14px;
@@ -2058,89 +2048,57 @@ body.ps-active { overflow: hidden; }
 .ps-back-btn:hover { border-color: #aaa; color: var(--black); }
 /* Tool panels */
 .ps-panel {
-  width: 280px;
+  width: 296px;
   flex-shrink: 0;
-  background: #fff;
-  border: 1px solid #E8E8E8;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: var(--white);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-panel);
   max-height: 80vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  overflow: hidden;
   position: relative;
+  transition: box-shadow 0.3s var(--ease);
 }
 .ps-panel.hidden { display: none; }
 @media (max-width: 960px) {
   .ps-editor-row {
     flex-direction: column;
     align-items: center;
+    width: 100%;
   }
   .ps-panel {
-    position: fixed;
-    bottom: 0;
-    left: 0 !important;
-    right: 0;
+    position: static;
     width: 100%;
     max-width: 100%;
-    border-radius: 16px 16px 0 0;
-    max-height: 50vh;
-    z-index: 510;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    max-height: none;
+    overflow: visible;
+    box-shadow: none;
+    border-top: 1px solid var(--gray-border);
+    margin-top: 8px;
+  }
+  .ps-panel .tp-drag-handle {
+    display: flex;
+  }
+  .ps-panel .ps-panel-close {
+    top: 12px;
+    right: 12px;
   }
 }
-.ps-panel-title {
-  font-family: var(--font-heading);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--black);
-  letter-spacing: 0.02em;
+/* Mobile drag handle — decorative grip */
+.tp-drag-handle {
+  display: none;
+  justify-content: center;
+  padding: 8px 0 2px;
 }
-#psCropFormats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.ps-fmt-btn {
-  padding: 7px 16px;
-  border: 1.5px solid #E8E8E8;
-  border-radius: 50px;
-  background: #fff;
-  font-family: var(--font-body);
-  font-size: 13px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
-}
-.ps-fmt-btn:hover { border-color: #aaa; }
-.ps-fmt-btn.active {
-  border-color: #003AE7;
-  background: rgba(0,58,231,0.06);
-  color: #003AE7;
-}
-.ps-slider-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--gray);
-}
-.ps-slider-row input[type=range] {
-  flex: 1;
-  accent-color: #003AE7;
-  cursor: pointer;
-}
-.ps-slider-val {
-  min-width: 38px;
-  text-align: right;
-  color: var(--black);
-  font-weight: 500;
-  font-size: 13px;
-}
-.ps-panel-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.tp-drag-handle::after {
+  content: '';
+  width: 36px;
+  height: 4px;
+  background: rgba(0,0,0,0.12);
+  border-radius: var(--r-full);
 }
 .ps-panel-close {
   position: absolute;
@@ -2162,37 +2120,6 @@ body.ps-active { overflow: hidden; }
   z-index: 2;
 }
 .ps-panel-close:hover { background: #f0f0f0; color: var(--black); }
-/* ===== Tool panel tabs ===== */
-.ps-tool-tabs {
-  display: flex;
-  border-bottom: 1.5px solid #E8E8E8;
-  margin: -4px -20px 0;
-  padding: 0 8px;
-}
-.ps-tool-tab {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 4px 8px;
-  border: none;
-  background: transparent;
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--gray);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1.5px;
-  transition: color 0.15s, border-color 0.15s;
-}
-.ps-tool-tab:hover { color: var(--black); }
-.ps-tool-tab.active { color: #003AE7; border-bottom-color: #003AE7; }
-.ps-tool-tab svg { width: 20px; height: 20px; opacity: 0.7; }
-.ps-tool-tab:hover svg, .ps-tool-tab.active svg { opacity: 1; }
-.ps-tool-config { display: flex; flex-direction: column; gap: 14px; }
-.ps-tool-config.hidden { display: none; }
 
 /* Selection canvas — styled in #psCanvas block above */
 
@@ -2204,7 +2131,7 @@ body.ps-active { overflow: hidden; }
   align-items: flex-end;
   justify-content: center;
   background: #fafafa;
-  border-radius: 10px;
+  border-radius: var(--r-lg);
   border: 1px solid #eee;
   overflow: hidden;
 }
@@ -2224,23 +2151,391 @@ body.ps-active { overflow: hidden; }
 .ps-rotate-btns button {
   flex: 1;
   padding: 8px 12px;
-  border: 1.5px solid #E8E8E8;
-  border-radius: 10px;
-  background: #fff;
+  border: 1.5px solid var(--gray-border);
+  border-radius: var(--r-lg);
+  background: var(--white);
   font-family: var(--font-body);
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
 }
-.ps-rotate-btns button:hover { border-color: #aaa; background: #f8f8f8; }
+.ps-rotate-btns button:hover { border-color: var(--border-hover); background: var(--gray-bg); }
 .ps-section-divider {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gray-light);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 6px;
+}
+
+/* ===== MATERIAL SYMBOLS ===== */
+.ms {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  transition: font-variation-settings 0.3s var(--ease);
+}
+.ms.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* ===== TOOL PANEL — iOS Segmented Tabs ===== */
+.tp-tabs-wrap {
+  padding: 12px 16px 0;
+}
+.tp-tabs-container {
+  position: relative;
+  background: var(--gray-bg);
+  border-radius: var(--r-lg);
+  padding: 3px;
+}
+.tp-tabs {
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+.tp-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 0 6px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  border-radius: calc(var(--r-lg) - 3px);
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.tp-tab .ms {
+  font-size: 20px;
+}
+.tp-tab:hover {
+  color: var(--black);
+}
+.tp-tab.active {
+  color: var(--blue);
+}
+.tp-tab.active .ms {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* Sliding background — glassmorphism */
+.tp-tab-bg {
+  position: absolute;
+  top: 3px;
+  height: calc(100% - 6px);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: calc(var(--r-lg) - 3px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: left 0.35s var(--ease), width 0.35s var(--ease);
+  z-index: 0;
+}
+
+/* Tool panel body */
+.tp-body {
+  padding: 16px;
+  flex: 1;
+}
+.tp-section {
+  display: none;
+  animation: tpFadeIn 0.3s var(--ease-out);
+}
+.tp-section.active {
+  display: block;
+}
+@keyframes tpFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section label */
+.tp-section-label {
   font-size: 11px;
   font-weight: 600;
   color: var(--gray);
-  margin-top: 6px;
-  letter-spacing: 0.03em;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
 }
+
+/* D4 Figma slider with tooltip */
+.tp-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.tp-slider-row:last-child { margin-bottom: 0; }
+.tp-slider-label {
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 78px;
+  color: var(--black);
+}
+.tp-slider-val {
+  min-width: 32px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray);
+  font-variant-numeric: tabular-nums;
+  cursor: text;
+  border-radius: 6px;
+  padding: 2px 4px;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+.tp-slider-val:hover {
+  background: var(--gray-bg);
+  color: var(--black);
+}
+.tp-slider-val-input {
+  width: 48px;
+  padding: 2px 4px;
+  border: 1.5px solid var(--blue);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--black);
+  text-align: right;
+  outline: none;
+  background: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+.tp-slider-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.tp-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  border-radius: var(--r-full);
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+.tp-range::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: var(--r-full);
+  background: linear-gradient(to right, var(--blue) var(--fill, 50%), #E5E7EB var(--fill, 50%));
+}
+.tp-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+  margin-top: -6px;
+  transition: box-shadow 0.2s var(--ease);
+}
+.tp-range::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 4px var(--blue-soft);
+}
+.tp-range:active::-webkit-slider-thumb {
+  box-shadow: 0 0 0 6px var(--blue-hover);
+}
+/* Subtle tooltip — only on active drag */
+.tp-tooltip {
+  position: absolute;
+  top: -36px;
+  background: rgba(10, 10, 10, 0.75);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 10px;
+  border-radius: var(--r-lg);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px) scale(0.9);
+  transition: opacity 0.15s var(--ease), transform 0.2s var(--ease-spring);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+.tp-slider-wrap.dragging .tp-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Crop preset groups */
+.tp-group {
+  margin-bottom: 14px;
+}
+.tp-group:last-child { margin-bottom: 0; }
+.tp-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gray-light);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+}
+.tp-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.tp-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1.5px solid var(--gray-border);
+  border-radius: var(--r-lg);
+  background: var(--white);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.tp-preset:hover {
+  border-color: var(--border-hover);
+  background: var(--gray-bg);
+}
+.tp-preset:active {
+  transform: scale(0.97);
+}
+.tp-preset.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.tp-preset-icon {
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  opacity: 0.5;
+}
+.tp-preset.active .tp-preset-icon {
+  opacity: 0.8;
+  border-color: var(--blue);
+}
+.tp-preset-name {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--black);
+}
+.tp-preset.active .tp-preset-name {
+  color: var(--blue);
+}
+.tp-preset-size {
+  font-size: 9px;
+  color: var(--gray-light);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Segmented sub-toggle (eraser/restore in brush tab) */
+.tp-seg-toggle {
+  display: flex;
+  background: var(--gray-bg);
+  border-radius: var(--r-lg);
+  padding: 3px;
+  margin-bottom: 14px;
+  position: relative;
+}
+.tp-seg-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 8px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  border-radius: calc(var(--r-lg) - 3px);
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s var(--ease);
+}
+.tp-seg-btn:hover { color: var(--black); }
+.tp-seg-btn.active { color: var(--blue); }
+.tp-seg-btn .ms { font-size: 16px; }
+.tp-seg-bg {
+  position: absolute;
+  top: 3px;
+  height: calc(100% - 6px);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: calc(var(--r-lg) - 3px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: left 0.3s var(--ease), width 0.3s var(--ease);
+  z-index: 0;
+}
+
+/* Panel footer buttons */
+.tp-footer {
+  padding: 0 16px 16px;
+  display: flex;
+  gap: 8px;
+}
+.tp-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--r-lg);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease), transform 0.15s var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tp-btn:active { transform: scale(0.97); }
+.tp-btn-primary {
+  background: var(--blue);
+  color: var(--white);
+}
+.tp-btn-primary:hover {
+  background: #0041FF;
+  box-shadow: 0 2px 8px rgba(0, 58, 231, 0.3);
+}
+.tp-btn-secondary {
+  background: var(--gray-bg);
+  color: var(--black);
+}
+.tp-btn-secondary:hover {
+  background: #EEEEF0;
+}
+.tp-btn .ms { font-size: 16px; }
 
 /* Hide page sections during upload */
 body.ps-active .hero,
@@ -2469,103 +2764,173 @@ body.ps-active #slideCta {
   </div>
   <!-- Unified Tool Panel (inside editor row for centering) -->
   <div id="psToolPanel" class="ps-panel hidden">
+    <div class="tp-drag-handle" id="tpDragHandle"></div>
     <button class="ps-panel-close" id="psToolPanelClose">×</button>
-    <div class="ps-tool-tabs">
-      <button class="ps-tool-tab active" data-tool="crop">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1 6 16a2 2 0 0 0 2 2l15-.13"/><path d="M1 6.13 16 6a2 2 0 0 1 2 2v15"/></svg>
-        Обрезать
-      </button>
-      <button class="ps-tool-tab" data-tool="brush">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/><path d="M14.5 17.5 4.5 15"/></svg>
-        Кисть
-      </button>
-      <button class="ps-tool-tab" data-tool="wand">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
-        Выделение
-      </button>
-      <button class="ps-tool-tab" data-tool="shadow">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="19" rx="8" ry="3" opacity="0.4"/><rect x="4" y="2" width="16" height="14" rx="3"/></svg>
-        Тень
-      </button>
-    </div>
-    <div id="psCropPanel" class="ps-tool-config">
-      <div id="psCropFormats">
-        <button class="ps-fmt-btn active" data-ratio="free">Свободно</button>
-        <button class="ps-fmt-btn" data-ratio="1/1">1:1</button>
-        <button class="ps-fmt-btn" data-ratio="4/3">4:3</button>
-        <button class="ps-fmt-btn" data-ratio="3/4">3:4</button>
-        <button class="ps-fmt-btn" data-ratio="3/2">3:2</button>
-        <button class="ps-fmt-btn" data-ratio="2/3">2:3</button>
-        <button class="ps-fmt-btn" data-ratio="16/9">16:9</button>
-        <button class="ps-fmt-btn" data-ratio="9/16">9:16</button>
-      </div>
-      <div class="ps-section-divider" style="margin-top:10px;">Поворот</div>
-      <div class="ps-rotate-btns">
-        <button id="psRotCW90">90° →</button>
-        <button id="psRotCCW90">← 90°</button>
-        <button id="psRot180">180°</button>
-      </div>
-      <div class="ps-section-divider">Зеркалирование</div>
-      <div class="ps-rotate-btns">
-        <button id="psFlipH">↔ По горизонтали</button>
-        <button id="psFlipV">↕ По вертикали</button>
-      </div>
-      <div class="ps-crop-hint" style="font-size:11px;color:var(--gray);">Shift — квадрат · Alt — от центра · ⟳ ручка — свободный поворот (Shift — 45°)</div>
-      <div class="ps-panel-actions">
-        <button id="psCropUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-        <button id="psCropApplyBtn" class="btn-primary">Применить</button>
+    <!-- iOS Segmented Tabs -->
+    <div class="tp-tabs-wrap">
+      <div class="tp-tabs-container">
+        <div class="tp-tab-bg" id="tpTabBg" style="left:3px; width:calc((100% - 6px) / 4)"></div>
+        <div class="tp-tabs" id="tpTabs">
+          <button class="tp-tab active" data-tool="crop">
+            <span class="ms filled">crop</span>
+            <span>Обрезать</span>
+          </button>
+          <button class="tp-tab" data-tool="brush">
+            <span class="ms">brush</span>
+            <span>Кисть</span>
+          </button>
+          <button class="tp-tab" data-tool="wand">
+            <span class="ms">auto_fix_high</span>
+            <span>Выделение</span>
+          </button>
+          <button class="tp-tab" data-tool="shadow">
+            <span class="ms">shadow</span>
+            <span>Тень</span>
+          </button>
+        </div>
       </div>
     </div>
-    <div id="psBrushPanel" class="ps-tool-config hidden">
-      <div class="ps-brush-tabs">
-        <button class="ps-brush-tab active" data-brush-mode="eraser">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-          Ластик
-        </button>
-        <button class="ps-brush-tab" data-brush-mode="restore">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Восстановить
-        </button>
+
+    <!-- Content -->
+    <div class="tp-body">
+      <!-- CROP -->
+      <div id="psCropPanel" class="tp-section active" data-tool="crop">
+        <div class="tp-group">
+          <div class="tp-group-label">Соотношение</div>
+          <div class="tp-preset-grid" id="psCropRatios">
+            <button class="tp-preset active" data-ratio="free">
+              <div class="tp-preset-icon" style="width:20px;height:16px;border-style:dashed"></div>
+              <span class="tp-preset-name">Свободно</span>
+            </button>
+            <button class="tp-preset" data-ratio="1/1">
+              <div class="tp-preset-icon" style="width:18px;height:18px"></div>
+              <span class="tp-preset-name">1 : 1</span>
+            </button>
+            <button class="tp-preset" data-ratio="4/3">
+              <div class="tp-preset-icon" style="width:20px;height:15px"></div>
+              <span class="tp-preset-name">4 : 3</span>
+            </button>
+            <button class="tp-preset" data-ratio="3/4">
+              <div class="tp-preset-icon" style="width:15px;height:20px"></div>
+              <span class="tp-preset-name">3 : 4</span>
+            </button>
+            <button class="tp-preset" data-ratio="16/9">
+              <div class="tp-preset-icon" style="width:22px;height:12px"></div>
+              <span class="tp-preset-name">16 : 9</span>
+            </button>
+            <button class="tp-preset" data-ratio="9/16">
+              <div class="tp-preset-icon" style="width:12px;height:22px"></div>
+              <span class="tp-preset-name">9 : 16</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="tp-group">
+          <div class="tp-group-label">Маркетплейсы</div>
+          <div class="tp-preset-grid" id="psCropMarketplaces">
+            <button class="tp-preset" data-ratio="3/4" data-mp="wb">
+              <div class="tp-preset-icon" style="width:15px;height:20px"></div>
+              <span class="tp-preset-name">WB</span>
+              <span class="tp-preset-size">900 × 1200</span>
+            </button>
+            <button class="tp-preset" data-ratio="1/1" data-mp="ozon">
+              <div class="tp-preset-icon" style="width:18px;height:18px"></div>
+              <span class="tp-preset-name">Ozon</span>
+              <span class="tp-preset-size">1000 × 1000</span>
+            </button>
+            <button class="tp-preset" data-ratio="1/1" data-mp="yandex">
+              <div class="tp-preset-icon" style="width:18px;height:18px"></div>
+              <span class="tp-preset-name">Яндекс</span>
+              <span class="tp-preset-size">800 × 800</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--gray-border);margin:14px 0 10px;opacity:0.5"></div>
+        <div class="ps-section-divider">Поворот</div>
+        <div class="tp-slider-row" style="margin-bottom:10px">
+          <span class="tp-slider-label">Угол</span>
+          <div class="tp-slider-wrap" id="psCropRotateSliderWrap">
+            <span class="tp-tooltip">0°</span>
+            <input type="range" class="tp-range" id="psCropRotateSlider" min="-180" max="180" value="0" style="--fill:50%">
+          </div>
+          <span class="tp-slider-val" id="psCropRotateVal">0°</span>
+        </div>
+        <div class="ps-rotate-btns">
+          <button id="psRotCW90">90° →</button>
+          <button id="psRotCCW90">← 90°</button>
+          <button id="psRot180">180°</button>
+        </div>
+        <div class="ps-section-divider">Зеркалирование</div>
+        <div class="ps-rotate-btns">
+          <button id="psFlipH">↔ По горизонтали</button>
+          <button id="psFlipV">↕ По вертикали</button>
+        </div>
+        <div style="font-size:11px;color:var(--gray);margin-top:6px;">Shift — квадрат · Alt — от центра · ⟳ ручка — свободный поворот (Shift — 45°)</div>
       </div>
-      <div class="ps-slider-row">
-        <span>Размер</span>
-        <input type="range" id="psBrushSize" min="5" max="500" value="40">
-        <span class="ps-slider-val"><span id="psBrushSizeVal">40</span>px</span>
+
+      <!-- BRUSH -->
+      <div id="psBrushPanel" class="tp-section" data-tool="brush">
+        <div class="tp-seg-toggle" id="brushToggle">
+          <div class="tp-seg-bg" style="left:3px; width:calc((100% - 6px) / 2)"></div>
+          <button class="tp-seg-btn active" data-brush-mode="eraser"><span class="ms" style="font-size:15px">ink_eraser</span> Стереть</button>
+          <button class="tp-seg-btn" data-brush-mode="restore"><span class="ms" style="font-size:15px">brush</span> Восстановить</button>
+        </div>
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Размер</span>
+          <div class="tp-slider-wrap">
+            <span class="tp-tooltip">40</span>
+            <input type="range" class="tp-range" id="psBrushSize" min="5" max="500" value="40" style="--fill:7%">
+          </div>
+          <span class="tp-slider-val"><span id="psBrushSizeVal">40</span>px</span>
+        </div>
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Жёсткость</span>
+          <div class="tp-slider-wrap">
+            <span class="tp-tooltip">80</span>
+            <input type="range" class="tp-range" id="psBrushHard" min="0" max="100" value="80" style="--fill:80%">
+          </div>
+          <span class="tp-slider-val"><span id="psBrushHardVal">80</span>%</span>
+        </div>
+        <button id="psBrushInvertBtn" class="tp-btn tp-btn-secondary" style="margin-top:8px"><span class="ms" style="font-size:16px">swap_horiz</span> Инвертировать</button>
       </div>
-      <div class="ps-slider-row">
-        <span>Жёсткость</span>
-        <input type="range" id="psBrushHard" min="0" max="100" value="80">
-        <span class="ps-slider-val"><span id="psBrushHardVal">80</span>%</span>
+
+      <!-- WAND -->
+      <div id="psWandPanel" class="tp-section" data-tool="wand">
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Допуск</span>
+          <div class="tp-slider-wrap">
+            <span class="tp-tooltip">32</span>
+            <input type="range" class="tp-range" id="psWandTolerance" min="0" max="255" value="32" style="--fill:12.5%">
+          </div>
+          <span class="tp-slider-val"><span id="psWandToleranceVal">32</span></span>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);cursor:pointer;">
+          <input type="checkbox" id="psWandContiguous" checked style="accent-color:#003AE7;"> Смежные пиксели
+        </label>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button id="psWandDeleteBtn" class="tp-btn tp-btn-primary" style="flex:1"><span class="ms" style="font-size:16px">delete</span> Удалить</button>
+          <button id="psWandInvertBtn" class="tp-btn tp-btn-secondary" style="flex:1"><span class="ms" style="font-size:16px">swap_horiz</span> Инвертировать</button>
+        </div>
       </div>
-      <div class="ps-panel-actions">
-        <button id="psBrushInvertBtn" class="ps-tool-btn">⊘ Инвертировать</button>
-        <button id="psBrushUndoBtn" class="ps-tool-btn">↩ Отменить</button>
+
+      <!-- SHADOW -->
+      <div id="psShadowPanel" class="tp-section" data-tool="shadow">
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Мягкость</span>
+          <div class="tp-slider-wrap">
+            <span class="tp-tooltip">40</span>
+            <input type="range" class="tp-range" id="psShadowBlur" min="0" max="100" value="40" style="--fill:40%">
+          </div>
+          <span class="tp-slider-val"><span id="psShadowBlurVal">40</span></span>
+        </div>
       </div>
     </div>
-    <div id="psWandPanel" class="ps-tool-config hidden">
-      <div class="ps-slider-row">
-        <span>Допуск</span>
-        <input type="range" id="psWandTolerance" min="0" max="255" value="32">
-        <span class="ps-slider-val"><span id="psWandToleranceVal">32</span></span>
-      </div>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray);cursor:pointer;">
-        <input type="checkbox" id="psWandContiguous" checked style="accent-color:#003AE7;"> Смежные пиксели
-      </label>
-      <div class="ps-panel-actions">
-        <button id="psWandDeleteBtn" class="btn-primary">Удалить выделение</button>
-        <button id="psWandInvertBtn" class="ps-tool-btn">Инвертировать</button>
-        <button id="psWandUndoBtn" class="ps-tool-btn">↩ Отменить</button>
-      </div>
-    </div>
-    <div id="psShadowPanel" class="ps-tool-config hidden">
-      <div class="ps-slider-row">
-        <span>Мягкость</span>
-        <input type="range" id="psShadowBlur" min="0" max="100" value="40">
-        <span class="ps-slider-val"><span id="psShadowBlurVal">40</span></span>
-      </div>
-      <div class="ps-panel-actions">
-        <button id="psShadowApplyBtn" class="btn-primary">Применить тень</button>
-      </div>
+
+    <!-- Footer -->
+    <div class="tp-footer" id="tpFooter">
+      <button class="tp-btn tp-btn-secondary" id="tpUndoBtn"><span class="ms">undo</span> Отменить</button>
+      <button class="tp-btn tp-btn-primary" id="tpApplyBtn"><span class="ms">check</span> Применить</button>
     </div>
   </div>
   </div><!-- /.ps-editor-row -->
@@ -2588,13 +2953,13 @@ body.ps-active #slideCta {
         </span>
       </div>
       <div id="psActions">
-        <button class="btn-primary" id="psDownloadBtn" disabled>Скачать PNG</button>
+        <button class="btn-primary" id="psDownloadBtn" disabled><span class="ms" style="font-size:16px">download</span> Скачать PNG</button>
         <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
         <button class="ps-help-circle-btn" id="psHelpBtn" type="button" aria-label="Горячие клавиши">?</button>
       </div>
       <div id="psToolbar" class="hidden">
         <button id="psToolsToggleBtn" class="ps-tool-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="ms" style="font-size:16px">tune</span>
           Инструменты
         </button>
       </div>
@@ -3017,7 +3382,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-14T23:30';
+  const DEPLOY_VERSION = '2026-04-15T12:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3415,6 +3780,12 @@ body.ps-active #slideCta {
     psBrushCursor.classList.remove('visible');
     brushDrawing = false;
     psOriginalCanvas.classList.remove('visible');
+    // If leaving crop with uncommitted rotation, revert it
+    if (activeToolTab === 'crop' && panel !== 'crop' && rotSliderSnapshot && rotSlider && parseInt(rotSlider.value) !== 0) {
+      psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+      psCtx.drawImage(rotSliderSnapshot, 0, 0);
+    }
+    if (panel !== 'crop') { rotSliderSnapshot = null; if (rotSlider) { rotSlider.value = 0; rotSliderUpdateUI(); } }
     if (panel !== 'wand' && wandSelection) {
       wandSelection = null;
       psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
@@ -3442,6 +3813,7 @@ body.ps-active #slideCta {
     // Show unified tool panel
     var wasHidden = psToolPanel.classList.contains('hidden');
     psToolPanel.classList.remove('hidden');
+    psToolPanel.classList.remove('collapsed');
     psToolsToggleBtn.classList.add('active');
     activeToolTab = panel;
     // Recalc card size when panel first appears (takes space)
@@ -3454,16 +3826,36 @@ body.ps-active #slideCta {
       requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
     }
 
-    // Switch config sections
-    psCropPanel.classList.toggle('hidden', panel !== 'crop');
-    psBrushPanel.classList.toggle('hidden', panel !== 'brush');
-    psWandPanel.classList.toggle('hidden', panel !== 'wand');
-    psShadowPanel.classList.toggle('hidden', panel !== 'shadow');
-
-    // Update tab highlights
-    document.querySelectorAll('.ps-tool-tab').forEach(function(t) {
-      t.classList.toggle('active', t.getAttribute('data-tool') === panel);
+    // Switch config sections (new tp-section system)
+    document.querySelectorAll('#psToolPanel .tp-section').forEach(function(s) {
+      var isActive = s.getAttribute('data-tool') === panel;
+      s.classList.toggle('active', isActive);
+      if (isActive) { s.style.animation = 'none'; s.offsetHeight; s.style.animation = ''; }
     });
+
+    // Update tab highlights + sliding background
+    var tabBg = document.getElementById('tpTabBg');
+    var allTabs = document.querySelectorAll('#tpTabs .tp-tab');
+    var tabCount = allTabs.length;
+    allTabs.forEach(function(t, idx) {
+      var isMatch = t.getAttribute('data-tool') === panel;
+      t.classList.toggle('active', isMatch);
+      var icon = t.querySelector('.ms');
+      if (icon) icon.classList.toggle('filled', isMatch);
+      if (isMatch && tabBg) {
+        tabBg.style.left = 'calc(3px + (100% - 6px) * ' + (idx / tabCount) + ')';
+        tabBg.style.width = 'calc((100% - 6px) / ' + tabCount + ')';
+      }
+    });
+
+    // Update footer button text based on tool
+    var applyBtn = document.getElementById('tpApplyBtn');
+    if (applyBtn) {
+      if (panel === 'crop') { applyBtn.innerHTML = '<span class="ms">check</span> Применить'; applyBtn.style.display = ''; }
+      else if (panel === 'shadow') { applyBtn.innerHTML = '<span class="ms">check</span> Тень'; applyBtn.style.display = ''; }
+      else if (panel === 'brush') { applyBtn.style.display = 'none'; }
+      else { applyBtn.style.display = ''; applyBtn.innerHTML = '<span class="ms">check</span> Применить'; }
+    }
 
     // Setup new tool state
     if (panel === 'crop') {
@@ -3480,7 +3872,7 @@ body.ps-active #slideCta {
         psOriginalCanvas.classList.remove('visible');
       }
     } else if (panel === 'wand') {
-      psCanvas.style.cursor = 'crosshair';
+      psCanvas.style.cursor = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0v6M12 18v6M0 12h6M18 12h6M3.5 3.5l4 4M16.5 16.5l4 4M3.5 20.5l4-4M16.5 7.5l4-4' stroke='%23003AE7' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23003AE7'/%3E%3C/svg%3E\") 12 12, crosshair";
     }
 
     psCard.classList.toggle('pannable', false);
@@ -3512,8 +3904,8 @@ body.ps-active #slideCta {
     }
   });
   // Tab clicks within tool panel
-  document.querySelector('.ps-tool-tabs').addEventListener('click', function(e) {
-    var tab = e.target.closest('.ps-tool-tab');
+  document.getElementById('tpTabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.tp-tab');
     if (!tab) return;
     var tool = tab.getAttribute('data-tool');
     if (tool && tool !== activeToolTab) showPsPanel(tool);
@@ -3523,6 +3915,11 @@ body.ps-active #slideCta {
     restoreToolEntryState(toolPanelEntryState);
     toolPanelEntryState = null;
     showPsPanel('default');
+  });
+
+  // Mobile bottom sheet toggle
+  document.getElementById('tpDragHandle').addEventListener('click', function() {
+    psToolPanel.classList.toggle('collapsed');
   });
 
   function psExitToLanding() {
@@ -3594,7 +3991,7 @@ body.ps-active #slideCta {
     applyTransform();
     // Reset crop state for new image
     cropActiveRatio = null;
-    document.querySelectorAll('.ps-fmt-btn').forEach(function(b) {
+    document.querySelectorAll('#psCropRatios .tp-preset, #psCropMarketplaces .tp-preset').forEach(function(b) {
       b.classList.toggle('active', b.getAttribute('data-ratio') === 'free');
     });
     editStack.length = 0;
@@ -3639,6 +4036,7 @@ body.ps-active #slideCta {
               psActions.classList.add('visible');
               psDownloadBtn.disabled = false;
               psToolbar.classList.remove('hidden');
+              flashZoomCtrls();
               // Save original result for restore brush
               originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
               // Setup selection canvas
@@ -3773,9 +4171,9 @@ body.ps-active #slideCta {
     psCropRotateWidget.style.top = Math.round(widgetY) + 'px';
   }
 
-  document.querySelectorAll('.ps-fmt-btn').forEach(function(btn) {
+  document.querySelectorAll('#psCropRatios .tp-preset, #psCropMarketplaces .tp-preset').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      document.querySelectorAll('.ps-fmt-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('#psCropRatios .tp-preset, #psCropMarketplaces .tp-preset').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       var r = btn.getAttribute('data-ratio');
       if (r === 'free') {
@@ -4074,9 +4472,9 @@ body.ps-active #slideCta {
     if (Math.abs(cropY + cropH - ch) < thresh) cropY = ch - cropH;
   }
 
-  document.getElementById('psCropApplyBtn').addEventListener('click', function() {
+  function doCropApply() {
     if (!psCtx) return;
-    pushEditState(); // save for undo
+    pushEditState();
     var tmp = document.createElement('canvas');
     var cx = Math.round(cropX), cy = Math.round(cropY);
     var cw = Math.round(cropW), ch = Math.round(cropH);
@@ -4098,8 +4496,15 @@ body.ps-active #slideCta {
     requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
     toolPanelEntryState = null;
     showPsPanel('default');
+  }
+
+  // Unified footer buttons
+  document.getElementById('tpUndoBtn').addEventListener('click', undoEdit);
+  document.getElementById('tpApplyBtn').addEventListener('click', function() {
+    if (activeToolTab === 'crop') doCropApply();
+    else if (activeToolTab === 'shadow') doShadowApply();
+    else if (activeToolTab === 'wand') wandDeleteSelection();
   });
-  document.getElementById('psCropUndoBtn').addEventListener('click', undoEdit);
 
   // ── UNIFIED UNDO STACK (eraser strokes + crops) ──
   var editStack = [];
@@ -4167,7 +4572,7 @@ body.ps-active #slideCta {
 
   var brushPreviewTimer = null;
   function showBrushPreview() {
-    if (psBrushPanel.classList.contains('hidden')) return;
+    if (activeToolTab !== 'brush') return;
     var canvRect = psCanvas.getBoundingClientRect();
     var scale = canvRect.width / psCanvas.width;
     var px = brushSize * scale;
@@ -4188,15 +4593,80 @@ body.ps-active #slideCta {
     }, 950);
   }
 
+  // ── D4 Figma sliders — tooltip + fill ──
+  document.querySelectorAll('.tp-slider-wrap').forEach(function(wrap) {
+    var range = wrap.querySelector('.tp-range');
+    var tooltip = wrap.querySelector('.tp-tooltip');
+    if (!range) return;
+    function updateSliderFill() {
+      var pct = ((range.value - range.min) / (range.max - range.min)) * 100;
+      range.style.setProperty('--fill', pct + '%');
+      if (tooltip) {
+        tooltip.style.left = pct + '%';
+      }
+    }
+    range.addEventListener('input', updateSliderFill);
+    range.addEventListener('mousedown', function() { wrap.classList.add('dragging'); });
+    range.addEventListener('touchstart', function() { wrap.classList.add('dragging'); }, { passive: true });
+    window.addEventListener('mouseup', function() { wrap.classList.remove('dragging'); });
+    window.addEventListener('touchend', function() { wrap.classList.remove('dragging'); });
+    updateSliderFill();
+  });
+
+  // ── Editable slider values — click to type ──
+  document.querySelectorAll('.tp-slider-val').forEach(function(valEl) {
+    valEl.addEventListener('click', function() {
+      var row = valEl.closest('.tp-slider-row');
+      if (!row) return;
+      var range = row.querySelector('.tp-range');
+      if (!range) return;
+
+      var currentText = valEl.textContent.trim();
+      var numericVal = parseFloat(currentText) || 0;
+      var suffix = currentText.replace(/[-\d.]/g, '').trim();
+
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.className = 'tp-slider-val-input';
+      input.value = numericVal;
+      input.min = range.min;
+      input.max = range.max;
+      input.step = range.step || 1;
+
+      valEl.style.display = 'none';
+      valEl.parentNode.insertBefore(input, valEl.nextSibling);
+      input.focus();
+      input.select();
+
+      function applyValue() {
+        var v = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), parseFloat(input.value) || 0));
+        range.value = v;
+        range.dispatchEvent(new Event('input', { bubbles: true }));
+        input.remove();
+        valEl.style.display = '';
+      }
+      input.addEventListener('blur', applyValue);
+      input.addEventListener('keydown', function(e) {
+        e.stopPropagation();
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.remove(); valEl.style.display = ''; }
+      });
+    });
+  });
+
   document.getElementById('psBrushSize').addEventListener('input', function() {
     brushSize = parseInt(this.value);
     document.getElementById('psBrushSizeVal').textContent = brushSize;
+    var tooltip = this.closest('.tp-slider-wrap').querySelector('.tp-tooltip');
+    if (tooltip) tooltip.textContent = brushSize;
     updateBrushCursorSize();
     showBrushPreview();
   });
   document.getElementById('psBrushHard').addEventListener('input', function() {
     brushHard = parseInt(this.value);
     document.getElementById('psBrushHardVal').textContent = brushHard;
+    var tooltip = this.closest('.tp-slider-wrap').querySelector('.tp-tooltip');
+    if (tooltip) tooltip.textContent = brushHard;
     showBrushPreview();
   });
 
@@ -4233,7 +4703,7 @@ body.ps-active #slideCta {
   }
 
   psCanvas.addEventListener('pointermove', function(e) {
-    var inBrush = !psBrushPanel.classList.contains('hidden');
+    var inBrush = activeToolTab === 'brush';
     if (inBrush) {
       var frameRect = psFrame.getBoundingClientRect();
       psBrushCursor.style.left = (e.clientX - frameRect.left) + 'px';
@@ -4258,7 +4728,7 @@ body.ps-active #slideCta {
   });
 
   psCanvas.addEventListener('pointerdown', function(e) {
-    if (psBrushPanel.classList.contains('hidden')) return;
+    if (activeToolTab !== 'brush') return;
     brushDrawing = true;
     psCanvas.setPointerCapture(e.pointerId);
     pushEditState();
@@ -4275,10 +4745,10 @@ body.ps-active #slideCta {
     psBrushCursor.classList.remove('visible');
   });
   psCanvas.addEventListener('pointerenter', function() {
-    if (!psBrushPanel.classList.contains('hidden')) psBrushCursor.classList.add('visible');
+    if (activeToolTab === 'brush') psBrushCursor.classList.add('visible');
   });
 
-  document.getElementById('psBrushUndoBtn').addEventListener('click', undoEdit);
+  // undo handled by tpUndoBtn in footer
 
   // Escape key = close tool panel (restore entry state)
   document.addEventListener('keydown', function(e) {
@@ -4341,7 +4811,7 @@ body.ps-active #slideCta {
     psZoomLevel.textContent = Math.round(zoom * 100) + '%';
     psZoomOutBtn.disabled = zoom <= ZOOM_MIN + 0.001;
     psZoomInBtn.disabled  = zoom >= ZOOM_MAX - 0.001;
-    psCard.classList.toggle('pannable', zoom > 1 && psCropPanel.classList.contains('hidden') && psBrushPanel.classList.contains('hidden'));
+    psCard.classList.toggle('pannable', zoom > 1 && activeToolTab !== 'crop' && activeToolTab !== 'brush');
     psCard.classList.toggle('zoomed', zoom > 1);
     updateBrushCursorSize();
     if (psCropOverlay.classList.contains('visible')) updateCropBoxCSS();
@@ -4357,6 +4827,15 @@ body.ps-active #slideCta {
     else panY = Math.max(ch - sh, Math.min(0, panY));
   }
 
+  var zoomCtrlsTimer = null;
+  function flashZoomCtrls() {
+    psZoomCtrls.classList.add('visible');
+    clearTimeout(zoomCtrlsTimer);
+    zoomCtrlsTimer = setTimeout(function() {
+      psZoomCtrls.classList.remove('visible');
+    }, 1800);
+  }
+
   function zoomAt(mx, my, factor) {
     var newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom * factor));
     if (Math.abs(newZoom - zoom) < 0.001) return;
@@ -4365,11 +4844,13 @@ body.ps-active #slideCta {
     zoom = newZoom;
     clampPan();
     applyTransform();
+    flashZoomCtrls();
   }
 
   function resetZoom() {
     zoom = 1; panX = 0; panY = 0;
     applyTransform();
+    flashZoomCtrls();
   }
 
   psCard.addEventListener('wheel', function(e) {
@@ -4383,6 +4864,15 @@ body.ps-active #slideCta {
     zoomAt(mx, my, factor);
   }, { passive: false });
 
+  psZoomCtrls.addEventListener('mouseenter', function() {
+    clearTimeout(zoomCtrlsTimer);
+    psZoomCtrls.classList.add('visible');
+  });
+  psZoomCtrls.addEventListener('mouseleave', function() {
+    zoomCtrlsTimer = setTimeout(function() {
+      psZoomCtrls.classList.remove('visible');
+    }, 1200);
+  });
   psZoomInBtn.addEventListener('click', function() {
     var rect = psFrame.getBoundingClientRect();
     zoomAt(rect.width / 2, rect.height / 2, 1.25);
@@ -4396,8 +4886,8 @@ body.ps-active #slideCta {
   // Pan drag (only in default mode when zoomed)
   psCard.addEventListener('pointerdown', function(e) {
     if (!psCtx || zoom <= 1) return;
-    if (!psCropPanel.classList.contains('hidden')) return;
-    if (!psBrushPanel.classList.contains('hidden')) return;
+    if (activeToolTab === 'crop') return;
+    if (activeToolTab === 'brush') return;
     if (e.target.closest('#psZoomCtrls')) return;
     if (e.button !== 0) return;
     panDragging = true;
@@ -4494,10 +4984,16 @@ body.ps-active #slideCta {
       resetZoom();
       return;
     }
-    // Enter — apply crop when in crop mode
-    if (e.key === 'Enter' && !psCropPanel.classList.contains('hidden')) {
+    // Delete/Backspace — delete wand selection
+    if ((e.key === 'Delete' || e.key === 'Backspace') && activeToolTab === 'wand' && wandSelection) {
       e.preventDefault();
-      document.getElementById('psCropApplyBtn').click();
+      wandDeleteSelection();
+      return;
+    }
+    // Enter — apply crop when in crop mode
+    if (e.key === 'Enter' && activeToolTab === 'crop') {
+      e.preventDefault();
+      doCropApply();
       return;
     }
     // Tool shortcuts (only when toolbar is available)
@@ -4517,8 +5013,12 @@ body.ps-active #slideCta {
     if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') {
       e.preventDefault();
       brushMode = 'eraser';
-      document.querySelectorAll('.ps-brush-tab').forEach(function(t) {
+      brushSegBtns.forEach(function(t, i) {
         t.classList.toggle('active', t.getAttribute('data-brush-mode') === 'eraser');
+        if (t.getAttribute('data-brush-mode') === 'eraser' && brushSegBg) {
+          brushSegBg.style.left = 'calc(3px + (100% - 6px) * ' + (i / brushSegBtns.length) + ')';
+          brushSegBg.style.width = 'calc((100% - 6px) / ' + brushSegBtns.length + ')';
+        }
       });
       openTool('brush');
       return;
@@ -4527,8 +5027,12 @@ body.ps-active #slideCta {
     if (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К') {
       e.preventDefault();
       brushMode = 'restore';
-      document.querySelectorAll('.ps-brush-tab').forEach(function(t) {
+      brushSegBtns.forEach(function(t, i) {
         t.classList.toggle('active', t.getAttribute('data-brush-mode') === 'restore');
+        if (t.getAttribute('data-brush-mode') === 'restore' && brushSegBg) {
+          brushSegBg.style.left = 'calc(3px + (100% - 6px) * ' + (i / brushSegBtns.length) + ')';
+          brushSegBg.style.width = 'calc((100% - 6px) / ' + brushSegBtns.length + ')';
+        }
       });
       openTool('brush');
       return;
@@ -4543,14 +5047,14 @@ body.ps-active #slideCta {
     if (e.key === ']' || e.key === 'ъ' || e.key === 'Ъ') {
       e.preventDefault();
       rotateCanvas(90);
-      if (!psCropPanel.classList.contains('hidden')) initCropOverlay();
+      if (activeToolTab === 'crop') initCropOverlay();
       return;
     }
     // [ — rotate 90° CCW
     if (e.key === '[' || e.key === 'х' || e.key === 'Х') {
       e.preventDefault();
       rotateCanvas(-90);
-      if (!psCropPanel.classList.contains('hidden')) initCropOverlay();
+      if (activeToolTab === 'crop') initCropOverlay();
       return;
     }
   });
@@ -4656,12 +5160,19 @@ body.ps-active #slideCta {
     psCtx.drawImage(mask, 0, 0, lw, lh, sx, sy, lw, lh);
   }
 
-  // Brush tab switching
-  document.querySelectorAll('.ps-brush-tab').forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.ps-brush-tab').forEach(function(t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      brushMode = tab.getAttribute('data-brush-mode');
+  // Brush tab switching (segmented toggle)
+  var brushSegBtns = document.querySelectorAll('#brushToggle .tp-seg-btn');
+  var brushSegBg = document.querySelector('#brushToggle .tp-seg-bg');
+  brushSegBtns.forEach(function(btn, idx) {
+    btn.addEventListener('click', function() {
+      brushSegBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      brushMode = btn.getAttribute('data-brush-mode');
+      var count = brushSegBtns.length;
+      if (brushSegBg) {
+        brushSegBg.style.left = 'calc(3px + (100% - 6px) * ' + (idx / count) + ')';
+        brushSegBg.style.width = 'calc((100% - 6px) / ' + count + ')';
+      }
       psBrushCursor.classList.toggle('restore-mode', brushMode === 'restore');
       if (brushMode === 'restore' && originalResultData) {
         showOriginalPreview();
@@ -4863,16 +5374,18 @@ body.ps-active #slideCta {
 
   // Wand click handler
   psCanvas.addEventListener('click', function(e) {
-    if (psWandPanel.classList.contains('hidden')) return;
+    if (activeToolTab !== 'wand') return;
     var pos = getCanvasPos(e);
     wandSelect(pos.x, pos.y);
   });
 
   document.getElementById('psWandDeleteBtn').addEventListener('click', wandDeleteSelection);
   document.getElementById('psWandInvertBtn').addEventListener('click', wandInvertSelection);
-  document.getElementById('psWandUndoBtn').addEventListener('click', undoEdit);
+  // undo handled by tpUndoBtn in footer
   document.getElementById('psWandTolerance').addEventListener('input', function() {
     document.getElementById('psWandToleranceVal').textContent = this.value;
+    var tooltip = this.closest('.tp-slider-wrap').querySelector('.tp-tooltip');
+    if (tooltip) tooltip.textContent = this.value;
   });
 
   // ── ROTATE / FLIP ──
@@ -5009,6 +5522,69 @@ body.ps-active #slideCta {
     cropRotCurrentAngle = 0;
   });
 
+  // ── ROTATION SLIDER ──
+  var rotSlider = document.getElementById('psCropRotateSlider');
+  var rotSliderVal = document.getElementById('psCropRotateVal');
+  var rotSliderWrap = document.getElementById('psCropRotateSliderWrap');
+  var rotSliderTooltip = rotSliderWrap ? rotSliderWrap.querySelector('.tp-tooltip') : null;
+  var rotSliderSnapshot = null; // snapshot taken when crop mode opens
+
+  function rotSliderUpdateUI() {
+    var deg = parseInt(rotSlider.value);
+    rotSliderVal.textContent = deg + '°';
+    if (rotSliderTooltip) rotSliderTooltip.textContent = deg + '°';
+    var pct = ((deg - (-180)) / 360) * 100;
+    rotSlider.style.setProperty('--fill', pct + '%');
+    if (rotSliderTooltip) rotSliderTooltip.style.left = pct + '%';
+  }
+
+  function rotSliderTakeSnapshot() {
+    if (!psCtx) return;
+    rotSliderSnapshot = document.createElement('canvas');
+    rotSliderSnapshot.width = psCanvas.width;
+    rotSliderSnapshot.height = psCanvas.height;
+    rotSliderSnapshot.getContext('2d').drawImage(psCanvas, 0, 0);
+  }
+
+  function rotSliderReset() {
+    rotSlider.value = 0;
+    rotSliderUpdateUI();
+    rotSliderSnapshot = null;
+  }
+
+  if (rotSlider) {
+    rotSlider.addEventListener('input', function() {
+      rotSliderUpdateUI();
+      // Take snapshot on first move if we don't have one yet
+      if (!rotSliderSnapshot && psCtx && activeToolTab === 'crop') {
+        rotSliderTakeSnapshot();
+      }
+      if (!psCtx || !rotSliderSnapshot) return;
+      var deg = parseInt(this.value);
+      var rad = deg * Math.PI / 180;
+      var w = psCanvas.width, h = psCanvas.height;
+      psCtx.clearRect(0, 0, w, h);
+      psCtx.save();
+      psCtx.translate(w / 2, h / 2);
+      psCtx.rotate(rad);
+      psCtx.drawImage(rotSliderSnapshot, -w / 2, -h / 2);
+      psCtx.restore();
+    });
+  }
+
+  // Hook into doCropApply to bake rotation and reset slider
+  var _origDoCropApply = doCropApply;
+  doCropApply = function() {
+    // If slider has rotation, apply it first
+    var deg = rotSlider ? parseInt(rotSlider.value) : 0;
+    if (deg !== 0 && rotSliderSnapshot) {
+      applyFreeRotation(deg, rotSliderSnapshot);
+      rotSliderSnapshot = null;
+    }
+    rotSliderReset();
+    _origDoCropApply();
+  };
+
   function applyFreeRotation(degrees, source) {
     if (!source) source = psCanvas;
     pushEditState();
@@ -5027,9 +5603,11 @@ body.ps-active #slideCta {
   // ── CONTACT SHADOW ──
   document.getElementById('psShadowBlur').addEventListener('input', function() {
     document.getElementById('psShadowBlurVal').textContent = this.value;
+    var tooltip = this.closest('.tp-slider-wrap').querySelector('.tp-tooltip');
+    if (tooltip) tooltip.textContent = this.value;
   });
 
-  document.getElementById('psShadowApplyBtn').addEventListener('click', function() {
+  function doShadowApply() {
     if (!psCtx) return;
     pushEditState();
     var w = psCanvas.width, h = psCanvas.height;
@@ -5057,7 +5635,7 @@ body.ps-active #slideCta {
     psCtx.shadowOffsetY = 0;
     toolPanelEntryState = null;
     showPsPanel('default');
-  });
+  }
 
   // Color picker
   function applyBackground(color) {
