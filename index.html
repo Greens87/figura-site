@@ -1326,14 +1326,16 @@ body.ps-active { overflow: hidden; }
     justify-content: flex-start;
   }
   .ps-editor-row {
-    flex-shrink: 1;
+    flex-shrink: 0;
     min-height: 0;
   }
   .ps-card {
     max-width: calc(100vw - 16px);
-    max-height: 50vh;
     padding: 8px;
-    flex-shrink: 1;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
   #psBottom {
     margin-top: 8px;
@@ -3382,7 +3384,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T12:30';
+  const DEPLOY_VERSION = '2026-04-15T14:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3569,6 +3571,10 @@ body.ps-active #slideCta {
     if (availW > 600) availW -= 40;
     var maxFrameW = Math.min(availW * 0.92, 900) - PAD;
     var maxFrameH = Math.min(availH * 0.92, 720) - PAD;
+    if (isMobile) {
+      var mobileCap = Math.floor((window.innerHeight - navH) * 0.48) - PAD;
+      if (mobileCap > 80) maxFrameH = Math.min(maxFrameH, mobileCap);
+    }
     var fw, fh;
     if (ratio >= 1) { fw = Math.min(maxFrameW, maxFrameH * ratio); fh = fw / ratio; }
     else            { fh = Math.min(maxFrameH, maxFrameW / ratio); fw = fh * ratio; }
