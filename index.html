@@ -3399,7 +3399,7 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T19:30';
+  const DEPLOY_VERSION = '2026-04-15T20:00';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -4598,6 +4598,7 @@ body.ps-active #slideCta {
       requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
     }
     psCtx.putImageData(s.data, 0, 0);
+    rotSliderReset();
     if (psCropOverlay.classList.contains('visible')) initCropOverlay();
   }
 
@@ -5620,6 +5621,7 @@ body.ps-active #slideCta {
       rotSliderUpdateUI();
       // Take snapshot on first move if we don't have one yet
       if (!rotSliderSnapshot && psCtx && activeToolTab === 'crop') {
+        pushEditState();
         rotSliderTakeSnapshot();
       }
       if (!psCtx || !rotSliderSnapshot) return;
