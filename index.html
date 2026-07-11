@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
 <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
 <style>
 *, *::before, *::after {
   box-sizing: border-box;
@@ -1283,7 +1284,7 @@ body.ps-active { overflow: hidden; }
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 40px 20px 16px;
+  padding: 24px 20px 16px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.55s ease;
@@ -1296,6 +1297,186 @@ body.ps-active { overflow: hidden; }
   gap: 16px;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* ===== HISTORY SIDEBAR ===== */
+#psHistorySidebar {
+  width: 112px;
+  flex-shrink: 0;
+  background: var(--white);
+  border: 1px solid var(--gray-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 12px 10px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  align-self: flex-start;
+  max-height: var(--ps-card-h, 380px);
+  transition: max-height 0.7s cubic-bezier(0.34,1.1,0.64,1);
+}
+body.ps-active #psHistorySidebar { display: flex; }
+body.ps-editing #psHistorySidebar { display: none; }
+.ps-history-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-border);
+  width: 100%;
+  justify-content: center;
+  white-space: nowrap;
+}
+.ps-history-title .ms { font-size: 14px; }
+.ps-history-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  align-items: center;
+  width: 100%;
+  overflow: visible;
+  padding: 6px 0 8px;
+}
+.ps-history-thumbs::-webkit-scrollbar { display: none; }
+.ps-history-empty {
+  font-size: 10px;
+  color: var(--gray-light);
+  text-align: center;
+  margin-top: 16px;
+  font-style: italic;
+  padding: 0 4px;
+  line-height: 1.4;
+}
+.ps-history-thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: calc(var(--r-lg) - 6px);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: 1.5px solid var(--gray-border);
+  background-image:
+    linear-gradient(45deg, #e8e8e8 25%, transparent 25%),
+    linear-gradient(-45deg, #e8e8e8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e8e8e8 75%),
+    linear-gradient(-45deg, transparent 75%, #e8e8e8 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+  background-color: #fafafa;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+  animation: psHistoryIn 0.35s var(--ease-spring);
+}
+.ps-history-thumb:hover {
+  transform: translateY(-2px) scale(1.05);
+  border-color: var(--blue);
+  box-shadow: 0 6px 20px rgba(0,58,231,0.18), 0 2px 6px rgba(0,0,0,0.08);
+}
+.ps-history-thumb.removing {
+  animation: psHistoryOut 0.3s var(--ease) forwards;
+  pointer-events: none;
+}
+@keyframes psHistoryIn {
+  from { opacity: 0; transform: scale(0.7) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes psHistoryOut {
+  to { opacity: 0; transform: scale(0.6); height: 0; margin-bottom: -10px; padding: 0; border: 0; }
+}
+.ps-history-thumb img,
+.ps-history-thumb canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+.ps-history-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(107, 114, 128, 0.5);
+  pointer-events: none;
+}
+.ps-history-placeholder .ms { font-size: 26px; }
+.ps-history-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(10,10,10,0.78);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease-spring), background 0.15s;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 2;
+  transform: scale(0.7);
+  padding: 0;
+}
+.ps-history-thumb:hover .ps-history-remove { opacity: 1; transform: scale(1); }
+.ps-history-remove:hover { background: #E5484D; }
+
+/* Mobile: sidebar becomes a horizontal strip below the canvas */
+@media (max-width: 960px) {
+  .ps-editor-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  body.ps-active #psHistorySidebar {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    flex-direction: row;
+    padding: 10px 12px;
+    gap: 10px;
+    align-items: center;
+    order: 10;
+  }
+  .ps-history-title {
+    border-bottom: none;
+    border-right: 1px solid var(--gray-border);
+    padding-bottom: 0;
+    padding-right: 10px;
+    width: auto;
+    flex-shrink: 0;
+  }
+  .ps-history-thumbs {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 0;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+  }
+  .ps-history-empty {
+    margin-top: 0;
+    font-size: 11px;
+    text-align: left;
+  }
+  .ps-history-thumb { width: 64px; height: 64px; }
+  .ps-history-remove { opacity: 1; transform: scale(1); }
 }
 #processingScreen.visible {
   opacity: 1;
@@ -1397,6 +1578,7 @@ body.ps-active { overflow: hidden; }
   left: 0;
   z-index: 1;
   transform-origin: 0 0;
+  touch-action: none;
 }
 #psOriginalCanvas {
   display: none;
@@ -1468,14 +1650,7 @@ body.ps-active { overflow: hidden; }
   pointer-events: none;
 }
 #psCropRotateWidget .ps-crop-rotate-line {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  height: 26px;
-  background: #4A90FF;
-  transform: translateX(-50%);
-  pointer-events: none;
+  display: none;
 }
 #psCropRotateWidget .ps-crop-rotate-handle {
   position: absolute;
@@ -2050,18 +2225,22 @@ body.ps-active { overflow: hidden; }
 .ps-back-btn:hover { border-color: #aaa; color: var(--black); }
 /* Tool panels */
 .ps-panel {
-  width: 296px;
+  width: clamp(296px, 22vw, 360px);
   flex-shrink: 0;
   background: var(--white);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-panel);
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: calc(100vh - 64px - 24px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   transition: box-shadow 0.3s var(--ease);
+}
+.ps-panel .tp-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
 }
 .ps-panel.hidden { display: none; }
 @media (max-width: 960px) {
@@ -2252,6 +2431,10 @@ body.ps-active { overflow: hidden; }
 .tp-tab.active .ms {
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
+/* Outline tool tab icon — fill inner rect on hover/active */
+.tp-tab .outline-icon-inner { fill: transparent; transition: fill 0.2s var(--ease); }
+.tp-tab:hover .outline-icon-inner,
+.tp-tab.active .outline-icon-inner { fill: currentColor; }
 
 /* Sliding background — glassmorphism */
 .tp-tab-bg {
@@ -2378,9 +2561,10 @@ body.ps-active { overflow: hidden; }
   box-shadow: 0 0 0 6px var(--blue-hover);
 }
 /* Subtle tooltip — only on active drag */
-.tp-tooltip {
-  position: absolute;
-  top: -36px;
+.tp-tooltip { display: none; }
+.tp-global-tooltip {
+  position: fixed;
+  z-index: 99999;
   background: rgba(10, 10, 10, 0.75);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -2397,7 +2581,7 @@ body.ps-active { overflow: hidden; }
   white-space: nowrap;
   letter-spacing: 0.2px;
 }
-.tp-slider-wrap.dragging .tp-tooltip {
+.tp-global-tooltip.visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0) scale(1);
 }
@@ -2512,6 +2696,196 @@ body.ps-active { overflow: hidden; }
   z-index: 0;
 }
 
+/* Shadow tool */
+.sh-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--black);
+  cursor: pointer;
+  margin-bottom: 16px;
+  user-select: none;
+}
+.sh-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+.sh-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.sh-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-border);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.sh-color-swatch:hover { border-color: var(--border-hover); box-shadow: 0 0 0 3px rgba(0,58,231,0.1); }
+.sh-hex-wrap {
+  position: relative;
+  flex: 1;
+}
+.sh-hex-wrap::before {
+  content: '#';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-light);
+  pointer-events: none;
+}
+.sh-hex-input {
+  width: 100%;
+  padding: 7px 10px 7px 22px;
+  border: 1.5px solid var(--gray-border);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--black);
+  outline: none;
+  background: var(--white);
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s var(--ease);
+}
+.sh-hex-input:focus { border-color: var(--blue); }
+.sh-hint {
+  font-size: 11px;
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--gray-bg);
+  border-radius: 10px;
+  line-height: 1.4;
+}
+.sh-divider {
+  height: 1px;
+  background: var(--gray-border);
+  margin: 16px 0;
+}
+.sh-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.sh-presets {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.sh-preset {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1.5px solid var(--gray-border);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s var(--ease-spring);
+}
+.sh-preset:hover { transform: scale(1.1); }
+.sh-preset.active { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(0,58,231,0.2); }
+.sh-picker {
+  display: none;
+  background: var(--white);
+  border: 1px solid var(--gray-border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.16), 0 4px 12px rgba(0,0,0,0.06);
+  padding: 16px;
+  width: 260px;
+  user-select: none;
+  margin-top: 8px;
+}
+.sh-picker.visible { display: block; }
+.sh-picker-sv {
+  width: 228px;
+  height: 140px;
+  border-radius: 10px;
+  position: relative;
+  cursor: crosshair;
+  overflow: hidden;
+  background-color: hsl(0, 100%, 50%);
+  margin-bottom: 12px;
+}
+.sh-picker-sv::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #fff, transparent);
+}
+.sh-picker-sv::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000, transparent);
+}
+.sh-picker-sv-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+.sh-picker-hue {
+  width: 228px;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(to right,
+    hsl(0,100%,50%), hsl(60,100%,50%), hsl(120,100%,50%),
+    hsl(180,100%,50%), hsl(240,100%,50%), hsl(300,100%,50%), hsl(360,100%,50%));
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.sh-picker-hue-marker {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.25);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+.sh-picker-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sh-picker-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gray-border);
+  flex-shrink: 0;
+}
+.ps-card canvas.sh-cursor-grab {
+  cursor: grab;
+}
+.ps-card canvas.sh-cursor-grabbing {
+  cursor: grabbing;
+}
+
 /* Panel footer buttons */
 .tp-footer {
   padding: 0 16px 16px;
@@ -2548,6 +2922,14 @@ body.ps-active { overflow: hidden; }
 }
 .tp-btn-secondary:hover {
   background: #EEEEF0;
+}
+.tp-btn-outline {
+  background: transparent;
+  color: var(--blue);
+  border: 1.5px solid var(--blue);
+}
+.tp-btn-outline:hover {
+  background: rgba(0, 58, 231, 0.06);
 }
 .tp-btn .ms { font-size: 16px; }
 
@@ -2699,9 +3081,448 @@ body.ps-active #slideCta {
   }
 }
 
+/* ═══════════════════════ BATCH MODE ═══════════════════════ */
+body.batch-active { overflow: hidden; }
+body.batch-active .hero,
+body.batch-active .stats-strip,
+body.batch-active .features-section,
+body.batch-active .how-section,
+body.batch-active .ba-section,
+body.batch-active .pricing-section,
+body.batch-active .faq-section,
+body.batch-active .email-section,
+body.batch-active .footer,
+body.batch-active #slideCta {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+body.batch-active #psHistorySidebar { display: none !important; }
+
+#batchScreen {
+  position: fixed;
+  top: 64px;
+  left: 0; right: 0; bottom: 0;
+  background: var(--gray-bg);
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 30;
+}
+#batchScreen.visible { opacity: 1; pointer-events: all; }
+
+.batch-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.batch-header {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.batch-title-block { display: flex; align-items: center; gap: 14px; }
+.batch-title {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: 24px; line-height: 1.2; margin-bottom: 2px;
+  letter-spacing: -0.02em;
+  color: var(--black);
+}
+.batch-progress-text {
+  font-size: 13px; color: var(--gray); font-weight: 500;
+}
+.batch-progress-text .done-count { color: var(--black); font-weight: 600; }
+
+.batch-circle-btn {
+  width: 40px; height: 40px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--gray-border);
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s var(--ease);
+  flex-shrink: 0;
+  color: var(--gray);
+}
+.batch-circle-btn:hover { background: var(--gray-bg); border-color: var(--border-hover); color: var(--black); }
+.batch-circle-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.batch-circle-btn .ms { font-size: 20px; }
+
+.batch-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.batch-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 600; font-size: 14px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  white-space: nowrap;
+  line-height: 1;
+}
+.batch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.batch-btn .ms { font-size: 18px; }
+.batch-btn-primary { background: var(--blue); color: var(--white); }
+.batch-btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+.batch-btn-secondary {
+  background: transparent; color: var(--gray);
+  border-color: var(--gray-border);
+}
+.batch-btn-secondary:hover:not(:disabled) {
+  border-color: var(--border-hover); color: var(--black); background: var(--white);
+}
+.batch-btn-danger {
+  background: transparent; color: #DC2626;
+  border-color: var(--gray-border);
+}
+.batch-btn-danger:hover:not(:disabled) {
+  background: rgba(220,38,38,0.08); border-color: #DC2626;
+}
+
+.batch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.batch-tile {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--white);
+  border: 1.5px solid var(--gray-border);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+  animation: batchTileIn 0.4s var(--ease-out) backwards;
+}
+@keyframes batchTileIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+.batch-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.batch-tile.selected {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-soft), var(--shadow-md);
+}
+.batch-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.batch-tile.checker-bg {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(45deg,#e5e5e5 25%,transparent 25%),
+    linear-gradient(-45deg,#e5e5e5 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#e5e5e5 75%),
+    linear-gradient(-45deg,transparent 75%,#e5e5e5 75%);
+  background-size: 22px 22px;
+  background-position: 0 0, 0 11px, 11px -11px, -11px 0;
+}
+
+.batch-tile-status {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px;
+  color: var(--gray);
+  pointer-events: none;
+}
+.batch-tile-status .ms {
+  font-size: 38px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 40;
+}
+.batch-tile-status-text {
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.batch-tile.status-queued,
+.batch-tile.status-processing,
+.batch-tile.status-error { cursor: default; }
+.batch-tile.status-queued:hover,
+.batch-tile.status-processing:hover { transform: none; box-shadow: none; }
+
+/* Processing — dot-spinner (Uiverse by abrahamcalsin) с glass-фоном */
+.batch-tile.status-processing {
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.85) 0%,
+      rgba(243,245,255,0.9) 100%) !important;
+  background-image:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.85) 0%,
+      rgba(243,245,255,0.9) 100%) !important;
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.7) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    0 4px 16px rgba(0,58,231,0.06) !important;
+  isolation: isolate;
+}
+.batch-tile.status-processing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(0,58,231,0.16), transparent 55%),
+    radial-gradient(circle at 72% 72%, rgba(123,63,228,0.13), transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(56,189,248,0.14), transparent 50%);
+  filter: blur(18px);
+  z-index: 0;
+  pointer-events: none;
+}
+.batch-tile.status-processing .batch-tile-status {
+  color: #183153;
+  gap: 14px;
+  z-index: 3;
+}
+.batch-tile.status-processing .batch-tile-status .ms { display: none; }
+
+/* Uiverse dot-spinner */
+.batch-dot-spinner {
+  --uib-size: 2.8rem;
+  --uib-speed: 1.4s;
+  --uib-color: var(--blue);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: var(--uib-size);
+  width: var(--uib-size);
+  z-index: 3;
+}
+.batch-dot-spinner__dot {
+  position: absolute;
+  top: 0; left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+}
+.batch-dot-spinner__dot::before {
+  content: '';
+  height: 20%;
+  width: 20%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
+  transform: scale(0);
+  opacity: 0.5;
+  animation: batchUiPulse calc(var(--uib-speed) * 1.111) ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(0,58,231,0.3);
+}
+.batch-dot-spinner__dot:nth-child(2) { transform: rotate(45deg); }
+.batch-dot-spinner__dot:nth-child(2)::before { animation-delay: calc(var(--uib-speed) * -0.875); }
+.batch-dot-spinner__dot:nth-child(3) { transform: rotate(90deg); }
+.batch-dot-spinner__dot:nth-child(3)::before { animation-delay: calc(var(--uib-speed) * -0.75); }
+.batch-dot-spinner__dot:nth-child(4) { transform: rotate(135deg); }
+.batch-dot-spinner__dot:nth-child(4)::before { animation-delay: calc(var(--uib-speed) * -0.625); }
+.batch-dot-spinner__dot:nth-child(5) { transform: rotate(180deg); }
+.batch-dot-spinner__dot:nth-child(5)::before { animation-delay: calc(var(--uib-speed) * -0.5); }
+.batch-dot-spinner__dot:nth-child(6) { transform: rotate(225deg); }
+.batch-dot-spinner__dot:nth-child(6)::before { animation-delay: calc(var(--uib-speed) * -0.375); }
+.batch-dot-spinner__dot:nth-child(7) { transform: rotate(270deg); }
+.batch-dot-spinner__dot:nth-child(7)::before { animation-delay: calc(var(--uib-speed) * -0.25); }
+.batch-dot-spinner__dot:nth-child(8) { transform: rotate(315deg); }
+.batch-dot-spinner__dot:nth-child(8)::before { animation-delay: calc(var(--uib-speed) * -0.125); }
+@keyframes batchUiPulse {
+  0%, 100% { transform: scale(0); opacity: 0.5; }
+  50%      { transform: scale(1); opacity: 1; }
+}
+
+.batch-tile.status-error { border-color: #FCA5A5; }
+.batch-tile.status-error:hover { transform: none; box-shadow: 0 6px 16px rgba(220,38,38,0.1); }
+.batch-tile.status-error .batch-tile-status { color: #DC2626; }
+
+.batch-tile-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 8px;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+  pointer-events: none;
+}
+.batch-tile.status-done:hover .batch-tile-overlay,
+.batch-tile.selected .batch-tile-overlay {
+  opacity: 1; pointer-events: auto;
+}
+.batch-tile.status-done::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 25%, transparent 65%, rgba(0,0,0,0.45) 100%);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+  pointer-events: none;
+  z-index: 1;
+}
+.batch-tile.status-done:hover::before,
+.batch-tile.selected::before { opacity: 1; }
+.batch-tile-overlay > * { position: relative; z-index: 2; }
+
+.batch-tile-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.batch-tile-bottom-row { display: flex; justify-content: flex-end; gap: 6px; }
+
+.batch-tile-checkbox {
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+  color: var(--white);
+  flex-shrink: 0;
+}
+.batch-tile-checkbox:hover { background: var(--white); transform: scale(1.08); }
+.batch-tile-checkbox.checked {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.batch-tile-checkbox .ms {
+  font-size: 18px;
+  font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 20;
+  opacity: 0;
+  transition: opacity 0.1s var(--ease);
+}
+.batch-tile-checkbox.checked .ms { opacity: 1; }
+
+.batch-tile-filename {
+  font-size: 10.5px; font-weight: 500;
+  color: rgba(255,255,255,0.95);
+  padding: 4px 9px;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: var(--r-full);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-tile-icon-btn {
+  width: 30px; height: 30px;
+  border-radius: var(--r-full);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+  color: var(--black);
+}
+.batch-tile-icon-btn:hover { background: var(--white); transform: scale(1.1); }
+.batch-tile-icon-btn.danger:hover { color: #DC2626; }
+.batch-tile-icon-btn .ms { font-size: 18px; }
+
+.batch-tile-retry-btn {
+  position: absolute;
+  bottom: 14px; left: 50%; transform: translateX(-50%);
+  padding: 6px 14px;
+  background: var(--white);
+  border: 1px solid #DC2626;
+  color: #DC2626;
+  border-radius: var(--r-full);
+  font-size: 12px; font-weight: 600;
+  font-family: var(--font-body);
+  display: inline-flex; align-items: center; gap: 4px;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.2s var(--ease);
+}
+.batch-tile-retry-btn:hover { background: #DC2626; color: var(--white); }
+.batch-tile-retry-btn .ms { font-size: 14px; }
+
+.batch-recovery-banner {
+  display: none;
+  align-items: center; gap: 12px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: var(--r-lg);
+  margin-bottom: 16px;
+  font-size: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.batch-recovery-banner.visible { display: flex; }
+.batch-recovery-banner .ms { color: var(--accent); font-size: 22px; flex-shrink: 0; }
+.batch-recovery-banner-text { flex: 1; color: var(--ink); line-height: 1.4; }
+.batch-recovery-banner-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.batch-recovery-banner .batch-btn { padding: 7px 14px; font-size: 13px; }
+
+.batch-policy-notice {
+  display: flex;
+  align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.04);
+  border-radius: var(--r-lg);
+  margin-bottom: 12px;
+  font-size: 12.5px;
+  color: var(--gray);
+  line-height: 1.4;
+}
+.batch-policy-notice .ms { font-size: 16px; flex-shrink: 0; opacity: 0.6; }
+
+.batch-empty-state {
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--gray);
+}
+.batch-empty-state .ms {
+  font-size: 56px;
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+.batch-empty-state-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: var(--black); }
+.batch-empty-state-text { font-size: 13px; }
+
+/* Editor navigation (visible only in batch mode) */
+#psBatchNav {
+  display: none;
+  gap: 6px; align-items: center;
+  margin-left: 8px;
+}
+body.batch-active.ps-active #psBatchNav { display: inline-flex; }
+body.batch-active.ps-active #psBackBtn { display: none; }
+body.batch-active.ps-active #psGridBackBtn { display: inline-flex; }
+#psGridBackBtn { display: none; }
+
+#psBatchCounter {
+  display: none;
+  font-size: 13px;
+  color: var(--gray);
+  font-weight: 500;
+  margin-left: 10px;
+  align-self: center;
+}
+body.batch-active.ps-active #psBatchCounter { display: inline; }
+#psBatchCounter .cur { color: var(--black); font-weight: 600; }
+
+/* Responsive — batch */
+@media (max-width: 640px) {
+  .batch-container { padding: 16px; }
+  .batch-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .batch-title { font-size: 20px; }
+  .batch-header { gap: 12px; }
+  .batch-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .batch-btn { padding: 9px 14px; font-size: 13px; width: 100%; }
+  .batch-recovery-banner .batch-btn { width: auto; }
+}
+
 </style>
 </head>
 <body>
+<div id="tpGlobalTooltip" class="tp-global-tooltip"></div>
 
 <!-- NAV -->
 <nav class="nav">
@@ -2731,6 +3552,13 @@ body.ps-active #slideCta {
 <!-- UPLOAD PAGE -->
 <div id="processingScreen" aria-hidden="true">
   <div class="ps-editor-row">
+  <aside id="psHistorySidebar">
+    <div class="ps-history-title">
+      <span class="ms">history</span>
+      Изображения
+    </div>
+    <div class="ps-history-thumbs" id="psHistoryThumbs"></div>
+  </aside>
   <div class="ps-card" id="psCard">
     <div class="ps-shimmer" id="psShimmer"></div>
     <div class="ps-canvas-frame" id="psFrame">
@@ -2783,7 +3611,7 @@ body.ps-active #slideCta {
     <!-- iOS Segmented Tabs -->
     <div class="tp-tabs-wrap">
       <div class="tp-tabs-container">
-        <div class="tp-tab-bg" id="tpTabBg" style="left:3px; width:calc((100% - 6px) / 4)"></div>
+        <div class="tp-tab-bg" id="tpTabBg" style="left:3px; width:calc((100% - 6px) / 5)"></div>
         <div class="tp-tabs" id="tpTabs">
           <button class="tp-tab active" data-tool="crop">
             <span class="ms filled">crop</span>
@@ -2796,6 +3624,13 @@ body.ps-active #slideCta {
           <button class="tp-tab" data-tool="wand">
             <span class="ms">auto_fix_high</span>
             <span>Выделение</span>
+          </button>
+          <button class="tp-tab" data-tool="outline">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" style="display:block;flex-shrink:0">
+              <rect x="3" y="3" width="18" height="18" rx="2.5"/>
+              <rect class="outline-icon-inner" x="9" y="9" width="6" height="6" rx="1"/>
+            </svg>
+            <span>Обводка</span>
           </button>
           <button class="tp-tab" data-tool="shadow">
             <span class="ms">shadow</span>
@@ -2925,20 +3760,180 @@ body.ps-active #slideCta {
           <input type="checkbox" id="psWandContiguous" checked style="accent-color:#003AE7;"> Смежные пиксели
         </label>
         <div style="display:flex;gap:6px;margin-top:8px">
-          <button id="psWandDeleteBtn" class="tp-btn tp-btn-primary" style="flex:1"><span class="ms" style="font-size:16px">delete</span> Удалить</button>
+          <button id="psWandDeleteBtn" class="tp-btn tp-btn-outline" style="flex:1"><span class="ms" style="font-size:16px">delete</span> Удалить</button>
           <button id="psWandInvertBtn" class="tp-btn tp-btn-secondary" style="flex:1"><span class="ms" style="font-size:16px">swap_horiz</span> Инвертировать</button>
         </div>
       </div>
 
       <!-- SHADOW -->
       <div id="psShadowPanel" class="tp-section" data-tool="shadow">
+        <!-- 2D | 3D toggle -->
+        <div class="tp-seg-toggle" id="shadowModeToggle">
+          <div class="tp-seg-bg" id="shadowModeSegBg" style="left:3px; width:calc((100% - 6px) / 2)"></div>
+          <button class="tp-seg-btn active" data-mode="2d">
+            <span class="ms" style="font-size:16px">layers</span> 2D
+          </button>
+          <button class="tp-seg-btn" data-mode="3d">
+            <span class="ms" style="font-size:16px">view_in_ar</span> 3D
+          </button>
+        </div>
+
+        <label class="sh-checkbox-row">
+          <input type="checkbox" id="psShadowEnabled" checked>
+          Показать тень
+        </label>
+
+        <div class="sh-divider"></div>
+
+        <!-- Blur -->
         <div class="tp-slider-row">
-          <span class="tp-slider-label">Мягкость</span>
+          <span class="tp-slider-label">Размытие</span>
           <div class="tp-slider-wrap">
             <span class="tp-tooltip">40</span>
             <input type="range" class="tp-range" id="psShadowBlur" min="0" max="100" value="40" style="--fill:40%">
           </div>
           <span class="tp-slider-val"><span id="psShadowBlurVal">40</span></span>
+        </div>
+
+        <!-- Opacity -->
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Прозрачность</span>
+          <div class="tp-slider-wrap">
+            <span class="tp-tooltip">30</span>
+            <input type="range" class="tp-range" id="psShadowOpacity" min="0" max="100" value="30" style="--fill:30%">
+          </div>
+          <span class="tp-slider-val"><span id="psShadowOpacityVal">30</span></span>
+        </div>
+
+        <!-- Color -->
+        <div class="sh-color-row">
+          <span class="tp-slider-label">Цвет</span>
+          <button class="sh-color-swatch" id="psShadowColorSwatch" style="background:#000000"></button>
+          <div class="sh-hex-wrap">
+            <input type="text" class="sh-hex-input" id="psShadowHex" value="000000" maxlength="6">
+          </div>
+        </div>
+
+        <!-- Shadow color picker -->
+        <div class="sh-picker" id="psShadowPicker">
+          <div class="sh-picker-sv" id="shPickerSV">
+            <div class="sh-picker-sv-marker" id="shPickerSVMarker" style="left:100%;top:0%"></div>
+          </div>
+          <div class="sh-picker-hue" id="shPickerHue">
+            <div class="sh-picker-hue-marker" id="shPickerHueMarker" style="left:0%"></div>
+          </div>
+          <div class="sh-picker-bottom">
+            <div class="sh-picker-preview" id="shPickerPreview" style="background:#000"></div>
+            <div class="sh-hex-wrap">
+              <input type="text" class="sh-hex-input" id="shPickerHex" value="000000" maxlength="6">
+            </div>
+          </div>
+        </div>
+
+        <div class="sh-divider"></div>
+
+        <!-- 2D: Offset sliders -->
+        <div id="shadowGroup2d">
+          <div class="sh-hint" style="margin-bottom:14px">
+            <span class="ms" style="font-size:16px">open_with</span>
+            Перетащите по изображению для смещения тени
+          </div>
+          <div class="tp-slider-row">
+            <span class="tp-slider-label">Смещение X</span>
+            <div class="tp-slider-wrap">
+              <span class="tp-tooltip">0</span>
+              <input type="range" class="tp-range" id="psShadowOffX" min="-100" max="100" value="0" style="--fill:50%">
+            </div>
+            <span class="tp-slider-val"><span id="psShadowOffXVal">0</span></span>
+          </div>
+          <div class="tp-slider-row">
+            <span class="tp-slider-label">Смещение Y</span>
+            <div class="tp-slider-wrap">
+              <span class="tp-tooltip">10</span>
+              <input type="range" class="tp-range" id="psShadowOffY" min="-100" max="100" value="10" style="--fill:55%">
+            </div>
+            <span class="tp-slider-val"><span id="psShadowOffYVal">10</span></span>
+          </div>
+        </div>
+
+        <!-- 3D: extra controls -->
+        <div id="shadowGroup3d" style="display:none">
+          <div class="tp-slider-row">
+            <span class="tp-slider-label">Затухание</span>
+            <div class="tp-slider-wrap">
+              <span class="tp-tooltip">50</span>
+              <input type="range" class="tp-range" id="psShadowFade" min="0" max="100" value="50" style="--fill:50%">
+            </div>
+            <span class="tp-slider-val"><span id="psShadowFadeVal">50</span></span>
+          </div>
+          <div class="tp-slider-row">
+            <span class="tp-slider-label">Высота</span>
+            <div class="tp-slider-wrap">
+              <span class="tp-tooltip">0</span>
+              <input type="range" class="tp-range" id="psShadowElevation" min="-50" max="50" value="0" style="--fill:50%">
+            </div>
+            <span class="tp-slider-val"><span id="psShadowElevationVal">0</span></span>
+          </div>
+          <div class="sh-hint" style="margin-top:6px">
+            <span class="ms" style="font-size:16px">pan_tool</span>
+            Перетащите по изображению для направления тени
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTLINE -->
+      <div id="psOutlinePanel" class="tp-section" data-tool="outline">
+        <label class="sh-checkbox-row">
+          <input type="checkbox" id="psOutlineEnabled" checked>
+          Показать обводку
+        </label>
+        <div class="sh-divider"></div>
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Ширина</span>
+          <div class="tp-slider-wrap">
+            <input type="range" class="tp-range" id="psOutlineWidth" min="1" max="200" value="20" style="--fill:10%">
+          </div>
+          <span class="tp-slider-val"><span id="psOutlineWidthVal">20</span>px</span>
+        </div>
+        <div class="tp-slider-row">
+          <span class="tp-slider-label">Мягкость</span>
+          <div class="tp-slider-wrap">
+            <input type="range" class="tp-range" id="psOutlineSoft" min="0" max="200" value="0" style="--fill:0%">
+          </div>
+          <span class="tp-slider-val"><span id="psOutlineSoftVal">0</span></span>
+        </div>
+        <div class="sh-divider"></div>
+        <div class="sh-label">Цвет</div>
+        <div class="sh-color-row">
+          <button class="sh-color-swatch" id="psOutlineColorSwatch" style="background:#FFFFFF"></button>
+          <div class="sh-hex-wrap">
+            <input type="text" class="sh-hex-input" id="psOutlineHex" value="FFFFFF" maxlength="6">
+          </div>
+        </div>
+        <div class="sh-presets" id="psOutlinePresets">
+          <button class="sh-preset active" data-color="#FFFFFF" style="background:#FFFFFF"></button>
+          <button class="sh-preset" data-color="#000000" style="background:#000000"></button>
+          <button class="sh-preset" data-color="#808080" style="background:#808080"></button>
+          <button class="sh-preset" data-color="#FF3B30" style="background:#FF3B30"></button>
+          <button class="sh-preset" data-color="#34C759" style="background:#34C759"></button>
+          <button class="sh-preset" data-color="#FFD60A" style="background:#FFD60A"></button>
+          <button class="sh-preset" data-color="#FF9500" style="background:#FF9500"></button>
+          <button class="sh-preset" data-color="#003AE7" style="background:#003AE7"></button>
+          <button class="sh-preset" data-color="#FF69B4" style="background:#FF69B4"></button>
+        </div>
+        <div class="sh-picker" id="psOutlinePicker">
+          <div class="sh-picker-sv" id="olPickerSV">
+            <div class="sh-picker-sv-marker" id="olPickerSVMarker" style="left:0%;top:0%"></div>
+          </div>
+          <div class="sh-picker-hue" id="olPickerHue">
+            <div class="sh-picker-hue-marker" id="olPickerHueMarker" style="left:0%"></div>
+          </div>
+          <div class="sh-picker-bottom">
+            <div class="sh-picker-preview" id="olPickerPreview" style="background:#fff"></div>
+            <div class="sh-hex-wrap">
+              <input type="text" class="sh-hex-input" id="olPickerHex" value="FFFFFF" maxlength="6">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2972,12 +3967,18 @@ body.ps-active #slideCta {
       <div id="psActions">
         <button class="btn-primary" id="psDownloadBtn" disabled><span class="ms" style="font-size:16px">download</span> Скачать PNG</button>
         <button class="ps-back-btn" id="psBackBtn">← Загрузить другое</button>
+        <button class="ps-back-btn" id="psGridBackBtn" type="button">← К сетке</button>
+        <div id="psBatchNav">
+          <button class="batch-circle-btn" id="psBatchPrev" type="button" title="Предыдущее (←)"><span class="ms">chevron_left</span></button>
+          <button class="batch-circle-btn" id="psBatchNext" type="button" title="Следующее (→)"><span class="ms">chevron_right</span></button>
+        </div>
+        <span id="psBatchCounter"><span class="cur" id="psBatchCurIdx">1</span> / <span id="psBatchTotal">1</span></span>
         <button class="ps-help-circle-btn" id="psHelpBtn" type="button" aria-label="Горячие клавиши">?</button>
       </div>
       <div id="psToolbar" class="hidden">
         <button id="psToolsToggleBtn" class="ps-tool-btn">
           <span class="ms" style="font-size:16px">tune</span>
-          Инструменты
+          Редактировать
         </button>
       </div>
     </div>
@@ -3018,6 +4019,69 @@ body.ps-active #slideCta {
   </div>
 </div>
 
+<!-- BATCH GRID SCREEN -->
+<div id="batchScreen" aria-hidden="true">
+  <div class="batch-container">
+    <div class="batch-header">
+      <div class="batch-title-block">
+        <button class="batch-circle-btn" id="batchLandingBack" title="На главную" type="button">
+          <span class="ms">arrow_back</span>
+        </button>
+        <div>
+          <div class="batch-title">Мои работы</div>
+          <div class="batch-progress-text">
+            <span class="done-count" id="batchProgressDone">0</span> из <span id="batchProgressTotal">0</span> обработано
+          </div>
+        </div>
+      </div>
+      <div class="batch-actions">
+        <button class="batch-btn batch-btn-secondary" id="batchSelectAll" type="button">
+          <span class="ms">check_box_outline_blank</span>
+          <span>Выбрать всё</span>
+        </button>
+        <button class="batch-btn batch-btn-secondary" id="batchAddMore" type="button">
+          <span class="ms">add</span>
+          <span>Добавить</span>
+        </button>
+        <button class="batch-btn batch-btn-danger" id="batchDelete" type="button" disabled>
+          <span class="ms">delete</span>
+          <span>Удалить</span>
+        </button>
+        <button class="batch-btn batch-btn-danger" id="batchClearAll" type="button">
+          <span class="ms">delete_sweep</span>
+          <span>Очистить всё</span>
+        </button>
+        <button class="batch-btn batch-btn-primary" id="batchDownload" type="button" disabled>
+          <span class="ms">download</span>
+          <span id="batchDownloadLabel">Скачать всё ZIP</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="batchRecoveryBanner" class="batch-recovery-banner">
+      <span class="ms">info</span>
+      <div class="batch-recovery-banner-text" id="batchRecoveryText"></div>
+      <div class="batch-recovery-banner-actions">
+        <button class="batch-btn batch-btn-primary" id="batchResume" type="button">Продолжить</button>
+        <button class="batch-btn batch-btn-secondary" id="batchRecoveryDismiss" type="button">Скрыть</button>
+      </div>
+    </div>
+
+    <div class="batch-policy-notice">
+      <span class="ms">schedule</span>
+      <span>Максимум <strong>100 изображений</strong> в хранилище. Изображения хранятся <strong>24 часа</strong> — скачайте ZIP, чтобы не потерять. После скачивания хранилище очищается автоматически.</span>
+    </div>
+
+    <div class="batch-grid" id="batchGrid"></div>
+
+    <div class="batch-empty-state" id="batchEmptyState" style="display:none">
+      <span class="ms">photo_library</span>
+      <div class="batch-empty-state-title">Пакет пуст</div>
+      <div class="batch-empty-state-text">Нажмите «Добавить», чтобы загрузить изображения</div>
+    </div>
+  </div>
+</div>
+
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#how" onclick="closeMobileMenu()">Как работает</a>
@@ -3043,7 +4107,7 @@ body.ps-active #slideCta {
         <div class="upload-zone-text">Перетащите фото или нажмите для выбора</div>
         <div class="upload-zone-hint">JPG, PNG, AVIF, WEBP до 15 MB</div>
         <div class="upload-zone-hint" id="dailyCounter" style="margin-top:4px;color:#6B7280;"></div>
-        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.avif,.webp">
+        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.avif,.webp">
       </div>
       <div class="upload-status" id="uploadStatus">
         <span id="uploadStatusText">Обработка...</span>
@@ -3399,7 +4463,8 @@ body.ps-active #slideCta {
   var stopDemo = function() {}; // overridden below after demo init
 
   const DAILY_LIMIT = 5;
-  const DEPLOY_VERSION = '2026-04-15T20:30';
+  const BATCH_MAX = 100; // max images stored at once
+  const DEPLOY_VERSION = '2026-07-11T14:21';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
@@ -3512,14 +4577,15 @@ body.ps-active #slideCta {
     e.preventDefault();
     uploadZone.classList.remove('dragover');
     if (e.dataTransfer.files.length > 0) {
-      handleFile(e.dataTransfer.files[0]);
+      handleFiles(e.dataTransfer.files);
     }
   });
 
   fileInput.addEventListener('change', function(e) {
     if (e.target.files.length > 0) {
-      handleFile(e.target.files[0]);
+      handleFiles(e.target.files);
     }
+    e.target.value = '';
   });
 
   // ── UPLOAD PAGE ──
@@ -3571,21 +4637,1102 @@ body.ps-active #slideCta {
   var psPickerHex    = document.getElementById('psPickerHex');
   var psCtx = null;
 
+  // ── HISTORY SIDEBAR (3 most recent processed images, persisted in IndexedDB) ──
+  var HISTORY_MAX = 3;
+  var HDB_NAME = 'bg5_history';
+  var HDB_STORE = 'images';
+  var historyItems = [];
+
+  function hdbOpen() {
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(HDB_NAME, 1);
+      req.onupgradeneeded = function() {
+        var db = req.result;
+        if (!db.objectStoreNames.contains(HDB_STORE)) {
+          db.createObjectStore(HDB_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = function() { resolve(req.result); };
+      req.onerror = function() { reject(req.error); };
+    });
+  }
+  function hdbAdd(record) {
+    return hdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(HDB_STORE, 'readwrite');
+        tx.objectStore(HDB_STORE).put(record);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    });
+  }
+  function hdbAll() {
+    return hdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(HDB_STORE, 'readonly');
+        var req = tx.objectStore(HDB_STORE).getAll();
+        req.onsuccess = function() { resolve(req.result || []); };
+        req.onerror = function() { reject(req.error); };
+      });
+    });
+  }
+  function hdbDelete(id) {
+    return hdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(HDB_STORE, 'readwrite');
+        tx.objectStore(HDB_STORE).delete(id);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    });
+  }
+
+  function makeHistoryThumbnail(sourceCanvas, maxSize) {
+    maxSize = maxSize || 160;
+    var sw = sourceCanvas.width, sh = sourceCanvas.height;
+    var scale = Math.min(maxSize / sw, maxSize / sh, 1);
+    var tw = Math.max(1, Math.round(sw * scale));
+    var th = Math.max(1, Math.round(sh * scale));
+    var c = document.createElement('canvas');
+    c.width = tw; c.height = th;
+    c.getContext('2d').drawImage(sourceCanvas, 0, 0, tw, th);
+    return c.toDataURL('image/png');
+  }
+
+  function historyAdd() {
+    if (!psCtx || !psCanvas.width) return Promise.resolve();
+    // Bake result with currently selected background (if not transparent)
+    var out = document.createElement('canvas');
+    out.width = psCanvas.width;
+    out.height = psCanvas.height;
+    var octx = out.getContext('2d');
+    if (currentBgColor && currentBgColor !== 'transparent') {
+      octx.fillStyle = currentBgColor;
+      octx.fillRect(0, 0, out.width, out.height);
+    }
+    octx.drawImage(psCanvas, 0, 0);
+    var thumbnail = makeHistoryThumbnail(out, 160);
+    return new Promise(function(resolve) {
+      out.toBlob(function(blob) {
+        if (!blob) { resolve(); return; }
+        var record = {
+          id: Date.now(),
+          blob: blob,
+          thumbnail: thumbnail,
+          w: out.width,
+          h: out.height,
+          createdAt: Date.now()
+        };
+        hdbAdd(record)
+          .then(hdbAll)
+          .then(function(all) {
+            all.sort(function(a, b) { return b.createdAt - a.createdAt; });
+            var keep = all.slice(0, HISTORY_MAX);
+            var drop = all.slice(HISTORY_MAX);
+            return Promise.all(drop.map(function(r) { return hdbDelete(r.id); }))
+              .then(function() { return keep; });
+          })
+          .then(function(keep) {
+            historyItems = keep;
+            historyRender();
+            resolve();
+          })
+          .catch(function(err) { console.warn('history add failed', err); resolve(); });
+      }, 'image/png');
+    });
+  }
+
+  function historyLoad() {
+    return hdbAll().then(function(all) {
+      all.sort(function(a, b) { return b.createdAt - a.createdAt; });
+      historyItems = all.slice(0, HISTORY_MAX);
+      historyRender();
+    }).catch(function(err) {
+      console.warn('history load failed', err);
+      historyItems = [];
+      historyRender();
+    });
+  }
+
+  function historyRemove(id) {
+    var node = document.querySelector('.ps-history-thumb[data-id="' + id + '"]');
+    if (node) node.classList.add('removing');
+    setTimeout(function() {
+      hdbDelete(id).then(function() {
+        historyItems = historyItems.filter(function(h) { return h.id !== id; });
+        historyRender();
+      });
+    }, 300);
+  }
+
+  function historyOpen(item) {
+    if (!item || !item.blob) return;
+    var url = URL.createObjectURL(item.blob);
+    var img = new Image();
+    img.onload = function() {
+      URL.revokeObjectURL(url);
+      if (typeof stopDemo === 'function') stopDemo();
+      document.body.classList.add('ps-active');
+      if (psScreen) {
+        psScreen.classList.add('visible');
+        psScreen.setAttribute('aria-hidden', 'false');
+      }
+      // Canvas setup
+      psCanvas.width = img.naturalWidth;
+      psCanvas.height = img.naturalHeight;
+      psCtx = psCanvas.getContext('2d');
+      psCtx.drawImage(img, 0, 0);
+      originalImage = img;
+      originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+      psSelectionCanvas.width = psCanvas.width;
+      psSelectionCanvas.height = psCanvas.height;
+      editStack.length = 0;
+      // Reset zoom/pan BEFORE resizing card so final transform is correct
+      zoom = 1; panX = 0; panY = 0;
+      frameBaseW = 0; frameBaseH = 0;
+      psCanvas.style.width = '';
+      psCanvas.style.height = '';
+      psSelectionCanvas.style.width = '';
+      psSelectionCanvas.style.height = '';
+      // UI state
+      psCard.classList.remove('breathing');
+      psCard.classList.add('has-image');
+      psShimmer.classList.add('hidden');
+      psBgApply('transparent');
+      psActions.classList.add('visible');
+      psDownloadBtn.disabled = false;
+      psToolbar.classList.remove('hidden');
+      showPsPanel('default');
+      // Instant card resize (no transition) — frame geometry ready immediately
+      var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
+      resizeCardInstant(sz.w, sz.h);
+      requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); };
+    img.src = url;
+  }
+
+  function historyRender() {
+    var container = document.getElementById('psHistoryThumbs');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!historyItems.length) {
+      container.innerHTML = '<div class="ps-history-empty">Пока пусто — обработанные работы появятся здесь</div>';
+      return;
+    }
+    historyItems.forEach(function(item) {
+      var el = document.createElement('div');
+      el.className = 'ps-history-thumb';
+      el.dataset.id = item.id;
+      if (item.thumbnail) {
+        var img = document.createElement('img');
+        img.src = item.thumbnail;
+        img.alt = '';
+        el.appendChild(img);
+      } else {
+        var ph = document.createElement('div');
+        ph.className = 'ps-history-placeholder';
+        ph.innerHTML = '<span class="ms">image</span>';
+        el.appendChild(ph);
+      }
+      var rm = document.createElement('button');
+      rm.className = 'ps-history-remove';
+      rm.type = 'button';
+      rm.setAttribute('aria-label', 'Удалить');
+      rm.textContent = '×';
+      rm.addEventListener('click', function(e) {
+        e.stopPropagation();
+        historyRemove(item.id);
+      });
+      el.appendChild(rm);
+      el.addEventListener('click', function() {
+        historyOpen(item);
+      });
+      container.appendChild(el);
+    });
+  }
+
+  historyLoad();
+
+  // ═══════════════════════════════════════════════════════════
+  // BATCH MODE — пакетная загрузка и обработка
+  // ═══════════════════════════════════════════════════════════
+
+  var BATCH_DB = 'bg5_batch';
+  var BATCH_STORE = 'items';
+  var BATCH_DB_VERSION = 1;
+
+  function bdbOpen() {
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(BATCH_DB, BATCH_DB_VERSION);
+      req.onupgradeneeded = function(e) {
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains(BATCH_STORE)) {
+          var store = db.createObjectStore(BATCH_STORE, { keyPath: 'id' });
+          store.createIndex('index', 'index', { unique: false });
+          store.createIndex('status', 'status', { unique: false });
+        }
+      };
+      req.onsuccess = function() { resolve(req.result); };
+      req.onerror = function() { reject(req.error); };
+    });
+  }
+  function bdbPut(rec) {
+    return bdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(BATCH_STORE, 'readwrite');
+        tx.objectStore(BATCH_STORE).put(rec);
+        tx.oncomplete = function() { resolve(rec); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    });
+  }
+  function bdbGet(id) {
+    return bdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var req = db.transaction(BATCH_STORE, 'readonly').objectStore(BATCH_STORE).get(id);
+        req.onsuccess = function() { resolve(req.result); };
+        req.onerror = function() { reject(req.error); };
+      });
+    });
+  }
+  function bdbAll() {
+    return bdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var req = db.transaction(BATCH_STORE, 'readonly').objectStore(BATCH_STORE).getAll();
+        req.onsuccess = function() {
+          var list = req.result || [];
+          list.sort(function(a, b) { return a.index - b.index; });
+          resolve(list);
+        };
+        req.onerror = function() { reject(req.error); };
+      });
+    });
+  }
+  function bdbDelete(id) {
+    return bdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(BATCH_STORE, 'readwrite');
+        tx.objectStore(BATCH_STORE).delete(id);
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    });
+  }
+  function bdbClear() {
+    return bdbOpen().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(BATCH_STORE, 'readwrite');
+        tx.objectStore(BATCH_STORE).clear();
+        tx.oncomplete = function() { resolve(); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    });
+  }
+
+  // ─── Batch state
+  var batchState = {
+    items: [],          // all records, sorted by index
+    selected: new Set(),
+    active: false,      // in batch mode (grid visible or editing from batch)
+    running: false,     // queue is processing
+    currentId: null,    // editing item in ps
+    thumbUrls: {}       // id → object URL for thumbnail (cached)
+  };
+
+  function buid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function batchUid() { return buid(); }
+
+  function batchSanitize(name) {
+    return String(name || 'image').replace(/\.[^.]+$/, '').replace(/[<>:"/\\|?*]/g, '_') || 'image';
+  }
+
+  // ─── Entry point: handleFiles (replaces single-file path for multi-upload)
+  window.handleFiles = function(files) {
+    var arr = Array.from(files || []).filter(function(f) { return f && f.type && f.type.indexOf('image/') === 0; });
+    if (!arr.length) {
+      if (files && files.length) showToast('Не найдено изображений', 3500);
+      return;
+    }
+    // Single-file path: only if NOT already in batch mode
+    if (arr.length === 1 && !batchState.active) {
+      handleFile(arr[0]);
+      return;
+    }
+    // Multi-file OR already in batch → enqueue
+    var stored = batchState.items.length;
+    if (stored >= BATCH_MAX) {
+      showToast('Хранилище заполнено (макс. ' + BATCH_MAX + ' изображений). Скачайте ZIP или удалите часть.', 6000);
+      return;
+    }
+    var available = DAILY_LIMIT - getDailyCount();
+    if (available <= 0) {
+      showToast('Лимит исчерпан: ' + DAILY_LIMIT + ' обработок в день. Попробуйте завтра.', 5000);
+      return;
+    }
+    var accepted = arr;
+    // Clamp by both daily limit and storage max
+    var storageLeft = BATCH_MAX - stored;
+    var canAccept = Math.min(available, storageLeft);
+    if (arr.length > canAccept) {
+      accepted = arr.slice(0, canAccept);
+      if (storageLeft < available) {
+        showToast('Хранилище заполнено ' + stored + '/' + BATCH_MAX + '. Взяли первые ' + canAccept + '. Скачайте ZIP чтобы освободить место.', 6000);
+      } else {
+        showToast('Лимит ' + DAILY_LIMIT + '/день. Взяли первые ' + canAccept, 4500);
+      }
+    }
+    batchEnqueueFiles(accepted);
+  };
+
+  function batchEnqueueFiles(files) {
+    var startIdx = batchState.items.length;
+    var records = files.map(function(f, i) {
+      return {
+        id: buid(),
+        index: startIdx + i,
+        filename: f.name || ('file_' + (startIdx + i + 1)),
+        originalBlob: f,
+        resultBlob: null,
+        thumbnail: null,
+        width: 0,
+        height: 0,
+        status: 'queued',
+        error: null,
+        createdAt: Date.now()
+      };
+    });
+    Promise.all(records.map(function(r) { return bdbPut(r); })).then(function() {
+      batchState.items = batchState.items.concat(records);
+      enterBatchMode();
+      batchRender();
+      batchUpdateHeader();
+      batchStartQueue();
+    }).catch(function(err) {
+      console.error(err);
+      showToast('Ошибка сохранения в IndexedDB', 4000);
+    });
+  }
+
+  function enterBatchMode() {
+    batchState.active = true;
+    document.body.classList.add('batch-active');
+    document.body.classList.remove('ps-active');
+    document.body.classList.remove('ps-editing');
+    stopDemo();
+    var scr = document.getElementById('batchScreen');
+    if (scr) {
+      scr.classList.add('visible');
+      scr.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function exitBatchMode() {
+    batchState.active = false;
+    document.body.classList.remove('batch-active');
+    var scr = document.getElementById('batchScreen');
+    if (scr) {
+      scr.classList.remove('visible');
+      scr.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  // ─── Rendering
+  function batchThumbUrl(item) {
+    if (batchState.thumbUrls[item.id]) return batchState.thumbUrls[item.id];
+    var blob = item.thumbnail || item.resultBlob;
+    if (!blob) return null;
+    var url = URL.createObjectURL(blob);
+    batchState.thumbUrls[item.id] = url;
+    return url;
+  }
+
+  function batchReleaseThumbUrl(id) {
+    if (batchState.thumbUrls[id]) {
+      URL.revokeObjectURL(batchState.thumbUrls[id]);
+      delete batchState.thumbUrls[id];
+    }
+  }
+
+  function batchRender() {
+    var grid = document.getElementById('batchGrid');
+    var empty = document.getElementById('batchEmptyState');
+    if (!grid) return;
+    if (!batchState.items.length) {
+      grid.style.display = 'none';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+    grid.style.display = 'grid';
+    if (empty) empty.style.display = 'none';
+    grid.innerHTML = '';
+    batchState.items.forEach(function(item, idx) {
+      var tile = batchRenderTile(item);
+      tile.style.animationDelay = (idx * 18) + 'ms';
+      grid.appendChild(tile);
+    });
+  }
+
+  function batchRenderTile(item) {
+    var tile = document.createElement('div');
+    tile.className = 'batch-tile status-' + item.status + ' checker-bg';
+    tile.dataset.id = item.id;
+    if (batchState.selected.has(item.id)) tile.classList.add('selected');
+
+    if (item.status === 'done' && (item.thumbnail || item.resultBlob)) {
+      var img = document.createElement('img');
+      img.src = batchThumbUrl(item);
+      img.loading = 'lazy';
+      img.alt = item.filename;
+      tile.appendChild(img);
+
+      var ov = document.createElement('div');
+      ov.className = 'batch-tile-overlay';
+
+      var topRow = document.createElement('div');
+      topRow.className = 'batch-tile-top-row';
+      topRow.appendChild(batchMakeCheckbox(item.id));
+      var fn = document.createElement('div');
+      fn.className = 'batch-tile-filename';
+      fn.textContent = item.filename;
+      topRow.appendChild(fn);
+      ov.appendChild(topRow);
+
+      var bottomRow = document.createElement('div');
+      bottomRow.className = 'batch-tile-bottom-row';
+      bottomRow.appendChild(batchMakeIconBtn('download', 'Скачать PNG', function(e) {
+        e.stopPropagation(); batchDownloadOne(item);
+      }));
+      bottomRow.appendChild(batchMakeIconBtn('close', 'Удалить', function(e) {
+        e.stopPropagation(); batchRemoveItem(item.id);
+      }, 'danger'));
+      ov.appendChild(bottomRow);
+
+      tile.appendChild(ov);
+      tile.addEventListener('click', function() { batchOpenItem(item.id); });
+
+    } else if (item.status === 'queued') {
+      tile.appendChild(batchStatusBlock('pending', 'В очереди'));
+    } else if (item.status === 'processing') {
+      var pWrap = document.createElement('div');
+      pWrap.className = 'batch-tile-status';
+      pWrap.appendChild(batchMakeDotSpinner());
+      var pTxt = document.createElement('div');
+      pTxt.className = 'batch-tile-status-text';
+      pTxt.textContent = 'Обрабатываем';
+      pWrap.appendChild(pTxt);
+      tile.appendChild(pWrap);
+    } else if (item.status === 'error') {
+      tile.appendChild(batchStatusBlock('error_outline', 'Ошибка'));
+      var retry = document.createElement('button');
+      retry.className = 'batch-tile-retry-btn';
+      retry.type = 'button';
+      retry.innerHTML = '<span class="ms">refresh</span>Повторить';
+      retry.addEventListener('click', function(e) {
+        e.stopPropagation(); batchRetryItem(item.id);
+      });
+      tile.appendChild(retry);
+    }
+    return tile;
+  }
+
+  function batchStatusBlock(icon, text) {
+    var wrap = document.createElement('div');
+    wrap.className = 'batch-tile-status';
+    wrap.innerHTML = '<span class="ms">' + icon + '</span><div class="batch-tile-status-text">' + text + '</div>';
+    return wrap;
+  }
+  function batchMakeDotSpinner() {
+    var wrap = document.createElement('div');
+    wrap.className = 'batch-dot-spinner';
+    for (var i = 0; i < 8; i++) {
+      var d = document.createElement('div');
+      d.className = 'batch-dot-spinner__dot';
+      wrap.appendChild(d);
+    }
+    return wrap;
+  }
+  function batchMakeCheckbox(id) {
+    var cb = document.createElement('div');
+    var isChecked = batchState.selected.has(id);
+    cb.className = 'batch-tile-checkbox' + (isChecked ? ' checked' : '');
+    cb.innerHTML = '<span class="ms">check</span>';
+    cb.addEventListener('click', function(e) { e.stopPropagation(); batchToggleSelect(id); });
+    return cb;
+  }
+  function batchMakeIconBtn(icon, title, onClick, extraClass) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'batch-tile-icon-btn' + (extraClass ? ' ' + extraClass : '');
+    b.innerHTML = '<span class="ms">' + icon + '</span>';
+    b.title = title;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function batchUpdateTileSelection(id) {
+    var tile = document.querySelector('.batch-tile[data-id="' + id + '"]');
+    if (!tile) return;
+    var isChecked = batchState.selected.has(id);
+    tile.classList.toggle('selected', isChecked);
+    var cb = tile.querySelector('.batch-tile-checkbox');
+    if (cb) cb.classList.toggle('checked', isChecked);
+  }
+
+  function batchUpdateTile(item) {
+    var old = document.querySelector('.batch-tile[data-id="' + item.id + '"]');
+    if (!old) { batchRender(); return; }
+    var fresh = batchRenderTile(item);
+    fresh.style.animation = 'none';
+    old.replaceWith(fresh);
+  }
+
+  function batchUpdateHeader() {
+    var doneList = batchState.items.filter(function(i){ return i.status === 'done'; });
+    var doneCount = doneList.length;
+    var progDone = document.getElementById('batchProgressDone');
+    var progTotal = document.getElementById('batchProgressTotal');
+    if (progDone) progDone.textContent = doneCount;
+    if (progTotal) progTotal.textContent = batchState.items.length;
+
+    var delBtn = document.getElementById('batchDelete');
+    var dlBtn = document.getElementById('batchDownload');
+    var dlLabel = document.getElementById('batchDownloadLabel');
+    if (delBtn) delBtn.disabled = batchState.selected.size === 0;
+    if (dlBtn) dlBtn.disabled = doneCount === 0;
+    if (dlLabel) {
+      dlLabel.textContent = batchState.selected.size > 0
+        ? 'Скачать выбранное (' + batchState.selected.size + ')'
+        : 'Скачать всё ZIP';
+    }
+    var selAll = document.getElementById('batchSelectAll');
+    if (selAll) {
+      var icon = selAll.querySelector('.ms');
+      var label = selAll.querySelector('span:last-child');
+      var allSelected = doneCount > 0 && doneList.every(function(i){ return batchState.selected.has(i.id); });
+      if (icon) icon.textContent = allSelected ? 'check_box' : 'check_box_outline_blank';
+      if (label) label.textContent = allSelected ? 'Снять выбор' : 'Выбрать всё';
+      selAll.disabled = doneCount === 0;
+    }
+  }
+
+  // ─── Selection
+  function batchToggleSelect(id) {
+    var item = batchState.items.find(function(i){ return i.id === id; });
+    if (!item || item.status !== 'done') return;
+    if (batchState.selected.has(id)) batchState.selected.delete(id);
+    else batchState.selected.add(id);
+    batchUpdateTileSelection(id);
+    batchUpdateHeader();
+  }
+  function batchToggleSelectAll() {
+    var doneList = batchState.items.filter(function(i){ return i.status === 'done'; });
+    if (!doneList.length) return;
+    var allSelected = doneList.every(function(i){ return batchState.selected.has(i.id); });
+    if (allSelected) {
+      batchState.selected.clear();
+    } else {
+      batchState.selected.clear();
+      doneList.forEach(function(i){ batchState.selected.add(i.id); });
+    }
+    doneList.forEach(function(i){ batchUpdateTileSelection(i.id); });
+    batchUpdateHeader();
+  }
+
+  // ─── Remove / retry / clear
+  function batchRemoveItem(id) {
+    bdbDelete(id).then(function() {
+      batchReleaseThumbUrl(id);
+      batchState.items = batchState.items.filter(function(i){ return i.id !== id; });
+      batchState.selected.delete(id);
+      if (!batchState.items.length) {
+        batchRender();
+        batchUpdateHeader();
+        showToast('Пакет пуст', 2000);
+        return;
+      }
+      batchRender();
+      batchUpdateHeader();
+    });
+  }
+  function batchRetryItem(id) {
+    var item = batchState.items.find(function(i){ return i.id === id; });
+    if (!item) return;
+    item.status = 'queued';
+    item.error = null;
+    bdbPut(item).then(function() {
+      batchUpdateTile(item);
+      batchUpdateHeader();
+      batchStartQueue();
+    });
+  }
+  function batchDeleteSelected() {
+    if (!batchState.selected.size) return;
+    if (!confirm('Удалить ' + batchState.selected.size + ' изображений?')) return;
+    var ids = Array.from(batchState.selected);
+    Promise.all(ids.map(function(id) { batchReleaseThumbUrl(id); return bdbDelete(id); })).then(function() {
+      batchState.items = batchState.items.filter(function(i){ return !batchState.selected.has(i.id); });
+      batchState.selected.clear();
+      batchRender();
+      batchUpdateHeader();
+      showToast('Удалено', 2000);
+    });
+  }
+
+  // ─── Queue processing
+  // In current demo version, backend API is absent → simulate processing by
+  // reading originalBlob and saving it as resultBlob (after a short delay + shimmer).
+  // Future: replace simulateProcess() with a fetch to /api/bgr.
+  function simulateProcess(item) {
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        // Use the original blob as "result" (demo). In reality we'd get a transparent-bg PNG.
+        var img = new Image();
+        var url = URL.createObjectURL(item.originalBlob);
+        img.onload = function() {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          URL.revokeObjectURL(url);
+          // Generate thumbnail
+          var thumbSize = 256;
+          var scale = thumbSize / Math.max(w, h);
+          var tw = Math.round(w * scale);
+          var th = Math.round(h * scale);
+          var c = document.createElement('canvas');
+          c.width = tw; c.height = th;
+          var cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0, tw, th);
+          c.toBlob(function(thumbBlob) {
+            resolve({
+              resultBlob: item.originalBlob, // demo: keep original as result
+              thumbnail: thumbBlob,
+              width: w,
+              height: h
+            });
+          }, 'image/webp', 0.85);
+        };
+        img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('image load failed')); };
+        img.src = url;
+      }, 900);
+    });
+  }
+
+  function batchStartQueue() {
+    if (batchState.running) return;
+    var next = batchState.items.find(function(i){ return i.status === 'queued'; });
+    if (!next) return;
+    if (getDailyCount() >= DAILY_LIMIT) {
+      showToast('Лимит исчерпан: ' + DAILY_LIMIT + '/день', 4000);
+      return;
+    }
+    batchState.running = true;
+    batchProcessOne(next);
+  }
+
+  function batchProcessOne(item) {
+    item.status = 'processing';
+    bdbPut(item).then(function() {
+      batchUpdateTile(item);
+      return simulateProcess(item);
+    }).then(function(result) {
+      item.resultBlob = result.resultBlob;
+      item.originalResultBlob = result.resultBlob; // transparent original — never overwrite
+      item.bgColor = 'transparent';
+      item.thumbnail = result.thumbnail;
+      item.width = result.width;
+      item.height = result.height;
+      item.status = 'done';
+      return bdbPut(item);
+    }).then(function() {
+      incrementDailyCount();
+      updateDailyCounter();
+      batchUpdateTile(item);
+      batchUpdateHeader();
+      batchState.running = false;
+      // Continue with next
+      var next = batchState.items.find(function(i){ return i.status === 'queued'; });
+      if (next) {
+        if (getDailyCount() >= DAILY_LIMIT) {
+          showToast('Лимит исчерпан: ' + DAILY_LIMIT + '/день. Остальные останутся в очереди.', 5000);
+          return;
+        }
+        batchStartQueue();
+      }
+    }).catch(function(err) {
+      console.error(err);
+      item.status = 'error';
+      item.error = String(err && err.message || err || 'unknown');
+      bdbPut(item).then(function() {
+        batchUpdateTile(item);
+        batchUpdateHeader();
+        batchState.running = false;
+        batchStartQueue(); // try next
+      });
+    });
+  }
+
+  // ─── Open item in editor
+  function batchOpenItem(id) {
+    var item = batchState.items.find(function(i){ return i.id === id; });
+    if (!item || item.status !== 'done' || !item.resultBlob) return;
+
+    // If already editing another item — auto-save first
+    if (batchState.currentId && batchState.currentId !== id) {
+      batchAutoSaveCurrent().then(function() {
+        batchState.currentId = id;
+        batchLoadIntoEditor(item);
+      });
+    } else {
+      batchState.currentId = id;
+      batchLoadIntoEditor(item);
+    }
+  }
+
+  function batchLoadIntoEditor(item) {
+    // Hide grid, show ps editor
+    document.body.classList.add('ps-active');
+    var scr = document.getElementById('batchScreen');
+    if (scr) { scr.classList.remove('visible'); scr.setAttribute('aria-hidden', 'true'); }
+
+    // Reset editor state like handleFile does, but without file reader / daily counter
+    psCard.classList.remove('has-image');
+    psFrame.classList.remove('checker-bg');
+    psFrame.style.backgroundColor = '';
+    psFrame.style.backgroundImage = '';
+    psShimmer.classList.add('hidden');
+    psActions.classList.remove('visible');
+    psDownloadBtn.disabled = true;
+    psToolbar.classList.add('hidden');
+    showPsPanel('default');
+    zoom = 1; panX = 0; panY = 0;
+    editStack.length = 0;
+    originalResultData = null;
+    psToolPanel.classList.add('hidden');
+    psToolsToggleBtn.classList.remove('active');
+    toolPanelEntryState = null;
+    if (psCtx) psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+
+    setTimeout(function() {
+      psScreen.classList.add('visible');
+      psScreen.setAttribute('aria-hidden', 'false');
+    }, 50);
+
+    var srcBlob = item.editedBlob || item.originalResultBlob || item.resultBlob;
+    var url = URL.createObjectURL(srcBlob);
+    originalImage = new Image();
+    originalImage.onload = function() {
+      URL.revokeObjectURL(url);
+      psCanvas.width = originalImage.naturalWidth;
+      psCanvas.height = originalImage.naturalHeight;
+      psCtx = psCanvas.getContext('2d');
+      psCtx.drawImage(originalImage, 0, 0);
+      psCard.classList.add('has-image');
+      psBgApply(item.bgColor || 'transparent');
+      psActions.classList.add('visible');
+      psDownloadBtn.disabled = false;
+      psToolbar.classList.remove('hidden');
+      var sz = psCalcCardSize(psCanvas.width, psCanvas.height);
+      resizeCardInstant(sz.w, sz.h);
+      flashZoomCtrls();
+      originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+      // Restore undo stack from saved snapshot, or seed fresh if none
+      if (item.editStackSnapshot && item.editStackSnapshot.length) {
+        editStack.length = 0;
+        item.editStackSnapshot.forEach(function(s) { editStack.push(s); });
+      } else {
+        pushEditState();
+      }
+      psSelectionCanvas.width = psCanvas.width;
+      psSelectionCanvas.height = psCanvas.height;
+      frameBaseW = 0; frameBaseH = 0;
+      requestAnimationFrame(function(){ cacheFrameSize(); applyTransform(); });
+      batchUpdateNavUI();
+    };
+    originalImage.onerror = function() { URL.revokeObjectURL(url); showToast('Ошибка загрузки', 3000); };
+    originalImage.src = url;
+  }
+
+  function batchUpdateNavUI() {
+    var doneList = batchState.items.filter(function(i){ return i.status === 'done'; });
+    var idx = -1;
+    for (var i = 0; i < doneList.length; i++) if (doneList[i].id === batchState.currentId) { idx = i; break; }
+    var cur = document.getElementById('psBatchCurIdx');
+    var total = document.getElementById('psBatchTotal');
+    if (cur) cur.textContent = idx >= 0 ? (idx + 1) : '–';
+    if (total) total.textContent = doneList.length;
+    var prev = document.getElementById('psBatchPrev');
+    var next = document.getElementById('psBatchNext');
+    if (prev) prev.disabled = idx <= 0;
+    if (next) next.disabled = idx < 0 || idx >= doneList.length - 1;
+  }
+
+  function batchAutoSaveCurrent() {
+    if (!batchState.currentId || !psCtx) return Promise.resolve();
+    var item = batchState.items.find(function(i){ return i.id === batchState.currentId; });
+    if (!item) return Promise.resolve();
+    return new Promise(function(resolve) {
+      // Step 1: save edited canvas WITHOUT background → editedBlob (for re-editing)
+      psCanvas.toBlob(function(editedBlob) {
+        if (!editedBlob) return resolve();
+        item.editedBlob = editedBlob;
+        item.bgColor = currentBgColor;
+        // Save undo stack so user can continue undoing in next session
+        try {
+          item.editStackSnapshot = editStack.map(function(s) {
+            return { w: s.w, h: s.h, data: s.data, cardW: s.cardW, cardH: s.cardH };
+          });
+        } catch(e) { item.editStackSnapshot = []; }
+
+        // Step 2: composite background + edited canvas → resultBlob (for ZIP/preview)
+        var out = document.createElement('canvas');
+        out.width = psCanvas.width;
+        out.height = psCanvas.height;
+        var octx = out.getContext('2d');
+        if (currentBgColor && currentBgColor !== 'transparent') {
+          octx.fillStyle = currentBgColor;
+          octx.fillRect(0, 0, out.width, out.height);
+        }
+        octx.drawImage(psCanvas, 0, 0);
+        out.toBlob(function(blob) {
+          if (!blob) { bdbPut(item).then(resolve, resolve); return; }
+          item.resultBlob = blob;
+          // originalResultBlob stays untouched — for full reset
+
+          // Step 3: thumbnail from composited result
+          var thumbSize = 256;
+          var scale = thumbSize / Math.max(out.width, out.height);
+          var tw = Math.max(1, Math.round(out.width * scale));
+          var th = Math.max(1, Math.round(out.height * scale));
+          var c = document.createElement('canvas');
+          c.width = tw; c.height = th;
+          c.getContext('2d').drawImage(out, 0, 0, tw, th);
+          c.toBlob(function(thumbBlob) {
+            item.thumbnail = thumbBlob || blob;
+            item.width = out.width;
+            item.height = out.height;
+            bdbPut(item).then(function() {
+              batchReleaseThumbUrl(item.id);
+              resolve();
+            }, function() { resolve(); });
+          }, 'image/webp', 0.85);
+        }, 'image/png');
+      }, 'image/png');
+    });
+  }
+
+  function batchNavPrev() {
+    var doneList = batchState.items.filter(function(i){ return i.status === 'done'; });
+    var idx = doneList.findIndex(function(i){ return i.id === batchState.currentId; });
+    if (idx > 0) batchOpenItem(doneList[idx - 1].id);
+  }
+  function batchNavNext() {
+    var doneList = batchState.items.filter(function(i){ return i.status === 'done'; });
+    var idx = doneList.findIndex(function(i){ return i.id === batchState.currentId; });
+    if (idx >= 0 && idx < doneList.length - 1) batchOpenItem(doneList[idx + 1].id);
+  }
+  function batchExitToGrid() {
+    batchAutoSaveCurrent().then(function() {
+      batchState.currentId = null;
+      document.body.classList.remove('ps-active');
+      document.body.classList.remove('ps-editing');
+      psScreen.classList.remove('visible');
+      psScreen.setAttribute('aria-hidden', 'true');
+      psDownloadBtn.disabled = true;
+      var scr = document.getElementById('batchScreen');
+      if (scr) { scr.classList.add('visible'); scr.setAttribute('aria-hidden', 'false'); }
+      batchRender();
+      batchUpdateHeader();
+    });
+  }
+  function batchExitToLanding() {
+    exitBatchMode();
+  }
+
+  // ─── Downloads
+  function batchDownloadOne(item) {
+    if (!item || !item.resultBlob) return;
+    var url = URL.createObjectURL(item.resultBlob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = batchSanitize(item.filename) + '_nobg.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }
+  function batchDownloadZip() {
+    var list = batchState.selected.size > 0
+      ? batchState.items.filter(function(i){ return batchState.selected.has(i.id) && i.status === 'done'; })
+      : batchState.items.filter(function(i){ return i.status === 'done'; });
+    if (!list.length) { showToast('Нет готовых изображений', 2500); return; }
+    if (typeof JSZip === 'undefined') { showToast('JSZip не загрузился (нет интернета)', 4000); return; }
+    showToast('Собираем архив… (' + list.length + ')', 3000);
+    var zip = new JSZip();
+    var used = {};
+    list.forEach(function(item) {
+      var base = batchSanitize(item.filename);
+      var name = base + '_nobg.png';
+      var n = 2;
+      while (used[name]) { name = base + ' (' + n + ')_nobg.png'; n++; }
+      used[name] = true;
+      zip.file(name, item.resultBlob);
+    });
+    zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } })
+      .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'bg5-batch-' + new Date().toISOString().slice(0, 10) + '.zip';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+        showToast('Готово: ' + list.length + ' файлов', 3000);
+        // Auto-clear after download: always wipe (user was warned via policy notice)
+        setTimeout(function() {
+          batchClearAll(true);
+        }, 1800);
+      }).catch(function(err) {
+        console.error(err);
+        showToast('Ошибка сборки ZIP', 3500);
+      });
+  }
+
+  function batchClearAll(autoAfterDownload) {
+    if (!autoAfterDownload && !confirm('Удалить все изображения из хранилища?')) return;
+    Object.values(batchState.thumbUrls || {}).forEach(function(u){ URL.revokeObjectURL(u); });
+    batchState.thumbUrls = {};
+    batchState.items = [];
+    batchState.selected.clear();
+    bdbClear().then(function() {
+      exitBatchMode();
+      if (autoAfterDownload) {
+        showToast('Хранилище очищено — файлы у вас в ZIP', 3500);
+      } else {
+        showToast('Хранилище очищено', 2500);
+      }
+    });
+  }
+
+  // ─── 24h expiry: remove items older than 24h on page load
+  function batchExpireOld() {
+    var cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    bdbAll().then(function(list) {
+      var expired = list.filter(function(i){ return i.createdAt < cutoff; });
+      if (!expired.length) return;
+      Promise.all(expired.map(function(i){ return bdbDelete(i.id); })).then(function() {
+        console.log('[BG5 batch] Expired ' + expired.length + ' items (>24h)');
+      });
+    });
+  }
+
+  // ─── Recovery
+  function batchCheckRecovery() {
+    bdbAll().then(function(list) {
+      if (!list.length) return;
+      // Any 'processing' at load time → flip to 'queued' (was interrupted)
+      var fixes = list.filter(function(i){ return i.status === 'processing'; });
+      var fixed = Promise.all(fixes.map(function(i){
+        i.status = 'queued';
+        return bdbPut(i);
+      }));
+      fixed.then(function() {
+        batchState.items = list.map(function(i){ return i; }).sort(function(a, b){ return a.index - b.index; });
+        var queued = batchState.items.filter(function(i){ return i.status === 'queued'; }).length;
+        var done = batchState.items.filter(function(i){ return i.status === 'done'; }).length;
+        var total = batchState.items.length;
+        var banner = document.getElementById('batchRecoveryBanner');
+        var txt = document.getElementById('batchRecoveryText');
+        if (banner && txt) {
+          if (queued > 0) {
+            txt.innerHTML = '<strong>Незаконченная обработка:</strong> ' + done + ' из ' + total + ' готово. Продолжить?';
+          } else {
+            txt.innerHTML = '<strong>Ваши работы ждут:</strong> ' + done + ' из ' + total + ' готово.';
+          }
+          banner.classList.add('visible');
+        }
+        // Don't auto-enter batch mode — user should decide via banner (Продолжить)
+        // But if user was previously in batch-active (e.g. inline recovery) we could auto-enter
+      });
+    });
+  }
+
+  function batchResumeFromRecovery() {
+    var banner = document.getElementById('batchRecoveryBanner');
+    if (banner) banner.classList.remove('visible');
+    enterBatchMode();
+    batchRender();
+    batchUpdateHeader();
+    batchStartQueue();
+  }
+
+  function batchDismissRecovery() {
+    var banner = document.getElementById('batchRecoveryBanner');
+    if (banner) banner.classList.remove('visible');
+  }
+
+  // ─── Bindings
+  (function bindBatchButtons() {
+    var sel = document.getElementById('batchSelectAll');
+    if (sel) sel.addEventListener('click', batchToggleSelectAll);
+    var add = document.getElementById('batchAddMore');
+    if (add) add.addEventListener('click', function() { fileInput.click(); });
+    var del = document.getElementById('batchDelete');
+    if (del) del.addEventListener('click', batchDeleteSelected);
+    var clearAll = document.getElementById('batchClearAll');
+    if (clearAll) clearAll.addEventListener('click', function(){ batchClearAll(false); });
+    var dl = document.getElementById('batchDownload');
+    if (dl) dl.addEventListener('click', batchDownloadZip);
+    var back = document.getElementById('batchLandingBack');
+    if (back) back.addEventListener('click', batchExitToLanding);
+    var resume = document.getElementById('batchResume');
+    if (resume) resume.addEventListener('click', batchResumeFromRecovery);
+    var dismiss = document.getElementById('batchRecoveryDismiss');
+    if (dismiss) dismiss.addEventListener('click', batchDismissRecovery);
+
+    var prev = document.getElementById('psBatchPrev');
+    if (prev) prev.addEventListener('click', batchNavPrev);
+    var nxt = document.getElementById('psBatchNext');
+    if (nxt) nxt.addEventListener('click', batchNavNext);
+    var grid = document.getElementById('psGridBackBtn');
+    if (grid) grid.addEventListener('click', batchExitToGrid);
+  })();
+
+  // Keyboard nav ←/→ in editor when batch-active
+  document.addEventListener('keydown', function(e) {
+    if (!document.body.classList.contains('batch-active')) return;
+    if (!document.body.classList.contains('ps-active')) return;
+    if (document.body.classList.contains('ps-editing')) return; // not in tool panel
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); batchNavPrev(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); batchNavNext(); }
+  });
+
+  // Check recovery on load + expire old items
+  batchExpireOld();
+  batchCheckRecovery();
+  // expose for debugging
+  window.batchState = batchState;
+  window.bdbAll = bdbAll;
+  window.bdbClear = bdbClear;
+
   function psCalcCardSize(imgW, imgH) {
     var ratio = imgW / imgH;
     var isMobile = window.innerWidth <= 960;
     var PAD = isMobile ? 0 : 30;
     var navH = 64;
-    var topPad = isMobile ? 24 : 40;
-    var bottomPad = isMobile ? 12 : 16;
+    var topPad = isMobile ? 24 : 24;
+    var bottomPad = isMobile ? 12 : 12;
     var gapH = 12;
-    var bottomH = 120;
-    var panelSpace = (!psToolPanel || psToolPanel.classList.contains('hidden') || isMobile) ? 0 : 296;
-    var availW = window.innerWidth - (isMobile ? 16 : 40) - panelSpace;
+    var panelOpen = psToolPanel && !psToolPanel.classList.contains('hidden') && !isMobile;
+    var bottomH = panelOpen ? 16 : 170;
+    var panelSpace = panelOpen ? (psToolPanel.offsetWidth || 296) : 0;
+    var gap = panelOpen ? 16 : 0;
+    // Reserve space for history sidebar (visible in view mode on desktop)
+    var sidebarVisible = !isMobile && document.body.classList.contains('ps-active') && !document.body.classList.contains('ps-editing');
+    var sidebarSpace = sidebarVisible ? 112 : 0;
+    var sidebarGap = sidebarVisible ? 16 : 0;
+    var availW = window.innerWidth - (isMobile ? 16 : 40) - panelSpace - gap - sidebarSpace - sidebarGap;
     var availH = window.innerHeight - navH - topPad - bottomPad - gapH - bottomH;
-    if (!isMobile && availW > 600) availW -= 40;
-    var maxFrameW = isMobile ? (availW - PAD) : (Math.min(availW * 0.92, 900) - PAD);
-    var maxFrameH = Math.min(availH * 0.92, 720) - PAD;
+    var maxFrameW = isMobile ? (availW - PAD) : (Math.min(availW, 1100) - PAD);
+    var maxFrameH = availH - PAD;
     if (isMobile) {
       var mobileCap = Math.floor((window.innerHeight - navH) * 0.55) - PAD;
       if (mobileCap > 80) maxFrameH = Math.min(maxFrameH, mobileCap);
@@ -3791,6 +5938,7 @@ body.ps-active #slideCta {
   var activeToolTab = null;
 
   function showPsPanel(panel) {
+    document.body.classList.toggle('ps-editing', panel !== 'default');
     psDefaultPanel.classList.toggle('hidden', panel !== 'default');
 
     // Cleanup previous tool state
@@ -3802,15 +5950,31 @@ body.ps-active #slideCta {
     brushDrawing = false;
     psOriginalCanvas.classList.remove('visible');
     // If leaving crop with uncommitted rotation, revert it
-    if (activeToolTab === 'crop' && panel !== 'crop' && rotSliderSnapshot && rotSlider && parseInt(rotSlider.value) !== 0) {
-      psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
-      psCtx.drawImage(rotSliderSnapshot, 0, 0);
+    if (activeToolTab === 'crop' && panel !== 'crop') {
+      if (cropRotPendingSnapshot) {
+        psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+        psCtx.drawImage(cropRotPendingSnapshot, 0, 0);
+        originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+      } else if (rotSliderSnapshot && rotSlider && parseInt(rotSlider.value) !== 0) {
+        psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+        psCtx.drawImage(rotSliderSnapshot, 0, 0);
+        originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+      }
     }
-    if (panel !== 'crop') { rotSliderSnapshot = null; if (rotSlider) { rotSlider.value = 0; rotSliderUpdateUI(); } }
+    if (panel !== 'crop') {
+      cropRotPendingAngle = 0; cropRotPendingSnapshot = null;
+      rotSliderSnapshot = null; if (rotSlider) { rotSlider.value = 0; rotSliderUpdateUI(); }
+    }
     if (panel !== 'wand' && wandSelection) {
       wandSelection = null;
       psSelCtx.clearRect(0, 0, psSelectionCanvas.width, psSelectionCanvas.height);
       if (wandAntsRAF) { cancelAnimationFrame(wandAntsRAF); wandAntsRAF = null; }
+    }
+    if (activeToolTab === 'shadow' && panel !== 'shadow') {
+      shadowCleanup();
+    }
+    if (activeToolTab === 'outline' && panel !== 'outline') {
+      outlineCleanup();
     }
 
     if (panel === 'default') {
@@ -3873,7 +6037,7 @@ body.ps-active #slideCta {
     var applyBtn = document.getElementById('tpApplyBtn');
     if (applyBtn) {
       if (panel === 'crop') { applyBtn.innerHTML = '<span class="ms">check</span> Применить'; applyBtn.style.display = ''; }
-      else if (panel === 'shadow') { applyBtn.innerHTML = '<span class="ms">check</span> Тень'; applyBtn.style.display = ''; }
+      else if (panel === 'shadow') { applyBtn.innerHTML = '<span class="ms">check</span> Применить'; applyBtn.style.display = ''; }
       else if (panel === 'brush') { applyBtn.innerHTML = '<span class="ms">check</span> Применить'; applyBtn.style.display = ''; }
       else { applyBtn.style.display = ''; applyBtn.innerHTML = '<span class="ms">check</span> Применить'; }
     }
@@ -3893,7 +6057,17 @@ body.ps-active #slideCta {
         psOriginalCanvas.classList.remove('visible');
       }
     } else if (panel === 'wand') {
-      psCanvas.style.cursor = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0v6M12 18v6M0 12h6M18 12h6M3.5 3.5l4 4M16.5 16.5l4 4M3.5 20.5l4-4M16.5 7.5l4-4' stroke='%23003AE7' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23003AE7'/%3E%3C/svg%3E\") 12 12, crosshair";
+      psCanvas.style.cursor = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='22' y1='22' x2='10' y2='10' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='22' y1='22' x2='10' y2='10' stroke='%23111' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M4,0.5 L4.8,3.2 L7.5,4 L4.8,4.8 L4,7.5 L3.2,4.8 L0.5,4 L3.2,3.2 Z' fill='%23111' stroke='white' stroke-width='0.9' stroke-linejoin='round'/%3E%3Cpath d='M14,0.5 L14.7,2.3 L16.5,3 L14.7,3.7 L14,5.5 L13.3,3.7 L11.5,3 L13.3,2.3 Z' fill='%23111' stroke='white' stroke-width='0.8' stroke-linejoin='round'/%3E%3Cpath d='M20,8.2 L20.5,9.5 L21.8,10 L20.5,10.5 L20,11.8 L19.5,10.5 L18.2,10 L19.5,9.5 Z' fill='%23111' stroke='white' stroke-width='0.7' stroke-linejoin='round'/%3E%3C/svg%3E\") 4 4, crosshair";
+    } else if (panel === 'shadow') {
+      shadowResetState();
+      shadowResetUI();
+      shadowTakeSnapshot();
+      shadowContentBounds = shadowGetContentBounds(shadowSnapshot);
+      psCanvas.classList.add('sh-cursor-grab');
+      renderShadowPreview();
+    } else if (panel === 'outline') {
+      outlineTakeSnapshot();
+      renderOutlinePreview(true);
     }
 
     psCard.classList.toggle('pannable', false);
@@ -3954,6 +6128,7 @@ body.ps-active #slideCta {
     psScreen.setAttribute('aria-hidden', 'true');
     setTimeout(function() {
       document.body.classList.remove('ps-active');
+      document.body.classList.remove('ps-editing');
       if (fileInput) fileInput.value = '';
       originalImage = null;
       uploadedImageData = null;
@@ -3984,7 +6159,18 @@ body.ps-active #slideCta {
 
   window.handleLogoClick = function(e) {
     e.preventDefault();
-    if (document.body.classList.contains('ps-active')) {
+    var wasPs = document.body.classList.contains('ps-active');
+    var wasBatch = document.body.classList.contains('batch-active');
+    if (wasBatch && wasPs && batchState && batchState.currentId) {
+      batchAutoSaveCurrent().then(function() {
+        batchState.currentId = null;
+        psExitToLanding();
+        exitBatchMode();
+      });
+    } else if (wasBatch) {
+      exitBatchMode();
+      if (wasPs) psExitToLanding();
+    } else if (wasPs) {
       psExitToLanding();
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4065,6 +6251,10 @@ body.ps-active #slideCta {
               psActions.classList.add('visible');
               psDownloadBtn.disabled = false;
               psToolbar.classList.remove('hidden');
+              var sz2 = psCalcCardSize(psCanvas.width, psCanvas.height);
+              psCard.style.width  = sz2.w + 'px';
+              psCard.style.height = sz2.h + 'px';
+              document.documentElement.style.setProperty('--ps-card-h', sz2.h + 'px');
               flashZoomCtrls();
               // Save original result for restore brush
               originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
@@ -4103,6 +6293,12 @@ body.ps-active #slideCta {
     link.download = 'figura-result.' + ext;
     link.href = out.toDataURL(fmt, 0.95);
     link.click();
+    // Save to history after successful download (only in single-flow, not in batch)
+    if (batchState && batchState.active && batchState.currentId) {
+      batchAutoSaveCurrent();
+    } else {
+      historyAdd();
+    }
   });
 
   // ── CROP ──
@@ -4114,7 +6310,8 @@ body.ps-active #slideCta {
       h: psCanvas.height,
       data: psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height),
       cardW: psCard.style.width,
-      cardH: psCard.style.height
+      cardH: psCard.style.height,
+      editStackLen: editStack ? editStack.length : 0
     };
   }
   function restoreToolEntryState(state) {
@@ -4133,7 +6330,9 @@ body.ps-active #slideCta {
     psSelectionCanvas.style.width = '';
     psSelectionCanvas.style.height = '';
     requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
-    editStack = [];
+    // Truncate editStack to entry size — preserve earlier undo history
+    var keep = Math.min(state.editStackLen || 0, editStack.length);
+    editStack.length = keep;
   }
   var cropActiveRatio = null;
   var cropX = 0, cropY = 0, cropW = 0, cropH = 0;
@@ -4226,6 +6425,7 @@ body.ps-active #slideCta {
     psDarkR.style.width = Math.max(0, fw - bR) + 'px'; psDarkR.style.height = Math.max(0, bB - bT) + 'px';
     var widgetX = canvRect.left + (bx + bw / 2) * canvRect.width / frameRect.width - 12;
     var widgetY = canvRect.top + by * canvRect.height / frameRect.height - 52;
+    widgetY = Math.max(68, widgetY);
     psCropRotateWidget.style.left = Math.round(widgetX) + 'px';
     psCropRotateWidget.style.top = Math.round(widgetY) + 'px';
   }
@@ -4562,8 +6762,16 @@ body.ps-active #slideCta {
   document.getElementById('tpApplyBtn').addEventListener('click', function() {
     if (activeToolTab === 'crop') doCropApply();
     else if (activeToolTab === 'shadow') doShadowApply();
-    else if (activeToolTab === 'wand') wandDeleteSelection();
-    else if (activeToolTab === 'brush') pushEditState();
+    else if (activeToolTab === 'outline') doOutlineApply();
+    else if (activeToolTab === 'wand') {
+      if (wandSelection) wandDeleteSelection();
+      toolPanelEntryState = null;
+      showPsPanel('default');
+    }
+    else if (activeToolTab === 'brush') {
+      toolPanelEntryState = null;
+      showPsPanel('default');
+    }
   });
 
   // ── UNIFIED UNDO STACK (eraser strokes + crops) ──
@@ -4595,9 +6803,20 @@ body.ps-active #slideCta {
       psCard.classList.remove('no-transition');
       zoom = 1; panX = 0; panY = 0;
       frameBaseW = 0; frameBaseH = 0;
+      psSelectionCanvas.width = s.w;
+      psSelectionCanvas.height = s.h;
       requestAnimationFrame(function() { cacheFrameSize(); applyTransform(); });
     }
     psCtx.putImageData(s.data, 0, 0);
+    // Sync originalResultData so Brush/Wand/etc see the restored state
+    originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+    // Refresh in-progress tool snapshots so Apply uses the post-undo canvas (no auto re-render)
+    if (activeToolTab === 'shadow') {
+      shadowTakeSnapshot();
+      shadowContentBounds = shadowGetContentBounds(shadowSnapshot);
+    } else if (activeToolTab === 'outline') {
+      outlineTakeSnapshot();
+    }
     rotSliderReset();
     if (psCropOverlay.classList.contains('visible')) initCropOverlay();
   }
@@ -4655,22 +6874,55 @@ body.ps-active #slideCta {
   }
 
   // ── D4 Figma sliders — tooltip + fill ──
+  var tpActiveRange = null;
+  function getTpTooltip() {
+    var el = document.getElementById('tpGlobalTooltip');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'tpGlobalTooltip';
+      el.className = 'tp-global-tooltip';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function tpUpdateGlobalTooltip() {
+    if (!tpActiveRange) return;
+    var tt = getTpTooltip();
+    var rect = tpActiveRange.getBoundingClientRect();
+    var pct = (tpActiveRange.value - tpActiveRange.min) / (tpActiveRange.max - tpActiveRange.min);
+    var thumbX = rect.left + pct * rect.width;
+    var thumbY = rect.top;
+    tt.style.left = thumbX + 'px';
+    tt.style.top = (thumbY - 44) + 'px';
+    tt.textContent = tpActiveRange.value;
+  }
+
+  function tpShowTooltip(range) {
+    tpActiveRange = range;
+    tpUpdateGlobalTooltip();
+    getTpTooltip().classList.add('visible');
+  }
+
+  function tpHideTooltip() {
+    tpActiveRange = null;
+    var tt = document.getElementById('tpGlobalTooltip');
+    if (tt) tt.classList.remove('visible');
+  }
+
   document.querySelectorAll('.tp-slider-wrap').forEach(function(wrap) {
     var range = wrap.querySelector('.tp-range');
-    var tooltip = wrap.querySelector('.tp-tooltip');
     if (!range) return;
     function updateSliderFill() {
       var pct = ((range.value - range.min) / (range.max - range.min)) * 100;
       range.style.setProperty('--fill', pct + '%');
-      if (tooltip) {
-        tooltip.style.left = pct + '%';
-      }
+      if (tpActiveRange === range) tpUpdateGlobalTooltip();
     }
     range.addEventListener('input', updateSliderFill);
-    range.addEventListener('mousedown', function() { wrap.classList.add('dragging'); });
-    range.addEventListener('touchstart', function() { wrap.classList.add('dragging'); }, { passive: true });
-    window.addEventListener('mouseup', function() { wrap.classList.remove('dragging'); });
-    window.addEventListener('touchend', function() { wrap.classList.remove('dragging'); });
+    range.addEventListener('mousedown', function() { tpShowTooltip(range); });
+    range.addEventListener('touchstart', function() { tpShowTooltip(range); }, { passive: true });
+    window.addEventListener('mouseup', function() { if (tpActiveRange === range) tpHideTooltip(); });
+    window.addEventListener('touchend', function() { if (tpActiveRange === range) tpHideTooltip(); });
     updateSliderFill();
   });
 
@@ -5284,38 +7536,66 @@ body.ps-active #slideCta {
     var contiguous = document.getElementById('psWandContiguous').checked;
     var sel = new Uint8Array(w * h);
 
-    var idx = (sy * w + sx) * 4;
-    var tr = data[idx], tg = data[idx+1], tb = data[idx+2], ta = data[idx+3];
+    // 3x3 averaging for stable reference (Photoshop "Sample Size")
+    var refR = 0, refG = 0, refB = 0, refA = 0, refN = 0;
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        var nx = sx + dx, ny = sy + dy;
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+        var ni = (ny * w + nx) * 4;
+        refR += data[ni]; refG += data[ni+1]; refB += data[ni+2]; refA += data[ni+3];
+        refN++;
+      }
+    }
+    var tr = refR / refN, tg = refG / refN, tb = refB / refN, ta = refA / refN;
+
+    // If clicked on near-transparent pixel → select by alpha similarity instead of RGB
+    // (RGB is unreliable for transparent areas due to premultiplication)
+    var alphaMode = ta < 16;
 
     function matches(i) {
-      return Math.abs(data[i] - tr) <= tol &&
-             Math.abs(data[i+1] - tg) <= tol &&
-             Math.abs(data[i+2] - tb) <= tol &&
-             Math.abs(data[i+3] - ta) <= tol;
+      if (alphaMode) {
+        return Math.abs(data[i+3] - ta) <= tol;
+      }
+      // Photoshop-style Chebyshev distance (max per-channel diff)
+      var dr = Math.abs(data[i] - tr);
+      var dg = Math.abs(data[i+1] - tg);
+      var db = Math.abs(data[i+2] - tb);
+      if (dr > tol || dg > tol || db > tol) return false;
+      // Exclude fully transparent pixels when matching opaque reference
+      if (data[i+3] < 8) return false;
+      return true;
     }
 
     if (contiguous) {
       var visited = new Uint8Array(w * h);
-      var queue = [sx + sy * w];
-      visited[sx + sy * w] = 1;
-      while (queue.length) {
-        var pos = queue.pop();
+      var startPos = sx + sy * w;
+      var queue = new Int32Array(w * h);
+      var qHead = 0, qTail = 0;
+      queue[qTail++] = startPos;
+      visited[startPos] = 1;
+      while (qHead < qTail) {
+        var pos = queue[qHead++];
+        var pi = pos * 4;
+        if (!matches(pi)) continue;
+        sel[pos] = 1;
         var px = pos % w;
         var py = (pos - px) / w;
-        var pi = pos * 4;
-        if (matches(pi)) {
-          sel[pos] = 1;
-          if (px > 0 && !visited[pos-1]) { visited[pos-1] = 1; queue.push(pos-1); }
-          if (px < w-1 && !visited[pos+1]) { visited[pos+1] = 1; queue.push(pos+1); }
-          if (py > 0 && !visited[pos-w]) { visited[pos-w] = 1; queue.push(pos-w); }
-          if (py < h-1 && !visited[pos+w]) { visited[pos+w] = 1; queue.push(pos+w); }
-        }
+        if (px > 0 && !visited[pos-1]) { visited[pos-1] = 1; queue[qTail++] = pos-1; }
+        if (px < w-1 && !visited[pos+1]) { visited[pos+1] = 1; queue[qTail++] = pos+1; }
+        if (py > 0 && !visited[pos-w]) { visited[pos-w] = 1; queue[qTail++] = pos-w; }
+        if (py < h-1 && !visited[pos+w]) { visited[pos+w] = 1; queue[qTail++] = pos+w; }
       }
     } else {
       for (var i = 0; i < w * h; i++) {
         if (matches(i * 4)) sel[i] = 1;
       }
     }
+
+    // No selection at all? abort silently
+    var hasSel = false;
+    for (var si = 0; si < sel.length; si++) { if (sel[si]) { hasSel = true; break; } }
+    if (!hasSel) { wandSelection = null; return; }
 
     wandSelection = sel;
     drawWandAnts();
@@ -5436,11 +7716,18 @@ body.ps-active #slideCta {
     drawWandAnts();
   }
 
-  // Wand click handler
-  psCanvas.addEventListener('click', function(e) {
+  // Wand click handler — immediate select on pointerdown (Photoshop behavior)
+  psCanvas.addEventListener('pointerdown', function(e) {
     if (activeToolTab !== 'wand') return;
+    if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+    e.preventDefault();
+    try { psCanvas.setPointerCapture(e.pointerId); } catch (_) {}
     var pos = getCanvasPos(e);
     wandSelect(pos.x, pos.y);
+  });
+  psCanvas.addEventListener('pointerup', function(e) {
+    if (activeToolTab !== 'wand') return;
+    try { psCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
   });
 
   document.getElementById('psWandDeleteBtn').addEventListener('click', wandDeleteSelection);
@@ -5511,6 +7798,9 @@ body.ps-active #slideCta {
   var cropRotCenterX = 0, cropRotCenterY = 0;
   var psCropAngleTip = document.getElementById('psCropAngleTip');
   var cropRotSnapshot = null;
+  var cropRotPendingAngle = 0;
+  var cropRotPendingSnapshot = null;
+  var cropRotBaseAngle = 0;
 
   function getCropBoxCenter() {
     var boxRect = psCropBox.getBoundingClientRect();
@@ -5525,18 +7815,26 @@ body.ps-active #slideCta {
     e.preventDefault();
     cropRotating = true;
     this.setPointerCapture(e.pointerId);
-    pushEditState();
+    if (cropRotPendingSnapshot) {
+      cropRotSnapshot = cropRotPendingSnapshot;
+      cropRotBaseAngle = cropRotPendingAngle;
+      cropRotPendingSnapshot = null;
+      cropRotPendingAngle = 0;
+    } else {
+      pushEditState();
+      cropRotSnapshot = document.createElement('canvas');
+      cropRotSnapshot.width = psCanvas.width;
+      cropRotSnapshot.height = psCanvas.height;
+      cropRotSnapshot.getContext('2d').drawImage(psCanvas, 0, 0);
+      cropRotBaseAngle = 0;
+    }
     var c = getCropBoxCenter();
     cropRotCenterX = c.x;
     cropRotCenterY = c.y;
     cropRotStartAngle = Math.atan2(e.clientX - cropRotCenterX, -(e.clientY - cropRotCenterY));
-    cropRotCurrentAngle = 0;
+    cropRotCurrentAngle = cropRotBaseAngle;
     psCropAngleTip.style.display = 'block';
-    psCropAngleTip.textContent = '0°';
-    cropRotSnapshot = document.createElement('canvas');
-    cropRotSnapshot.width = psCanvas.width;
-    cropRotSnapshot.height = psCanvas.height;
-    cropRotSnapshot.getContext('2d').drawImage(psCanvas, 0, 0);
+    psCropAngleTip.textContent = Math.round(cropRotBaseAngle) + '°';
     psDarkT.style.display = 'none';
     psDarkR.style.display = 'none';
     psDarkB.style.display = 'none';
@@ -5553,8 +7851,8 @@ body.ps-active #slideCta {
     if (e.shiftKey) {
       delta = Math.round(delta / 45) * 45;
     }
-    cropRotCurrentAngle = delta;
-    var rad = delta * Math.PI / 180;
+    cropRotCurrentAngle = cropRotBaseAngle + delta;
+    var rad = cropRotCurrentAngle * Math.PI / 180;
     var w = psCanvas.width, h = psCanvas.height;
     psCtx.clearRect(0, 0, w, h);
     psCtx.save();
@@ -5562,7 +7860,7 @@ body.ps-active #slideCta {
     psCtx.rotate(rad);
     psCtx.drawImage(cropRotSnapshot, -w / 2, -h / 2);
     psCtx.restore();
-    psCropAngleTip.textContent = Math.round(delta) + '°';
+    psCropAngleTip.textContent = Math.round(cropRotCurrentAngle) + '°';
   });
 
   document.addEventListener('pointerup', function(e) {
@@ -5582,9 +7880,11 @@ body.ps-active #slideCta {
       cropRotSnapshot = null;
       return;
     }
-    applyFreeRotation(cropRotCurrentAngle, cropRotSnapshot);
+    cropRotPendingAngle = cropRotCurrentAngle;
+    cropRotPendingSnapshot = cropRotSnapshot;
     cropRotSnapshot = null;
     cropRotCurrentAngle = 0;
+    updateCropBoxCSS();
   });
 
   // ── ROTATION SLIDER ──
@@ -5641,7 +7941,12 @@ body.ps-active #slideCta {
   // Hook into doCropApply to bake rotation and reset slider
   var _origDoCropApply = doCropApply;
   doCropApply = function() {
-    // If slider has rotation, apply it first
+    // Bake pending handle rotation
+    if (cropRotPendingAngle !== 0 && cropRotPendingSnapshot) {
+      applyFreeRotation(cropRotPendingAngle, cropRotPendingSnapshot);
+    }
+    cropRotPendingAngle = 0; cropRotPendingSnapshot = null;
+    // Bake slider rotation
     var deg = rotSlider ? parseInt(rotSlider.value) : 0;
     if (deg !== 0 && rotSliderSnapshot) {
       applyFreeRotation(deg, rotSliderSnapshot);
@@ -5655,6 +7960,7 @@ body.ps-active #slideCta {
     if (!source) source = psCanvas;
     var rad = degrees * Math.PI / 180;
     var w = source.width, h = source.height;
+    psCanvas.width = w; psCanvas.height = h;
     psCtx.clearRect(0, 0, w, h);
     psCtx.save();
     psCtx.translate(w / 2, h / 2);
@@ -5662,45 +7968,813 @@ body.ps-active #slideCta {
     psCtx.drawImage(source, -w / 2, -h / 2);
     psCtx.restore();
     originalResultData = psCtx.getImageData(0, 0, w, h);
-    initCropOverlay();
   }
 
-  // ── CONTACT SHADOW ──
-  document.getElementById('psShadowBlur').addEventListener('input', function() {
-    document.getElementById('psShadowBlurVal').textContent = this.value;
-    var tooltip = this.closest('.tp-slider-wrap').querySelector('.tp-tooltip');
-    if (tooltip) tooltip.textContent = this.value;
+  // ── SHADOW TOOL ──
+  var shadowMode = '2d';
+  var shadowEnabled = true;
+  var shadowBlur = 40;
+  var shadowOpacity = 30;
+  var shadowColor = '#000000';
+  var shadowOffX = 0;
+  var shadowOffY = 10;
+  var shadow3dTipX = 0.4;
+  var shadow3dTipY = 0.3;
+  var shadow3dFade = 50;
+  var shadow3dElevation = 0;
+  var shadowSnapshot = null;
+  var shadowContentBounds = null;
+  var shadowDragging = false;
+  var shadowPreviewRAF = null;
+  var shPickerH = 0, shPickerS = 0, shPickerV = 0;
+  var shPickerDraggingSV = false, shPickerDraggingHue = false;
+  var shadowDragStartX = 0, shadowDragStartY = 0;
+  var shadowDragStartOffX = 0, shadowDragStartOffY = 0;
+
+  function hexToRgba(hex, alpha) {
+    var m = /^#?([0-9A-Fa-f]{6})$/.exec(hex);
+    if (!m) return 'rgba(0,0,0,' + alpha + ')';
+    var r = parseInt(m[1].substring(0,2),16);
+    var g = parseInt(m[1].substring(2,4),16);
+    var b = parseInt(m[1].substring(4,6),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+  function shadowTakeSnapshot() {
+    shadowSnapshot = document.createElement('canvas');
+    shadowSnapshot.width = psCanvas.width;
+    shadowSnapshot.height = psCanvas.height;
+    shadowSnapshot.getContext('2d').drawImage(psCanvas, 0, 0);
+  }
+
+  function shadowGetContentBounds(src) {
+    var c = src.getContext('2d');
+    var w = src.width, h = src.height;
+    var d = c.getImageData(0, 0, w, h).data;
+    var top = h, bot = 0, left = w, right = 0;
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        if (d[(y * w + x) * 4 + 3] > 10) {
+          if (y < top) top = y;
+          if (y > bot) bot = y;
+          if (x < left) left = x;
+          if (x > right) right = x;
+        }
+      }
+    }
+    if (top > bot) return null;
+    return { top: top, bottom: bot, left: left, right: right,
+             cx: (left + right) / 2, cy: (top + bot) / 2,
+             w: right - left + 1, h: bot - top + 1 };
+  }
+
+  function renderShadow2d(targetCtx, src) {
+    var w = src.width, h = src.height;
+    var maxDim = Math.max(w, h);
+    var blurPx = Math.round(shadowBlur * maxDim / 1500) + 2;
+    var offX = Math.round(shadowOffX * maxDim / 400);
+    var offY = Math.round(shadowOffY * maxDim / 400);
+    targetCtx.clearRect(0, 0, w, h);
+    targetCtx.save();
+    targetCtx.shadowColor = hexToRgba(shadowColor, shadowOpacity / 100);
+    targetCtx.shadowBlur = blurPx;
+    targetCtx.shadowOffsetX = offX;
+    targetCtx.shadowOffsetY = offY;
+    targetCtx.drawImage(src, 0, 0);
+    targetCtx.restore();
+  }
+
+  function renderShadow3d(targetCtx, src) {
+    var w = src.width, h = src.height;
+    var bounds = shadowContentBounds;
+    if (!bounds) { targetCtx.clearRect(0,0,w,h); targetCtx.drawImage(src,0,0); return; }
+    var maxDim = Math.max(w, h);
+    var anchorX = bounds.cx;
+    var anchorY = bounds.bottom;
+    var objH = bounds.h;
+    var tipDx = shadow3dTipX * objH;
+    var tipDy = shadow3dTipY * objH;
+    var shadowLen = Math.sqrt(tipDx * tipDx + tipDy * tipDy);
+    var blurRadius = Math.round(shadowBlur * maxDim / 2000) + 1;
+
+    var silC = document.createElement('canvas');
+    silC.width = w; silC.height = h;
+    var silCtx = silC.getContext('2d');
+    silCtx.drawImage(src, 0, 0);
+    silCtx.globalCompositeOperation = 'source-in';
+    silCtx.fillStyle = shadowColor;
+    silCtx.fillRect(0, 0, w, h);
+
+    var extra = Math.round(shadowLen + blurRadius * 4 + objH * 0.3);
+    var bigW = w + extra * 2;
+    var bigH = h + extra * 2;
+    var ox = extra, oy = extra;
+
+    var mc = -tipDx / Math.max(1, objH);
+    var md = -tipDy / Math.max(1, objH);
+
+    var shC = document.createElement('canvas');
+    shC.width = bigW; shC.height = bigH;
+    var shCtx = shC.getContext('2d');
+    shCtx.save();
+    shCtx.translate(anchorX + ox, anchorY + oy);
+    shCtx.transform(1, 0, mc, md, 0, 0);
+    shCtx.translate(-anchorX, -anchorY);
+    shCtx.drawImage(silC, 0, 0);
+    shCtx.restore();
+
+    var alpha = shadowOpacity / 100;
+    var f = shadow3dFade / 100;
+    shCtx.save();
+    shCtx.globalCompositeOperation = 'destination-in';
+    var grad = shCtx.createLinearGradient(
+      anchorX + ox, anchorY + oy,
+      anchorX + ox + tipDx, anchorY + oy + tipDy
+    );
+    grad.addColorStop(0, 'rgba(0,0,0,' + alpha + ')');
+    grad.addColorStop(0.2, 'rgba(0,0,0,' + (alpha * (1 - f * 0.5)) + ')');
+    grad.addColorStop(0.5, 'rgba(0,0,0,' + (alpha * (1 - f * 0.75)) + ')');
+    grad.addColorStop(0.8, 'rgba(0,0,0,' + (alpha * (1 - f * 0.95)) + ')');
+    grad.addColorStop(1, 'rgba(0,0,0,' + (alpha * (1 - f)) + ')');
+    shCtx.fillStyle = grad;
+    shCtx.fillRect(0, 0, bigW, bigH);
+    shCtx.restore();
+
+    var blurC = document.createElement('canvas');
+    var blurPad = blurRadius * 3;
+    blurC.width = bigW + blurPad * 2;
+    blurC.height = bigH + blurPad * 2;
+    var blurCtx = blurC.getContext('2d');
+    blurCtx.shadowColor = 'rgba(0,0,0,1)';
+    blurCtx.shadowBlur = blurRadius;
+    blurCtx.shadowOffsetX = blurC.width;
+    blurCtx.shadowOffsetY = 0;
+    blurCtx.drawImage(shC, blurPad - blurC.width, blurPad);
+
+    var elevPx = Math.round(shadow3dElevation * objH / 100);
+
+    targetCtx.clearRect(0, 0, w, h);
+    targetCtx.drawImage(blurC, -ox - blurPad, -oy - blurPad + elevPx);
+    targetCtx.drawImage(src, 0, 0);
+  }
+
+  function renderShadowPreview() {
+    if (!shadowSnapshot) return;
+    if (shadowPreviewRAF) cancelAnimationFrame(shadowPreviewRAF);
+    shadowPreviewRAF = requestAnimationFrame(function() {
+      shadowPreviewRAF = null;
+      if (!shadowEnabled) {
+        psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+        psCtx.drawImage(shadowSnapshot, 0, 0);
+        return;
+      }
+      if (shadowMode === '2d') renderShadow2d(psCtx, shadowSnapshot);
+      else renderShadow3d(psCtx, shadowSnapshot);
+    });
+  }
+
+  function shadowSyncSlider(sliderId, valId, value, min, max) {
+    var el = document.getElementById(sliderId);
+    var valEl = document.getElementById(valId);
+    if (!el || !valEl) return;
+    el.value = value;
+    valEl.textContent = value;
+    el.style.setProperty('--fill', ((value - min) / (max - min) * 100) + '%');
+    var tooltip = el.closest('.tp-slider-wrap');
+    if (tooltip) {
+      var tt = tooltip.querySelector('.tp-tooltip');
+      if (tt) tt.textContent = value;
+    }
+  }
+
+  function shadowResetState() {
+    shadowMode = '2d';
+    shadowEnabled = true;
+    shadowBlur = 40;
+    shadowOpacity = 30;
+    shadowColor = '#000000';
+    shadowOffX = 0;
+    shadowOffY = 10;
+    shadow3dTipX = 0.4;
+    shadow3dTipY = 0.3;
+    shadow3dFade = 50;
+    shadow3dElevation = 0;
+    shPickerH = 0; shPickerS = 0; shPickerV = 0;
+  }
+
+  function shadowResetUI() {
+    shadowSyncSlider('psShadowBlur', 'psShadowBlurVal', 40, 0, 100);
+    shadowSyncSlider('psShadowOpacity', 'psShadowOpacityVal', 30, 0, 100);
+    shadowSyncSlider('psShadowOffX', 'psShadowOffXVal', 0, -100, 100);
+    shadowSyncSlider('psShadowOffY', 'psShadowOffYVal', 10, -100, 100);
+    shadowSyncSlider('psShadowFade', 'psShadowFadeVal', 50, 0, 100);
+    shadowSyncSlider('psShadowElevation', 'psShadowElevationVal', 0, -50, 50);
+    var chk = document.getElementById('psShadowEnabled');
+    if (chk) chk.checked = true;
+    var swatch = document.getElementById('psShadowColorSwatch');
+    if (swatch) swatch.style.background = '#000000';
+    var hexIn = document.getElementById('psShadowHex');
+    if (hexIn) hexIn.value = '000000';
+    var g2d = document.getElementById('shadowGroup2d');
+    var g3d = document.getElementById('shadowGroup3d');
+    if (g2d) g2d.style.display = '';
+    if (g3d) g3d.style.display = 'none';
+    var modeBtns = document.querySelectorAll('#shadowModeToggle .tp-seg-btn');
+    modeBtns.forEach(function(b) { b.classList.remove('active'); });
+    if (modeBtns[0]) modeBtns[0].classList.add('active');
+    var segBg = document.getElementById('shadowModeSegBg');
+    if (segBg) { segBg.style.left = '3px'; segBg.style.width = 'calc((100% - 6px) / 2)'; }
+    var picker = document.getElementById('psShadowPicker');
+    if (picker) picker.classList.remove('visible');
+  }
+
+  function shadowCleanup() {
+    if (shadowSnapshot && psCtx) {
+      psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+      psCtx.drawImage(shadowSnapshot, 0, 0);
+    }
+    shadowSnapshot = null;
+    shadowContentBounds = null;
+    if (shadowPreviewRAF) { cancelAnimationFrame(shadowPreviewRAF); shadowPreviewRAF = null; }
+    psCanvas.classList.remove('sh-cursor-grab', 'sh-cursor-grabbing');
+    var picker = document.getElementById('psShadowPicker');
+    if (picker) picker.classList.remove('visible');
+  }
+
+  // Shadow slider wiring
+  function wireShadowSlider(id, valId, onChange) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+      var valEl = document.getElementById(valId);
+      if (valEl) valEl.textContent = this.value;
+      var tooltip = this.closest('.tp-slider-wrap').querySelector('.tp-tooltip');
+      if (tooltip) tooltip.textContent = this.value;
+      var pct = (this.value - this.min) / (this.max - this.min) * 100;
+      this.style.setProperty('--fill', pct + '%');
+      onChange(parseInt(this.value));
+      renderShadowPreview();
+    });
+  }
+  wireShadowSlider('psShadowBlur', 'psShadowBlurVal', function(v) { shadowBlur = v; });
+  wireShadowSlider('psShadowOpacity', 'psShadowOpacityVal', function(v) { shadowOpacity = v; });
+  wireShadowSlider('psShadowOffX', 'psShadowOffXVal', function(v) { shadowOffX = v; });
+  wireShadowSlider('psShadowOffY', 'psShadowOffYVal', function(v) { shadowOffY = v; });
+  wireShadowSlider('psShadowFade', 'psShadowFadeVal', function(v) { shadow3dFade = v; });
+  wireShadowSlider('psShadowElevation', 'psShadowElevationVal', function(v) { shadow3dElevation = v; });
+
+  // Shadow checkbox
+  var psShadowEnabledEl = document.getElementById('psShadowEnabled');
+  if (psShadowEnabledEl) {
+    psShadowEnabledEl.addEventListener('change', function() {
+      shadowEnabled = this.checked;
+      renderShadowPreview();
+    });
+  }
+
+  // Shadow mode toggle (2D/3D)
+  (function() {
+    var modeBtns = document.querySelectorAll('#shadowModeToggle .tp-seg-btn');
+    var segBg = document.getElementById('shadowModeSegBg');
+    modeBtns.forEach(function(btn, idx) {
+      btn.addEventListener('click', function() {
+        modeBtns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        shadowMode = btn.getAttribute('data-mode');
+        if (segBg) {
+          segBg.style.left = 'calc(3px + (100% - 6px) * ' + (idx / 2) + ')';
+          segBg.style.width = 'calc((100% - 6px) / 2)';
+        }
+        document.getElementById('shadowGroup2d').style.display = shadowMode === '2d' ? '' : 'none';
+        document.getElementById('shadowGroup3d').style.display = shadowMode === '3d' ? '' : 'none';
+        if (activeToolTab === 'shadow') {
+          psCanvas.classList.remove('sh-cursor-grabbing');
+          psCanvas.classList.add('sh-cursor-grab');
+        }
+        renderShadowPreview();
+      });
+    });
+  })();
+
+  // Shadow color swatch + picker
+  (function() {
+    var swatch = document.getElementById('psShadowColorSwatch');
+    var hexInput = document.getElementById('psShadowHex');
+    var pickerEl = document.getElementById('psShadowPicker');
+    var pickerSV = document.getElementById('shPickerSV');
+    var pickerSVMarker = document.getElementById('shPickerSVMarker');
+    var pickerHue = document.getElementById('shPickerHue');
+    var pickerHueMarker = document.getElementById('shPickerHueMarker');
+    var pickerPreview = document.getElementById('shPickerPreview');
+    var pickerHex = document.getElementById('shPickerHex');
+
+    if (!swatch || !pickerEl) return;
+
+    function shUpdatePickerUI() {
+      var rgb = hsvToRgb(shPickerH, shPickerS, shPickerV);
+      var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      pickerSV.style.backgroundColor = 'hsl(' + shPickerH + ', 100%, 50%)';
+      pickerSVMarker.style.left = (shPickerS * 100) + '%';
+      pickerSVMarker.style.top = ((1 - shPickerV) * 100) + '%';
+      pickerHueMarker.style.left = (shPickerH / 360 * 100) + '%';
+      pickerHueMarker.style.background = 'hsl(' + shPickerH + ', 100%, 50%)';
+      pickerPreview.style.background = hex;
+      pickerHex.value = hex.substring(1);
+      return hex;
+    }
+
+    function shApplyPickerColor() {
+      var rgb = hsvToRgb(shPickerH, shPickerS, shPickerV);
+      var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      shadowColor = hex;
+      swatch.style.background = hex;
+      hexInput.value = hex.substring(1);
+      renderShadowPreview();
+    }
+
+    swatch.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (pickerEl.classList.contains('visible')) {
+        pickerEl.classList.remove('visible');
+        return;
+      }
+      var hsv = hexToHsv(shadowColor);
+      if (hsv) { shPickerH = hsv.h; shPickerS = hsv.s; shPickerV = hsv.v; }
+      shUpdatePickerUI();
+      pickerEl.classList.add('visible');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!pickerEl.contains(e.target) && e.target !== swatch) {
+        pickerEl.classList.remove('visible');
+      }
+    });
+
+    // SV drag
+    pickerSV.addEventListener('pointerdown', function(e) {
+      shPickerDraggingSV = true;
+      pickerSV.setPointerCapture(e.pointerId);
+      shUpdateSV(e);
+    });
+    pickerSV.addEventListener('pointermove', function(e) {
+      if (!shPickerDraggingSV) return;
+      shUpdateSV(e);
+    });
+    pickerSV.addEventListener('pointerup', function() { shPickerDraggingSV = false; });
+
+    function shUpdateSV(e) {
+      var rect = pickerSV.getBoundingClientRect();
+      shPickerS = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      shPickerV = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
+      shUpdatePickerUI();
+      shApplyPickerColor();
+    }
+
+    // Hue drag
+    pickerHue.addEventListener('pointerdown', function(e) {
+      shPickerDraggingHue = true;
+      pickerHue.setPointerCapture(e.pointerId);
+      shUpdateHue(e);
+    });
+    pickerHue.addEventListener('pointermove', function(e) {
+      if (!shPickerDraggingHue) return;
+      shUpdateHue(e);
+    });
+    pickerHue.addEventListener('pointerup', function() { shPickerDraggingHue = false; });
+
+    function shUpdateHue(e) {
+      var rect = pickerHue.getBoundingClientRect();
+      shPickerH = Math.max(0, Math.min(360, (e.clientX - rect.left) / rect.width * 360));
+      shUpdatePickerUI();
+      shApplyPickerColor();
+    }
+
+    // Picker hex input
+    pickerHex.addEventListener('input', function() {
+      if (/^[0-9A-Fa-f]{6}$/.test(this.value)) {
+        var hsv = hexToHsv('#' + this.value);
+        if (hsv) { shPickerH = hsv.h; shPickerS = hsv.s; shPickerV = hsv.v; }
+        shUpdatePickerUI();
+        shApplyPickerColor();
+      }
+    });
+
+    // Main hex input
+    hexInput.addEventListener('input', function() {
+      if (/^[0-9A-Fa-f]{6}$/.test(this.value)) {
+        shadowColor = '#' + this.value;
+        swatch.style.background = shadowColor;
+        var hsv = hexToHsv(shadowColor);
+        if (hsv) { shPickerH = hsv.h; shPickerS = hsv.s; shPickerV = hsv.v; }
+        renderShadowPreview();
+      }
+    });
+  })();
+
+  // Shadow canvas drag (2D offset / 3D direction)
+  psCanvas.addEventListener('pointerdown', function(e) {
+    if (activeToolTab !== 'shadow') return;
+    if (!shadowSnapshot) return;
+    shadowDragging = true;
+    psCanvas.setPointerCapture(e.pointerId);
+    psCanvas.classList.remove('sh-cursor-grab');
+    psCanvas.classList.add('sh-cursor-grabbing');
+    if (shadowMode === '2d') {
+      shadowDragStartX = e.clientX;
+      shadowDragStartY = e.clientY;
+      shadowDragStartOffX = shadowOffX;
+      shadowDragStartOffY = shadowOffY;
+    } else {
+      shadowUpdate3dFromPointer(e);
+    }
+    if (!shadowEnabled) {
+      shadowEnabled = true;
+      var chk = document.getElementById('psShadowEnabled');
+      if (chk) chk.checked = true;
+    }
   });
 
+  psCanvas.addEventListener('pointermove', function(e) {
+    if (activeToolTab !== 'shadow') return;
+    if (!shadowDragging) return;
+    if (shadowMode === '2d') {
+      var rect = psCanvas.getBoundingClientRect();
+      var scale = psCanvas.width / rect.width;
+      var dxPx = (e.clientX - shadowDragStartX) * scale;
+      var dyPx = (e.clientY - shadowDragStartY) * scale;
+      var maxDim = Math.max(psCanvas.width, psCanvas.height);
+      shadowOffX = Math.max(-100, Math.min(100, shadowDragStartOffX + Math.round(dxPx / maxDim * 400)));
+      shadowOffY = Math.max(-100, Math.min(100, shadowDragStartOffY + Math.round(dyPx / maxDim * 400)));
+      shadowSyncSlider('psShadowOffX', 'psShadowOffXVal', shadowOffX, -100, 100);
+      shadowSyncSlider('psShadowOffY', 'psShadowOffYVal', shadowOffY, -100, 100);
+      renderShadowPreview();
+    } else {
+      shadowUpdate3dFromPointer(e);
+    }
+  });
+
+  psCanvas.addEventListener('pointerup', function() {
+    if (activeToolTab !== 'shadow') return;
+    shadowDragging = false;
+    psCanvas.classList.remove('sh-cursor-grabbing');
+    if (activeToolTab === 'shadow') psCanvas.classList.add('sh-cursor-grab');
+  });
+
+  function shadowUpdate3dFromPointer(e) {
+    if (!shadowContentBounds) return;
+    var pos = getCanvasPos(e);
+    var anchorX = shadowContentBounds.cx;
+    var anchorY = shadowContentBounds.bottom;
+    var dx = pos.x - anchorX;
+    var dy = pos.y - anchorY;
+    shadow3dTipX = dx / Math.max(1, shadowContentBounds.h);
+    shadow3dTipY = dy / Math.max(1, shadowContentBounds.h);
+    renderShadowPreview();
+  }
+
   function doShadowApply() {
-    if (!psCtx) return;
+    if (!psCtx || !shadowSnapshot) return;
+    // Restore pre-shadow state so pushEditState captures the correct undo target
+    psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+    psCtx.drawImage(shadowSnapshot, 0, 0);
     pushEditState();
-    var w = psCanvas.width, h = psCanvas.height;
-    var softness = parseInt(document.getElementById('psShadowBlur').value) || 40;
-    var blurPx = Math.round(softness * Math.max(w, h) / 2000) + 3;
-    var offsetY = Math.round(h * 0.015) + 2;
-
-    // Save current image
-    var tmp = document.createElement('canvas');
-    tmp.width = w; tmp.height = h;
-    tmp.getContext('2d').drawImage(psCanvas, 0, 0);
-
-    // Draw with shadow
-    psCtx.clearRect(0, 0, w, h);
-    psCtx.shadowColor = 'rgba(0,0,0,0.22)';
-    psCtx.shadowBlur = blurPx;
-    psCtx.shadowOffsetX = 0;
-    psCtx.shadowOffsetY = offsetY;
-    psCtx.drawImage(tmp, 0, 0);
-
-    // Reset shadow
-    psCtx.shadowColor = 'transparent';
-    psCtx.shadowBlur = 0;
-    psCtx.shadowOffsetX = 0;
-    psCtx.shadowOffsetY = 0;
+    if (shadowEnabled) {
+      if (shadowMode === '2d') renderShadow2d(psCtx, shadowSnapshot);
+      else renderShadow3d(psCtx, shadowSnapshot);
+    }
+    originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+    shadowSnapshot = null;
+    shadowContentBounds = null;
+    psCanvas.classList.remove('sh-cursor-grab', 'sh-cursor-grabbing');
+    var picker = document.getElementById('psShadowPicker');
+    if (picker) picker.classList.remove('visible');
     toolPanelEntryState = null;
     showPsPanel('default');
   }
+
+  // ── OUTLINE TOOL ──
+  var outlineSnapshot = null;
+  var outlineEnabled = true;
+  var outlineWidth = 20;
+  var outlineSoft = 0;
+  var outlineColor = '#FFFFFF';
+  var outlinePreviewRAF = null;
+  var olPickerH = 0, olPickerS = 0, olPickerV = 1;
+  var olPickerDraggingSV = false, olPickerDraggingHue = false;
+
+  // Reusable DT buffers
+  var olDtBufs = { size: 0, lineSize: 0 };
+  var olOutlineImgData = null;
+  var outlineDtReady = false;
+  var outlineOrigReady = false;
+
+  // 1D squared Euclidean distance transform (Felzenszwalb & Huttenlocher)
+  function olEdt1d(f, d, n, v, z) {
+    var k = 0;
+    v[0] = 0; z[0] = -Infinity; z[1] = Infinity;
+    for (var q = 1; q < n; q++) {
+      var fq = f[q], vk = v[k];
+      var s = ((fq + q * q) - (f[vk] + vk * vk)) / (2 * (q - vk));
+      while (s <= z[k] && k > 0) {
+        k--;
+        vk = v[k];
+        s = ((fq + q * q) - (f[vk] + vk * vk)) / (2 * (q - vk));
+      }
+      k++;
+      v[k] = q; z[k] = s; z[k + 1] = Infinity;
+    }
+    k = 0;
+    for (var q2 = 0; q2 < n; q2++) {
+      while (z[k + 1] < q2) k++;
+      var dq = q2 - v[k];
+      d[q2] = dq * dq + f[v[k]];
+    }
+  }
+
+  function olGetDtBufs(w, h) {
+    var wh = w * h, line = Math.max(w, h);
+    if (olDtBufs.size < wh) { olDtBufs.dSq = new Float64Array(wh); olDtBufs.size = wh; }
+    if (olDtBufs.lineSize < line) {
+      olDtBufs.f = new Float64Array(line); olDtBufs.dOut = new Float64Array(line);
+      olDtBufs.v = new Int32Array(line); olDtBufs.z = new Float64Array(line + 1);
+      olDtBufs.lineSize = line;
+    }
+    return olDtBufs;
+  }
+
+  function olComputeDT(src, w, h, bufs) {
+    var data = src.data, dSq = bufs.dSq, f = bufs.f, dOut = bufs.dOut, v = bufs.v, z = bufs.z;
+    var INF = (w * w + h * h) * 4 + 1;
+    for (var y = 0; y < h; y++) {
+      var rowStart = y * w;
+      for (var x = 0; x < w; x++) f[x] = data[(rowStart + x) * 4 + 3] >= 128 ? 0 : INF;
+      olEdt1d(f, dOut, w, v, z);
+      for (var x2 = 0; x2 < w; x2++) dSq[rowStart + x2] = dOut[x2];
+    }
+    for (var xc = 0; xc < w; xc++) {
+      for (var yc = 0; yc < h; yc++) f[yc] = dSq[yc * w + xc];
+      olEdt1d(f, dOut, h, v, z);
+      for (var yc2 = 0; yc2 < h; yc2++) dSq[yc2 * w + xc] = dOut[yc2];
+    }
+  }
+
+  var olCacheCanvases = {};
+  function olGetCanvas(key, w, h) {
+    var c = olCacheCanvases[key];
+    if (!c) { c = document.createElement('canvas'); olCacheCanvases[key] = c; }
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    return c;
+  }
+
+  function olRenderOutline(targetCtx, src) {
+    var w = src.width, h = src.height;
+    var origC = olGetCanvas('orig', w, h);
+    if (!outlineOrigReady) {
+      var origCtx = origC.getContext('2d');
+      origCtx.clearRect(0, 0, w, h);
+      origCtx.putImageData(src, 0, 0);
+      outlineOrigReady = true;
+    }
+    if (!outlineEnabled) {
+      targetCtx.clearRect(0, 0, w, h);
+      targetCtx.drawImage(origC, 0, 0);
+      return;
+    }
+    var bufs = olGetDtBufs(w, h);
+    if (!outlineDtReady) {
+      olComputeDT(src, w, h, bufs);
+      outlineDtReady = true;
+    }
+    var dSq = bufs.dSq;
+    if (!olOutlineImgData || olOutlineImgData.width !== w || olOutlineImgData.height !== h) {
+      olOutlineImgData = new ImageData(w, h);
+    }
+    var outData = olOutlineImgData.data;
+    outData.fill(0);
+    var hex = outlineColor.replace('#', '');
+    var cr = parseInt(hex.slice(0, 2), 16);
+    var cg = parseInt(hex.slice(2, 4), 16);
+    var cb = parseInt(hex.slice(4, 6), 16);
+    var softF = outlineSoft / 100;
+    var innerAA = 0.75;
+    var outerFade = 0.75 + softF * 40;
+    var W = outlineWidth;
+    var Wmin = W - innerAA, Wmax = W + outerFade;
+    var WminSq = Wmin > 0 ? Wmin * Wmin : 0;
+    var WmaxSq = Wmax * Wmax;
+    var invAA = 1 / (Wmax - Wmin);
+    for (var i = 0; i < w * h; i++) {
+      var d2 = dSq[i];
+      if (d2 >= WmaxSq) continue;
+      var j = i * 4;
+      if (d2 <= WminSq) {
+        outData[j] = cr; outData[j+1] = cg; outData[j+2] = cb; outData[j+3] = 255;
+      } else {
+        var d = Math.sqrt(d2);
+        var t = (Wmax - d) * invAA;
+        var a = (t * t * (3 - 2 * t)) * 255;
+        outData[j] = cr; outData[j+1] = cg; outData[j+2] = cb; outData[j+3] = a | 0;
+      }
+    }
+    var outC = olGetCanvas('out', w, h);
+    var outCtx = outC.getContext('2d');
+    outCtx.putImageData(olOutlineImgData, 0, 0);
+    targetCtx.clearRect(0, 0, w, h);
+    targetCtx.drawImage(outC, 0, 0);
+    targetCtx.drawImage(origC, 0, 0);
+  }
+
+  function renderOutlinePreview(deferred) {
+    if (outlinePreviewRAF) cancelAnimationFrame(outlinePreviewRAF);
+    function run() {
+      outlinePreviewRAF = null;
+      if (!outlineSnapshot || !psCtx) return;
+      olRenderOutline(psCtx, outlineSnapshot);
+    }
+    if (deferred) {
+      // Double RAF — lets the CSS panel-open animation paint before heavy DT computation
+      outlinePreviewRAF = requestAnimationFrame(function() {
+        outlinePreviewRAF = requestAnimationFrame(run);
+      });
+    } else {
+      outlinePreviewRAF = requestAnimationFrame(run);
+    }
+  }
+
+  function outlineTakeSnapshot() {
+    if (!psCtx) return;
+    outlineSnapshot = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+    outlineDtReady = false;
+    outlineOrigReady = false;
+  }
+
+  function outlineCleanup() {
+    if (outlineSnapshot && psCtx) {
+      psCtx.clearRect(0, 0, psCanvas.width, psCanvas.height);
+      psCtx.putImageData(outlineSnapshot, 0, 0);
+    }
+    outlineSnapshot = null;
+    outlineDtReady = false;
+    outlineOrigReady = false;
+    if (outlinePreviewRAF) { cancelAnimationFrame(outlinePreviewRAF); outlinePreviewRAF = null; }
+    var picker = document.getElementById('psOutlinePicker');
+    if (picker) picker.classList.remove('visible');
+  }
+
+  function doOutlineApply() {
+    if (!psCtx || !outlineSnapshot) return;
+    // Restore pre-outline state so pushEditState captures the correct undo target
+    psCtx.putImageData(outlineSnapshot, 0, 0);
+    pushEditState();
+    if (outlineEnabled) olRenderOutline(psCtx, outlineSnapshot);
+    originalResultData = psCtx.getImageData(0, 0, psCanvas.width, psCanvas.height);
+    outlineSnapshot = null;
+    var picker = document.getElementById('psOutlinePicker');
+    if (picker) picker.classList.remove('visible');
+    toolPanelEntryState = null;
+    showPsPanel('default');
+  }
+
+  // Outline sliders
+  (function() {
+    function wireOlSlider(id, valId, onChange) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function() {
+        var v = parseInt(this.value);
+        var valEl = document.getElementById(valId);
+        if (valEl) valEl.textContent = v;
+        var pct = (this.value - this.min) / (this.max - this.min) * 100;
+        this.style.setProperty('--fill', pct + '%');
+        onChange(v);
+        renderOutlinePreview();
+      });
+    }
+    wireOlSlider('psOutlineWidth', 'psOutlineWidthVal', function(v) { outlineWidth = v; });
+    wireOlSlider('psOutlineSoft', 'psOutlineSoftVal', function(v) { outlineSoft = v; });
+
+    var chk = document.getElementById('psOutlineEnabled');
+    if (chk) chk.addEventListener('change', function() { outlineEnabled = this.checked; renderOutlinePreview(); });
+  })();
+
+  // Outline color picker
+  (function() {
+    var swatch = document.getElementById('psOutlineColorSwatch');
+    var hexInput = document.getElementById('psOutlineHex');
+    var pickerEl = document.getElementById('psOutlinePicker');
+    var pickerSV = document.getElementById('olPickerSV');
+    var pickerSVMarker = document.getElementById('olPickerSVMarker');
+    var pickerHue = document.getElementById('olPickerHue');
+    var pickerHueMarker = document.getElementById('olPickerHueMarker');
+    var pickerPreview = document.getElementById('olPickerPreview');
+    var pickerHex = document.getElementById('olPickerHex');
+    if (!swatch || !pickerEl) return;
+
+    function olUpdatePickerUI() {
+      var rgb = hsvToRgb(olPickerH, olPickerS, olPickerV);
+      var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      pickerSV.style.backgroundColor = 'hsl(' + olPickerH + ', 100%, 50%)';
+      pickerSVMarker.style.left = (olPickerS * 100) + '%';
+      pickerSVMarker.style.top = ((1 - olPickerV) * 100) + '%';
+      pickerHueMarker.style.left = (olPickerH / 360 * 100) + '%';
+      pickerHueMarker.style.background = 'hsl(' + olPickerH + ', 100%, 50%)';
+      pickerPreview.style.background = hex;
+      pickerHex.value = hex.substring(1);
+    }
+
+    function olApplyPickerColor() {
+      var rgb = hsvToRgb(olPickerH, olPickerS, olPickerV);
+      var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      outlineColor = hex;
+      swatch.style.background = hex;
+      hexInput.value = hex.substring(1);
+      olSyncPresets(hex);
+      renderOutlinePreview();
+    }
+
+    function olSyncPresets(hex) {
+      document.querySelectorAll('#psOutlinePresets .sh-preset').forEach(function(p) {
+        p.classList.toggle('active', p.getAttribute('data-color').toUpperCase() === hex.toUpperCase());
+      });
+    }
+
+    document.querySelectorAll('#psOutlinePresets .sh-preset').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var hex = btn.getAttribute('data-color');
+        outlineColor = hex;
+        swatch.style.background = hex;
+        hexInput.value = hex.substring(1).toUpperCase();
+        var hsv = hexToHsv(hex);
+        if (hsv) { olPickerH = hsv.h; olPickerS = hsv.s; olPickerV = hsv.v; }
+        olSyncPresets(hex);
+        renderOutlinePreview();
+      });
+    });
+
+    swatch.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (pickerEl.classList.contains('visible')) { pickerEl.classList.remove('visible'); return; }
+      var hsv = hexToHsv(outlineColor);
+      if (hsv) { olPickerH = hsv.h; olPickerS = hsv.s; olPickerV = hsv.v; }
+      olUpdatePickerUI();
+      pickerEl.classList.add('visible');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!pickerEl.contains(e.target) && e.target !== swatch) pickerEl.classList.remove('visible');
+    });
+
+    pickerSV.addEventListener('pointerdown', function(e) {
+      olPickerDraggingSV = true;
+      pickerSV.setPointerCapture(e.pointerId);
+      olUpdateSV(e);
+    });
+    pickerSV.addEventListener('pointermove', function(e) { if (olPickerDraggingSV) olUpdateSV(e); });
+    pickerSV.addEventListener('pointerup', function() { olPickerDraggingSV = false; });
+
+    function olUpdateSV(e) {
+      var rect = pickerSV.getBoundingClientRect();
+      olPickerS = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      olPickerV = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
+      olUpdatePickerUI();
+      olApplyPickerColor();
+    }
+
+    pickerHue.addEventListener('pointerdown', function(e) {
+      olPickerDraggingHue = true;
+      pickerHue.setPointerCapture(e.pointerId);
+      olUpdateHue(e);
+    });
+    pickerHue.addEventListener('pointermove', function(e) { if (olPickerDraggingHue) olUpdateHue(e); });
+    pickerHue.addEventListener('pointerup', function() { olPickerDraggingHue = false; });
+
+    function olUpdateHue(e) {
+      var rect = pickerHue.getBoundingClientRect();
+      olPickerH = Math.max(0, Math.min(360, (e.clientX - rect.left) / rect.width * 360));
+      olUpdatePickerUI();
+      olApplyPickerColor();
+    }
+
+    pickerHex.addEventListener('input', function() {
+      if (/^[0-9A-Fa-f]{6}$/.test(this.value)) {
+        var hsv = hexToHsv('#' + this.value);
+        if (hsv) { olPickerH = hsv.h; olPickerS = hsv.s; olPickerV = hsv.v; }
+        olUpdatePickerUI();
+        olApplyPickerColor();
+      }
+    });
+
+    hexInput.addEventListener('input', function() {
+      if (/^[0-9A-Fa-f]{6}$/.test(this.value)) {
+        outlineColor = '#' + this.value;
+        swatch.style.background = outlineColor;
+        var hsv = hexToHsv(outlineColor);
+        if (hsv) { olPickerH = hsv.h; olPickerS = hsv.s; olPickerV = hsv.v; }
+        olSyncPresets(outlineColor);
+        renderOutlinePreview();
+      }
+    });
+  })();
 
   // Color picker
   function applyBackground(color) {
