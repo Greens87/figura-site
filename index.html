@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
-<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
 <style>
 *, *::before, *::after {
@@ -4464,29 +4463,15 @@ body.batch-active.ps-active #psBatchCounter { display: inline; }
 
   const DAILY_LIMIT = 5;
   const BATCH_MAX = 100; // max images stored at once
-  const DEPLOY_VERSION = '2026-07-11T14:21';
+  const DEPLOY_VERSION = '2026-07-12T09:30';
   const MAX_FILE_SIZE = 15 * 1024 * 1024;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/avif', 'image/webp'];
   const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.avif', '.webp'];
 
-  let visitorId = null;
   let uploadedImageData = null;
   let currentBgColor = 'transparent';
   let originalImage = null;
   let slideCtaShown = false;
-
-  // FingerprintJS
-  if (typeof FingerprintJS !== 'undefined') {
-    FingerprintJS.load().then(function(fp) {
-      return fp.get();
-    }).then(function(result) {
-      visitorId = result.visitorId;
-    }).catch(function() {
-      visitorId = 'fallback-' + Math.random().toString(36).substr(2, 9);
-    });
-  } else {
-    visitorId = 'fallback-' + Math.random().toString(36).substr(2, 9);
-  }
 
   // Reset counter on new deploy
   if (localStorage.getItem('bg5_deploy') !== DEPLOY_VERSION) {
